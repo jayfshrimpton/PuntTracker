@@ -39,6 +39,30 @@ export default function DashboardPage() {
     loadBets();
   }, []);
 
+  const filterBets = useCallback(() => {
+    let filtered = [...bets];
+
+    if (dateRange === 'this-month') {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      filtered = bets.filter((bet) => {
+        const betDate = new Date(bet.bet_date);
+        return betDate >= start && betDate <= end;
+      });
+    } else if (dateRange === 'last-month') {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const end = new Date(now.getFullYear(), now.getMonth(), 0);
+      filtered = bets.filter((bet) => {
+        const betDate = new Date(bet.bet_date);
+        return betDate >= start && betDate <= end;
+      });
+    }
+
+    setFilteredBets(filtered);
+  }, [bets, dateRange]);
+
   useEffect(() => {
     filterBets();
   }, [filterBets]);
@@ -64,29 +88,7 @@ export default function DashboardPage() {
     }
   };
 
-  const filterBets = useCallback(() => {
-    let filtered = [...bets];
-
-    if (dateRange === 'this-month') {
-      const now = new Date();
-      const start = new Date(now.getFullYear(), now.getMonth(), 1);
-      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      filtered = bets.filter((bet) => {
-        const betDate = new Date(bet.bet_date);
-        return betDate >= start && betDate <= end;
-      });
-    } else if (dateRange === 'last-month') {
-      const now = new Date();
-      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const end = new Date(now.getFullYear(), now.getMonth(), 0);
-      filtered = bets.filter((bet) => {
-        const betDate = new Date(bet.bet_date);
-        return betDate >= start && betDate <= end;
-      });
-    }
-
-    setFilteredBets(filtered);
-  }, [bets, dateRange]);
+  
 
   const stats = calculateMonthlyStats(filteredBets);
   const betTypeStats = calculateStatsByBetType(filteredBets);
