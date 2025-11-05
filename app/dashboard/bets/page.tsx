@@ -452,9 +452,9 @@ export default function BetsPage() {
                   className={`w-full px-3 py-2 border rounded-md ${
                     manualProfitEdit ? 'bg-white' : 'bg-gray-50'
                   } ${
-                    formData.profit_loss !== null && formData.profit_loss >= 0
+                    formData.profit_loss !== null && formData.profit_loss !== undefined && Number(formData.profit_loss) >= 0
                       ? 'border-green-300 text-green-700'
-                      : formData.profit_loss !== null
+                      : formData.profit_loss !== null && formData.profit_loss !== undefined
                       ? 'border-red-300 text-red-700'
                       : 'border-gray-300 text-gray-900'
                   }`}
