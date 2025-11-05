@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ToastContainer } from './Toast';
-import { subscribeToToasts, removeToast, getToasts, type Toast } from '@/lib/toast';
+import { ToastContainer, type Toast } from './Toast';
+import { subscribeToToasts, removeToast, getToasts } from '@/lib/toast';
 
 export function ToastProvider() {
   const [toasts, setToasts] = useState<Toast[]>([]);
