@@ -361,7 +361,7 @@ export default function BetsPage() {
               </select>
               {formData.bet_type === 'lay' && (
                 <p className="mt-1 text-xs text-gray-900">
-                  Lay: You're betting against the horse. If it wins, you lose the
+                  Lay: You&apos;re betting against the horse. If it wins, you lose the
                   liability (stake × (odds - 1)). If it loses, you win the
                   stake.
                 </p>

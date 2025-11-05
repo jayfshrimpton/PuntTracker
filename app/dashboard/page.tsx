@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fetchUserBets, type Bet, type DateRange } from '@/lib/api';
 import {
@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     filterBets();
-  }, [bets, dateRange]);
+  }, [filterBets]);
 
   const loadBets = async () => {
     try {
@@ -64,7 +64,7 @@ export default function DashboardPage() {
     }
   };
 
-  const filterBets = () => {
+  const filterBets = useCallback(() => {
     let filtered = [...bets];
 
     if (dateRange === 'this-month') {
@@ -86,7 +86,7 @@ export default function DashboardPage() {
     }
 
     setFilteredBets(filtered);
-  };
+  }, [bets, dateRange]);
 
   const stats = calculateMonthlyStats(filteredBets);
   const betTypeStats = calculateStatsByBetType(filteredBets);
