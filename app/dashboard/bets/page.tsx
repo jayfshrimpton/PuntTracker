@@ -116,7 +116,7 @@ export default function BetsPage() {
         betType,
         price,
         stake,
-        position
+        position ?? null
       );
     }
 
