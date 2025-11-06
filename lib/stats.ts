@@ -19,11 +19,21 @@ export interface MonthlyStats {
   longestLoseStreak: number;
 }
 
-export interface BetTypeStats {
-  win: MonthlyStats;
-  place: MonthlyStats;
-  lay: MonthlyStats;
-}
+export const ALL_BET_TYPES = [
+  'win',
+  'place',
+  'lay',
+  'each-way',
+  'multi',
+  'quinella',
+  'exacta',
+  'trifecta',
+  'first-four',
+  'other',
+] as const;
+export type BetType = typeof ALL_BET_TYPES[number];
+
+export type BetTypeStats = Record<BetType, MonthlyStats>;
 
 export interface ProfitLossDataPoint {
   date: string;
@@ -180,15 +190,12 @@ export function groupBetsByMonth(bets: Bet[]): Record<string, Bet[]> {
 }
 
 export function calculateStatsByBetType(bets: Bet[]): BetTypeStats {
-  const winBets = bets.filter((bet) => bet.bet_type === 'win');
-  const placeBets = bets.filter((bet) => bet.bet_type === 'place');
-  const layBets = bets.filter((bet) => bet.bet_type === 'lay');
-
-  return {
-    win: calculateMonthlyStats(winBets),
-    place: calculateMonthlyStats(placeBets),
-    lay: calculateMonthlyStats(layBets),
-  };
+  const map = {} as BetTypeStats;
+  ALL_BET_TYPES.forEach((t) => {
+    const subset = bets.filter((bet) => bet.bet_type === (t as any));
+    (map as any)[t] = calculateMonthlyStats(subset);
+  });
+  return map;
 }
 
 export function getProfitLossTimeSeries(bets: Bet[]): ProfitLossDataPoint[] {

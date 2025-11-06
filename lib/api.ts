@@ -5,7 +5,17 @@ export interface Bet {
   user_id: string;
   race_name: string;
   horse_name: string;
-  bet_type: 'win' | 'place' | 'lay';
+  bet_type:
+    | 'win'
+    | 'place'
+    | 'lay'
+    | 'each-way'
+    | 'multi'
+    | 'quinella'
+    | 'exacta'
+    | 'trifecta'
+    | 'first-four'
+    | 'other';
   price: number;
   stake: number;
   finishing_position: number | null;
@@ -13,17 +23,37 @@ export interface Bet {
   bet_date: string;
   created_at: string;
   updated_at: string;
+  // Optional fields for new bet types
+  selections?: Record<string, unknown> | null; // JSONB
+  exotic_numbers?: string | null;
+  num_legs?: number | null;
+  description?: string | null;
 }
 
 export interface BetInput {
   race_name: string;
   horse_name: string;
-  bet_type: 'win' | 'place' | 'lay';
+  bet_type:
+    | 'win'
+    | 'place'
+    | 'lay'
+    | 'each-way'
+    | 'multi'
+    | 'quinella'
+    | 'exacta'
+    | 'trifecta'
+    | 'first-four'
+    | 'other';
   price: number;
   stake: number;
   finishing_position?: number | null;
   profit_loss?: number | null;
   bet_date: string;
+  // Optional fields for new bet types
+  selections?: Record<string, unknown> | null;
+  exotic_numbers?: string | null;
+  num_legs?: number | null;
+  description?: string | null;
 }
 
 export type DateRange = 'all' | 'this-month' | 'last-month' | 'custom';

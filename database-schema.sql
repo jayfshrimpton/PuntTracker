@@ -7,7 +7,7 @@ CREATE TABLE bets (
   user_id UUID REFERENCES auth.users NOT NULL,
   race_name TEXT NOT NULL,
   horse_name TEXT NOT NULL,
-  bet_type TEXT NOT NULL, -- 'win', 'place', 'lay'
+  bet_type TEXT NOT NULL, -- 'win','place','lay','each-way','multi','quinella','exacta','trifecta','first-four','other'
   price DECIMAL(10,2) NOT NULL, -- odds
   stake DECIMAL(10,2) NOT NULL,
   finishing_position INTEGER,
@@ -39,3 +39,9 @@ CREATE POLICY "Users can update own bets" ON bets
 -- Create policy: Users can delete their own bets
 CREATE POLICY "Users can delete own bets" ON bets
   FOR DELETE USING (auth.uid() = user_id);
+
+-- Optional columns for new bet types (idempotent)
+ALTER TABLE bets ADD COLUMN IF NOT EXISTS selections JSONB;
+ALTER TABLE bets ADD COLUMN IF NOT EXISTS exotic_numbers TEXT;
+ALTER TABLE bets ADD COLUMN IF NOT EXISTS num_legs INTEGER;
+ALTER TABLE bets ADD COLUMN IF NOT EXISTS description TEXT;

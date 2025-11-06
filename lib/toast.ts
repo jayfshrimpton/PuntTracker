@@ -1,4 +1,5 @@
 import { Toast } from '@/components/Toast';
+export type { Toast } from '@/components/Toast';
 
 let toastIdCounter = 0;
 let toastListeners: Array<(toasts: Toast[]) => void> = [];
