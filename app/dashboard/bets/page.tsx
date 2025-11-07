@@ -497,7 +497,7 @@ export default function BetsPage() {
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Place Terms (e.g., "1/4 odds, 3 places")
+                    Place Terms (e.g., &quot;1/4 odds, 3 places&quot;)
                   </label>
                   <input
                     type="text"
@@ -509,7 +509,7 @@ export default function BetsPage() {
                         'each-way',
                         formData.price,
                         formData.stake,
-                        formData.finishing_position,
+                        formData.finishing_position ?? null,
                         { placeTerms }
                       );
                       setFormData({ ...formData, profit_loss: pl as any });
