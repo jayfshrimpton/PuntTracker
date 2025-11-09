@@ -3,8 +3,14 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
 
 export const metadata: Metadata = {
-  title: "PuntTracker",
-  description: "PuntTracker – modern, vibrant horse betting tracker with rich analytics",
+  title: "PuntTracker - Horse Racing Bet Tracker for Australian Punters",
+  description: "Track your horse racing bets with ease. Automatic stats, beautiful charts, and insights. Built for Aussie punters. Free to start.",
+  keywords: "horse racing, bet tracker, betting stats, punt tracker, racing bets, Australian horse racing, betting analytics",
+  openGraph: {
+    title: "PuntTracker - Horse Racing Bet Tracker for Australian Punters",
+    description: "Track your horse racing bets with ease. Automatic stats, beautiful charts, and insights. Built for Aussie punters.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

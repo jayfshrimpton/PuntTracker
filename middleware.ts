@@ -65,6 +65,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect authenticated users away from login/signup
+  // But allow password reset routes (they may have recovery sessions)
   if (pathname === '/login' || pathname === '/signup') {
     if (user) {
       const url = request.nextUrl.clone();
@@ -72,6 +73,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
   }
+
+  // Allow forgot-password and reset-password routes (no restrictions)
+  // These routes handle their own authentication state
 
   return supabaseResponse;
 }
