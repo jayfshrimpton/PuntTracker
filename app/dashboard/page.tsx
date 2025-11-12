@@ -29,7 +29,7 @@ import {
   AreaChart,
 } from 'recharts';
 import { format } from 'date-fns';
-import { TrendingUp, DollarSign, Target, Activity, Trophy } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, Activity, Trophy, Calendar } from 'lucide-react';
 
 export default function DashboardPage() {
   const [bets, setBets] = useState<Bet[]>([]);
@@ -152,6 +152,12 @@ export default function DashboardPage() {
   }
 
   const currentMonth = format(new Date(), 'MMMM yyyy');
+  const profitTodayDisplay =
+    stats.profitToday > 0
+      ? `+$${stats.profitToday.toFixed(2)}`
+      : stats.profitToday < 0
+      ? `-$${Math.abs(stats.profitToday).toFixed(2)}`
+      : '$0.00';
 
   return (
     <div className="space-y-6">
@@ -264,17 +270,20 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-          <p className="text-sm font-medium text-gray-500">Current Streak</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-500">Today&apos;s Profit/Loss</p>
+            <Calendar className="h-5 w-5 text-gray-400" />
+          </div>
           <p
             className={`text-3xl font-bold mt-2 ${
-              stats.currentStreak >= 0 ? 'text-green-600' : 'text-red-600'
+              stats.profitToday > 0
+                ? 'text-green-600'
+                : stats.profitToday < 0
+                ? 'text-red-600'
+                : 'text-gray-900 dark:text-white'
             }`}
           >
-            {stats.currentStreak > 0
-              ? `${stats.currentStreak}W`
-              : stats.currentStreak < 0
-              ? `${Math.abs(stats.currentStreak)}L`
-              : '-'}
+            {profitTodayDisplay}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">

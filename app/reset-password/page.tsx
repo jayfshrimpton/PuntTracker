@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Lock, CheckCircle, ArrowLeft } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +35,7 @@ export default function ResetPasswordPage() {
             setIsValidToken(false);
           }
         });
-        subscription = data;
+        subscription = data?.subscription ?? null;
 
         // Also check session after a short delay as fallback
         timeoutId = setTimeout(async () => {

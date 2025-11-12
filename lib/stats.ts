@@ -4,6 +4,7 @@ import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 export interface MonthlyStats {
   totalStake: number;
   totalProfit: number;
+  profitToday: number;
   totalBets: number;
   winningBets: number;
   losingBets: number;
@@ -14,9 +15,6 @@ export interface MonthlyStats {
   averageStake: number;
   bestWin: number;
   worstLoss: number;
-  currentStreak: number;
-  longestWinStreak: number;
-  longestLoseStreak: number;
 }
 
 export const ALL_BET_TYPES = [
@@ -46,6 +44,7 @@ export function calculateMonthlyStats(bets: Bet[]): MonthlyStats {
     return {
       totalStake: 0,
       totalProfit: 0,
+      profitToday: 0,
       totalBets: 0,
       winningBets: 0,
       losingBets: 0,
@@ -56,9 +55,6 @@ export function calculateMonthlyStats(bets: Bet[]): MonthlyStats {
       averageStake: 0,
       bestWin: 0,
       worstLoss: 0,
-      currentStreak: 0,
-      longestWinStreak: 0,
-      longestLoseStreak: 0,
     };
   }
 
@@ -67,6 +63,21 @@ export function calculateMonthlyStats(bets: Bet[]): MonthlyStats {
     (sum, bet) => sum + (bet.profit_loss ? Number(bet.profit_loss) : 0),
     0
   );
+  const today = new Date();
+  const profitToday = bets.reduce((sum, bet) => {
+    if (!bet.bet_date) return sum;
+    const betDate = new Date(bet.bet_date);
+    const isSameDay =
+      betDate.getFullYear() === today.getFullYear() &&
+      betDate.getMonth() === today.getMonth() &&
+      betDate.getDate() === today.getDate();
+
+    if (!isSameDay) {
+      return sum;
+    }
+
+    return sum + (bet.profit_loss ? Number(bet.profit_loss) : 0);
+  }, 0);
   const totalBets = bets.length;
   const winningBets = bets.filter(
     (bet) => bet.profit_loss !== null && Number(bet.profit_loss) > 0
@@ -94,68 +105,10 @@ export function calculateMonthlyStats(bets: Bet[]): MonthlyStats {
   const bestWin = profits.length > 0 ? Math.max(...profits, 0) : 0;
   const worstLoss = profits.length > 0 ? Math.min(...profits, 0) : 0;
 
-  // Calculate streaks
-  const sortedBets = [...bets].sort(
-    (a, b) =>
-      new Date(a.bet_date).getTime() - new Date(b.bet_date).getTime()
-  );
-
-  let currentStreak = 0;
-  let longestWinStreak = 0;
-  let longestLoseStreak = 0;
-  let currentWinStreak = 0;
-  let currentLoseStreak = 0;
-
-  for (let i = sortedBets.length - 1; i >= 0; i--) {
-    const profit = sortedBets[i].profit_loss
-      ? Number(sortedBets[i].profit_loss)
-      : null;
-
-    if (profit === null) continue;
-
-    if (i === sortedBets.length - 1) {
-      // Start from the most recent bet
-      if (profit > 0) {
-        currentStreak = 1;
-        currentWinStreak = 1;
-      } else if (profit < 0) {
-        currentStreak = -1;
-        currentLoseStreak = 1;
-      }
-    } else {
-      // Check if streak continues
-      const prevProfit = sortedBets[i + 1].profit_loss
-        ? Number(sortedBets[i + 1].profit_loss)
-        : null;
-
-      if (profit > 0 && prevProfit && prevProfit > 0) {
-        currentStreak++;
-        currentWinStreak++;
-        currentLoseStreak = 0;
-      } else if (profit < 0 && prevProfit && prevProfit < 0) {
-        currentStreak--;
-        currentLoseStreak++;
-        currentWinStreak = 0;
-      } else {
-        if (profit > 0) {
-          currentStreak = 1;
-          currentWinStreak = 1;
-          currentLoseStreak = 0;
-        } else if (profit < 0) {
-          currentStreak = -1;
-          currentLoseStreak = 1;
-          currentWinStreak = 0;
-        }
-      }
-    }
-
-    longestWinStreak = Math.max(longestWinStreak, currentWinStreak);
-    longestLoseStreak = Math.max(longestLoseStreak, currentLoseStreak);
-  }
-
   return {
     totalStake,
     totalProfit,
+    profitToday,
     totalBets,
     winningBets,
     losingBets,
@@ -166,9 +119,6 @@ export function calculateMonthlyStats(bets: Bet[]): MonthlyStats {
     averageStake,
     bestWin,
     worstLoss,
-    currentStreak,
-    longestWinStreak,
-    longestLoseStreak,
   };
 }
 
