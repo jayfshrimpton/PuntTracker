@@ -20,10 +20,14 @@ import {
   calculateExoticPL,
   calculateOtherPL,
 } from '@/lib/calculations';
-import { Edit2, Trash2, X, Check, PlusCircle, DollarSign, Target, CalendarDays, Activity, Award } from 'lucide-react';
+import { Edit2, Trash2, X, Check, PlusCircle, DollarSign, Target, CalendarDays, Activity, Award, Calendar, List, Download, Upload, Filter, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { showToast } from '@/lib/toast';
 import BetTypesGuide from '@/components/BetTypesGuide';
+import BetCalendar from '@/components/BetCalendar';
+import { exportBetsToCSV, downloadCSV, parseCSVToBets } from '@/lib/csv-utils';
+import { AUSTRALIAN_RACE_TRACKS, getTracksByState, getTrackLabel } from '@/lib/australian-tracks';
+import VenueCombobox from '@/components/VenueCombobox';
 
 export default function BetsPage() {
   const [bets, setBets] = useState<Bet[]>([]);
@@ -46,15 +50,52 @@ export default function BetsPage() {
     exotic_numbers: null,
     num_legs: null,
     description: null,
+    notes: null,
+    strategy_tags: null,
+    venue: null,
+    race_number: null,
+    race_class: null,
   });
 
   const [showLayInfo, setShowLayInfo] = useState(false);
   const [manualProfitEdit, setManualProfitEdit] = useState(false);
   const [celebrateWin, setCelebrateWin] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [isImporting, setIsImporting] = useState(false);
+  
+  // Advanced filtering state
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    oddsMin: '',
+    oddsMax: '',
+    stakeMin: '',
+    stakeMax: '',
+    profitLossMin: '',
+    profitLossMax: '',
+    betType: '',
+    venue: '',
+    horseName: '',
+    dateFrom: '',
+    dateTo: '',
+    profitLossType: '', // 'win', 'loss', 'neutral', ''
+  });
 
   useEffect(() => {
     loadBets();
   }, []);
+
+  // Update form date when selected date changes
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      bet_date: format(selectedDate, 'yyyy-MM-dd'),
+    }));
+  }, [selectedDate]);
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+  };
 
   const loadBets = async () => {
     try {
@@ -202,6 +243,11 @@ export default function BetsPage() {
         exotic_numbers: null,
         num_legs: null,
         description: null,
+        notes: null,
+        strategy_tags: null,
+        venue: null,
+        race_number: null,
+        race_class: null,
       });
       setManualProfitEdit(false);
 
@@ -284,6 +330,11 @@ export default function BetsPage() {
         finishing_position: editForm.finishing_position ?? null,
         profit_loss: editForm.profit_loss ?? null,
         bet_date: editForm.bet_date || '',
+        notes: editForm.notes ?? null,
+        strategy_tags: editForm.strategy_tags ?? null,
+        venue: editForm.venue ?? null,
+        race_number: editForm.race_number ?? null,
+        race_class: editForm.race_class ?? null,
       });
 
       if (updateError) {
@@ -324,7 +375,145 @@ export default function BetsPage() {
     }
   };
 
-  const monthlyStats = calculateMonthlyStats(bets);
+  const handleExportCSV = () => {
+    try {
+      if (bets.length === 0) {
+        showToast('No bets to export', 'error');
+        return;
+      }
+
+      const csvContent = exportBetsToCSV(bets);
+      const filename = `bets_export_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      downloadCSV(csvContent, filename);
+      showToast('Bets exported successfully!', 'success');
+    } catch (err) {
+      showToast('Failed to export bets', 'error');
+      setError('Failed to export bets');
+    }
+  };
+
+  const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setIsImporting(true);
+    setError(null);
+
+    try {
+      const fileContent = await file.text();
+      const { bets: importedBets, errors } = parseCSVToBets(fileContent);
+
+      if (errors.length > 0) {
+        const errorMessage = `Import completed with ${errors.length} error(s). First error: ${errors[0]}`;
+        setError(errorMessage);
+        showToast(errorMessage, 'error');
+      }
+
+      if (importedBets.length === 0) {
+        showToast('No valid bets found in CSV file', 'error');
+        setIsImporting(false);
+        // Reset file input
+        event.target.value = '';
+        return;
+      }
+
+      // Import each bet
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const bet of importedBets) {
+        const { error: createError } = await createBet(bet);
+        if (createError) {
+          failCount++;
+        } else {
+          successCount++;
+        }
+      }
+
+      // Reload bets
+      await loadBets();
+
+      if (failCount > 0) {
+        showToast(
+          `Imported ${successCount} bet(s), ${failCount} failed`,
+          failCount === importedBets.length ? 'error' : 'success'
+        );
+      } else {
+        showToast(`Successfully imported ${successCount} bet(s)!`, 'success');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to import bets';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
+  // Apply filters to bets
+  const filteredBets = bets.filter((bet) => {
+    // Odds range filter
+    if (filters.oddsMin && Number(bet.price) < Number(filters.oddsMin)) return false;
+    if (filters.oddsMax && Number(bet.price) > Number(filters.oddsMax)) return false;
+    
+    // Stake range filter
+    if (filters.stakeMin && Number(bet.stake) < Number(filters.stakeMin)) return false;
+    if (filters.stakeMax && Number(bet.stake) > Number(filters.stakeMax)) return false;
+    
+    // Profit/Loss range filter
+    if (bet.profit_loss !== null) {
+      if (filters.profitLossMin && Number(bet.profit_loss) < Number(filters.profitLossMin)) return false;
+      if (filters.profitLossMax && Number(bet.profit_loss) > Number(filters.profitLossMax)) return false;
+      
+      // Profit/Loss type filter
+      if (filters.profitLossType === 'win' && Number(bet.profit_loss) <= 0) return false;
+      if (filters.profitLossType === 'loss' && Number(bet.profit_loss) >= 0) return false;
+      if (filters.profitLossType === 'neutral' && Number(bet.profit_loss) !== 0) return false;
+    } else {
+      // If profit_loss is null and we're filtering for win/loss, exclude it
+      if (filters.profitLossType === 'win' || filters.profitLossType === 'loss' || filters.profitLossType === 'neutral') return false;
+    }
+    
+    // Bet type filter
+    if (filters.betType && bet.bet_type !== filters.betType) return false;
+    
+    // Venue filter
+    if (filters.venue && bet.venue !== filters.venue) return false;
+    
+    // Horse name filter (case-insensitive)
+    if (filters.horseName && !bet.horse_name.toLowerCase().includes(filters.horseName.toLowerCase())) return false;
+    
+    // Date range filter
+    if (filters.dateFrom && bet.bet_date < filters.dateFrom) return false;
+    if (filters.dateTo && bet.bet_date > filters.dateTo) return false;
+    
+    return true;
+  });
+
+  const monthlyStats = calculateMonthlyStats(filteredBets);
+  
+  const hasActiveFilters = Object.values(filters).some((value) => value !== '');
+  
+  const clearFilters = () => {
+    setFilters({
+      oddsMin: '',
+      oddsMax: '',
+      stakeMin: '',
+      stakeMax: '',
+      profitLossMin: '',
+      profitLossMax: '',
+      betType: '',
+      venue: '',
+      horseName: '',
+      dateFrom: '',
+      dateTo: '',
+      profitLossType: '',
+    });
+  };
 
   if (loading) {
     return (
@@ -341,12 +530,50 @@ export default function BetsPage() {
           <div className="absolute inset-0 animate-pulse bg-green-400/10" />
         </div>
       )}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Enter Bets</h1>
-        <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-          Add and manage your horse racing bets
-        </p>
+
+      {/* View Toggle */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Enter Bets</h1>
+          <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+            Add and manage your horse racing bets
+          </p>
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => setViewMode('calendar')}
+            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+              viewMode === 'calendar'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            <span className="hidden sm:inline">Calendar</span>
+            <span className="sm:hidden">Cal</span>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+              viewMode === 'list'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`}
+          >
+            <List className="w-4 h-4" />
+            List
+          </button>
+        </div>
       </div>
+
+      {/* Calendar View */}
+      {viewMode === 'calendar' && (
+        <BetCalendar
+          bets={bets}
+          selectedDate={selectedDate}
+          onDateSelect={handleDateSelect}
+        />
+      )}
 
       {/* Monthly Totals */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-shadow">
@@ -396,15 +623,62 @@ export default function BetsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Race Name
+                Venue
+              </label>
+              <VenueCombobox
+                value={formData.venue}
+                onChange={(value) => setFormData({ ...formData, venue: value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Race Number
+              </label>
+              <input
+                type="number"
+                name="race_number"
+                min="1"
+                max="12"
+                value={formData.race_number || ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    race_number: e.target.value === '' ? null : parseInt(e.target.value, 10),
+                  })
+                }
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                placeholder="e.g., 1, 2, 3..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Race Name (optional)
               </label>
               <input
                 type="text"
                 name="race_name"
-                required
-                value={formData.race_name}
+                value={formData.race_name || ''}
                 onChange={handleFormChange}
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                placeholder="e.g., Melbourne Cup, Cox Plate, etc."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Class (optional)
+              </label>
+              <input
+                type="text"
+                name="race_class"
+                value={formData.race_class || ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    race_class: e.target.value || null,
+                  })
+                }
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                placeholder="e.g., Class 1, Maiden, Open, etc."
               />
             </div>
             <div>
@@ -668,14 +942,63 @@ export default function BetsPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                 <CalendarDays className="h-4 w-4" />
                 Date
+                {viewMode === 'calendar' && (
+                  <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                    (Select from calendar above)
+                  </span>
+                )}
               </label>
               <input
                 type="date"
                 name="bet_date"
                 required
                 value={formData.bet_date}
-                onChange={handleFormChange}
+                onChange={(e) => {
+                  handleFormChange(e);
+                  const newDate = new Date(e.target.value);
+                  if (!isNaN(newDate.getTime())) {
+                    setSelectedDate(newDate);
+                  }
+                }}
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Strategy/Tags (comma-separated)
+              </label>
+              <input
+                type="text"
+                name="strategy_tags"
+                placeholder="e.g., value bet, favorite, longshot, form-based"
+                value={formData.strategy_tags?.join(', ') || ''}
+                onChange={(e) => {
+                  const tags = e.target.value
+                    .split(',')
+                    .map((tag) => tag.trim())
+                    .filter((tag) => tag.length > 0);
+                  setFormData({
+                    ...formData,
+                    strategy_tags: tags.length > 0 ? tags : null,
+                  });
+                }}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+              />
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                Separate multiple tags with commas
+              </p>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Notes
+              </label>
+              <textarea
+                name="notes"
+                rows={3}
+                placeholder="Add any additional notes about this bet..."
+                value={formData.notes || ''}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value || null })}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
               />
             </div>
             {formData.profit_loss !== null && (
@@ -728,15 +1051,281 @@ export default function BetsPage() {
 
       {/* Bets Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-700 to-gray-800">
-          <h2 className="text-lg font-semibold text-white">All Bets</h2>
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-700 to-gray-800 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-white">All Bets</h2>
+            <p className="text-sm text-white/80 mt-1">
+              {filteredBets.length} bet{filteredBets.length !== 1 ? 's' : ''} {hasActiveFilters ? 'filtered' : 'total'}
+              {hasActiveFilters && bets.length !== filteredBets.length && (
+                <span className="ml-1 text-blue-300">
+                  (of {bets.length} total)
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                showFilters || hasActiveFilters
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-white/10 hover:bg-white/20 text-white'
+              }`}
+            >
+              <Filter className="h-4 w-4" />
+              <span className="hidden sm:inline">Filters</span>
+              {hasActiveFilters && (
+                <span className="bg-white/20 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+                  {Object.values(filters).filter((v) => v !== '').length}
+                </span>
+              )}
+            </button>
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleImportCSV}
+              disabled={isImporting}
+              className="hidden"
+              id="csv-import-input"
+            />
+            <label
+              htmlFor="csv-import-input"
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                isImporting
+                  ? 'bg-gray-500 text-white cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700 text-white'
+              }`}
+            >
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">{isImporting ? 'Importing...' : 'Import CSV'}</span>
+              <span className="sm:hidden">{isImporting ? '...' : 'Import'}</span>
+            </label>
+            <button
+              onClick={() => {
+                const csvContent = exportBetsToCSV(filteredBets);
+                const filename = `bets_export_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+                downloadCSV(csvContent, filename);
+                showToast('Filtered bets exported successfully!', 'success');
+              }}
+              disabled={filteredBets.length === 0}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                filteredBets.length === 0
+                  ? 'bg-gray-500 text-white cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Export CSV</span>
+              <span className="sm:hidden">Export</span>
+            </button>
+          </div>
         </div>
+        
+        {/* Advanced Filters Panel */}
+        {showFilters && (
+          <div className="p-6 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-md font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Advanced Filters
+              </h3>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1"
+                >
+                  <XCircle className="h-4 w-4" />
+                  Clear All
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Odds Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Odds Range
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    placeholder="Min"
+                    value={filters.oddsMin}
+                    onChange={(e) => setFilters({ ...filters, oddsMin: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                  />
+                  <span className="text-gray-500">-</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    placeholder="Max"
+                    value={filters.oddsMax}
+                    onChange={(e) => setFilters({ ...filters, oddsMax: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Stake Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Stake Range ($)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Min"
+                    value={filters.stakeMin}
+                    onChange={(e) => setFilters({ ...filters, stakeMin: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                  />
+                  <span className="text-gray-500">-</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Max"
+                    value={filters.stakeMax}
+                    onChange={(e) => setFilters({ ...filters, stakeMax: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Profit/Loss Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Profit/Loss Range ($)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Min"
+                    value={filters.profitLossMin}
+                    onChange={(e) => setFilters({ ...filters, profitLossMin: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                  />
+                  <span className="text-gray-500">-</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Max"
+                    value={filters.profitLossMax}
+                    onChange={(e) => setFilters({ ...filters, profitLossMax: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Profit/Loss Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Result Type
+                </label>
+                <select
+                  value={filters.profitLossType}
+                  onChange={(e) => setFilters({ ...filters, profitLossType: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                >
+                  <option value="">All Results</option>
+                  <option value="win">Winning Bets</option>
+                  <option value="loss">Losing Bets</option>
+                  <option value="neutral">Break Even</option>
+                </select>
+              </div>
+
+              {/* Bet Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Bet Type
+                </label>
+                <select
+                  value={filters.betType}
+                  onChange={(e) => setFilters({ ...filters, betType: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                >
+                  <option value="">All Types</option>
+                  <option value="win">Win</option>
+                  <option value="place">Place</option>
+                  <option value="each-way">Each-Way</option>
+                  <option value="lay">Lay</option>
+                  <option value="multi">Multi</option>
+                  <option value="quinella">Quinella</option>
+                  <option value="exacta">Exacta</option>
+                  <option value="trifecta">Trifecta</option>
+                  <option value="first-four">First Four</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              {/* Venue */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Venue
+                </label>
+                <VenueCombobox
+                  value={filters.venue}
+                  onChange={(value) => setFilters({ ...filters, venue: value || '' })}
+                />
+              </div>
+
+              {/* Horse Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Horse Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Search horse name..."
+                  value={filters.horseName}
+                  onChange={(e) => setFilters({ ...filters, horseName: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                />
+              </div>
+
+              {/* Date From */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date From
+                </label>
+                <input
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                />
+              </div>
+
+              {/* Date To */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date To
+                </label>
+                <input
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gradient-to-r from-gray-700 to-gray-800">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Date
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  Venue
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Race
@@ -765,9 +1354,9 @@ export default function BetsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {bets.length === 0 ? (
+              {filteredBets.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center">
+                  <td colSpan={10} className="px-4 py-10 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Activity className="h-10 w-10 text-blue-600" />
                       <p className="text-gray-900 dark:text-gray-100 font-medium">No bets yet</p>
@@ -779,129 +1368,242 @@ export default function BetsPage() {
                   </td>
                 </tr>
               ) : (
-                bets.map((bet, idx) =>
+                filteredBets.map((bet, idx) =>
                   editingBet === bet.id ? (
-                    <tr key={bet.id} className="bg-amber-50 dark:bg-gray-700/50">
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <input
-                          type="date"
-                          name="bet_date"
-                          value={editForm.bet_date || ''}
-                          onChange={handleEditChange}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <input
-                          type="text"
-                          name="race_name"
-                          value={editForm.race_name || ''}
-                          onChange={handleEditChange}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <input
-                          type="text"
-                          name="horse_name"
-                          value={editForm.horse_name || ''}
-                          onChange={handleEditChange}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <select
-                          name="bet_type"
-                          value={editForm.bet_type || 'win'}
-                          onChange={handleEditChange}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-                        >
-                          <option value="win">Win</option>
-                          <option value="place">Place</option>
-                          <option value="each-way">Each-Way</option>
-                          <option value="lay">Lay</option>
-                          <option value="multi">Multi</option>
-                          <option value="quinella">Quinella</option>
-                          <option value="exacta">Exacta</option>
-                          <option value="trifecta">Trifecta</option>
-                          <option value="first-four">First Four</option>
-                          <option value="other">Other</option>
-                        </select>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <input
-                          type="number"
-                          name="price"
-                          step="0.01"
-                          value={editForm.price || 0}
-                          onChange={handleEditChange}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <input
-                          type="number"
-                          name="stake"
-                          step="0.01"
-                          value={editForm.stake || 0}
-                          onChange={handleEditChange}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <input
-                          type="number"
-                          name="finishing_position"
-                          value={editForm.finishing_position || ''}
-                          onChange={handleEditChange}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <input
-                          type="number"
-                          name="profit_loss"
-                          step="0.01"
-                          value={editForm.profit_loss !== null && editForm.profit_loss !== undefined ? Number(editForm.profit_loss) : ''}
-                          onChange={handleEditChange}
-                          className={`w-full px-2 py-1 border rounded text-sm ${
-                            (editForm.profit_loss !== null && editForm.profit_loss !== undefined && Number(editForm.profit_loss) >= 0)
-                              ? 'border-green-300 text-green-700 dark:text-green-400'
-                              : editForm.profit_loss !== null && editForm.profit_loss !== undefined
-                              ? 'border-red-300 text-red-700 dark:text-red-400'
-                              : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
-                          }`}
-                        />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleUpdate(bet.id)}
-                            className="text-green-600 hover:text-green-800"
-                            title="Save"
+                    <>
+                      <tr key={bet.id} className="bg-amber-50 dark:bg-gray-700/50">
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <input
+                            type="date"
+                            name="bet_date"
+                            value={editForm.bet_date || ''}
+                            onChange={handleEditChange}
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                          />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <VenueCombobox
+                            value={editForm.venue || null}
+                            onChange={(value) => setEditForm({ ...editForm, venue: value })}
+                            className="text-sm"
+                          />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex gap-1">
+                            <input
+                              type="number"
+                              name="race_number"
+                              min="1"
+                              max="12"
+                              value={editForm.race_number || ''}
+                              onChange={(e) =>
+                                setEditForm({
+                                  ...editForm,
+                                  race_number: e.target.value === '' ? null : parseInt(e.target.value, 10),
+                                })
+                              }
+                              className="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                              placeholder="#"
+                            />
+                            <input
+                              type="text"
+                              name="race_name"
+                              value={editForm.race_name || ''}
+                              onChange={handleEditChange}
+                              className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                              placeholder="Race name"
+                            />
+                            <input
+                              type="text"
+                              name="race_class"
+                              value={editForm.race_class || ''}
+                              onChange={(e) =>
+                                setEditForm({
+                                  ...editForm,
+                                  race_class: e.target.value || null,
+                                })
+                              }
+                              className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                              placeholder="Class"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <input
+                            type="text"
+                            name="horse_name"
+                            value={editForm.horse_name || ''}
+                            onChange={handleEditChange}
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                          />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <select
+                            name="bet_type"
+                            value={editForm.bet_type || 'win'}
+                            onChange={handleEditChange}
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
                           >
-                            <Check className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => setEditingBet(null)}
-                            className="text-gray-600 hover:text-gray-800"
-                            title="Cancel"
-                          >
-                            <X className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                            <option value="win">Win</option>
+                            <option value="place">Place</option>
+                            <option value="each-way">Each-Way</option>
+                            <option value="lay">Lay</option>
+                            <option value="multi">Multi</option>
+                            <option value="quinella">Quinella</option>
+                            <option value="exacta">Exacta</option>
+                            <option value="trifecta">Trifecta</option>
+                            <option value="first-four">First Four</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <input
+                            type="number"
+                            name="price"
+                            step="0.01"
+                            value={editForm.price || 0}
+                            onChange={handleEditChange}
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                          />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <input
+                            type="number"
+                            name="stake"
+                            step="0.01"
+                            value={editForm.stake || 0}
+                            onChange={handleEditChange}
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                          />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <input
+                            type="number"
+                            name="finishing_position"
+                            value={editForm.finishing_position || ''}
+                            onChange={handleEditChange}
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                          />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <input
+                            type="number"
+                            name="profit_loss"
+                            step="0.01"
+                            value={editForm.profit_loss !== null && editForm.profit_loss !== undefined ? Number(editForm.profit_loss) : ''}
+                            onChange={handleEditChange}
+                            className={`w-full px-2 py-1 border rounded text-sm ${
+                              (editForm.profit_loss !== null && editForm.profit_loss !== undefined && Number(editForm.profit_loss) >= 0)
+                                ? 'border-green-300 text-green-700 dark:text-green-400'
+                                : editForm.profit_loss !== null && editForm.profit_loss !== undefined
+                                ? 'border-red-300 text-red-700 dark:text-red-400'
+                                : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
+                            }`}
+                          />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleUpdate(bet.id)}
+                              className="text-green-600 hover:text-green-800"
+                              title="Save"
+                            >
+                              <Check className="h-5 w-5" />
+                            </button>
+                            <button
+                              onClick={() => setEditingBet(null)}
+                              className="text-gray-600 hover:text-gray-800"
+                              title="Cancel"
+                            >
+                              <X className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr key={`${bet.id}-edit-extra`} className="bg-amber-50 dark:bg-gray-700/50">
+                        <td colSpan={10} className="px-4 py-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Strategy/Tags (comma-separated)
+                              </label>
+                              <input
+                                type="text"
+                                value={editForm.strategy_tags?.join(', ') || ''}
+                                onChange={(e) => {
+                                  const tags = e.target.value
+                                    .split(',')
+                                    .map((tag) => tag.trim())
+                                    .filter((tag) => tag.length > 0);
+                                  setEditForm({
+                                    ...editForm,
+                                    strategy_tags: tags.length > 0 ? tags : null,
+                                  });
+                                }}
+                                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                                placeholder="e.g., value bet, favorite"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Notes
+                              </label>
+                              <textarea
+                                value={editForm.notes || ''}
+                                onChange={(e) =>
+                                  setEditForm({ ...editForm, notes: e.target.value || null })
+                                }
+                                rows={2}
+                                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                                placeholder="Add notes..."
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </>
                   ) : (
                     <tr key={bet.id} className={`${(idx % 2 === 0) ? 'bg-white dark:bg-gray-800/50' : 'bg-gray-50 dark:bg-gray-800/30'} hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors`}>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {format(new Date(bet.bet_date), 'MMM dd, yyyy')}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {bet.race_name}
+                        {bet.venue ? getTrackLabel(bet.venue) : '-'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {bet.horse_name || (bet.exotic_numbers ? `# ${bet.exotic_numbers}` : bet.description || '-')}
+                        <div>
+                          {bet.race_number && <span className="font-semibold">R{bet.race_number} </span>}
+                          {bet.race_name || '-'}
+                          {bet.race_class && (
+                            <span className="ml-2 text-xs text-gray-600 dark:text-gray-400">
+                              ({bet.race_class})
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                        <div>
+                          <div className="whitespace-nowrap">
+                            {bet.horse_name || (bet.exotic_numbers ? `# ${bet.exotic_numbers}` : bet.description || '-')}
+                          </div>
+                          {bet.strategy_tags && bet.strategy_tags.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {bet.strategy_tags.map((tag, tagIdx) => (
+                                <span
+                                  key={tagIdx}
+                                  className="inline-block px-2 py-0.5 text-xs rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {bet.notes && (
+                            <div className="mt-1 text-xs text-gray-600 dark:text-gray-400 italic truncate max-w-xs" title={bet.notes}>
+                              {bet.notes}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         <span

@@ -9,6 +9,13 @@ import {
   getProfitLossTimeSeries,
   getMonthlyProfitData,
   getMonthlyROIData,
+  calculateStreaks,
+  getOddsRangePerformance,
+  getDayOfWeekPerformance,
+  getBetSizePerformance,
+  getTopHorsePerformance,
+  getTopRacePerformance,
+  getWeeklyPerformance,
   ALL_BET_TYPES,
 } from '@/lib/stats';
 import {
@@ -29,7 +36,7 @@ import {
   AreaChart,
 } from 'recharts';
 import { format } from 'date-fns';
-import { TrendingUp, DollarSign, Target, Activity, Trophy, Calendar } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, Activity, Trophy, Calendar, Flame, BarChart3, Clock, Coins, TrendingDown, Award } from 'lucide-react';
 
 export default function DashboardPage() {
   const [bets, setBets] = useState<Bet[]>([]);
@@ -103,6 +110,13 @@ export default function DashboardPage() {
   const profitLossData = getProfitLossTimeSeries(filteredBets);
   const monthlyProfitData = getMonthlyProfitData(filteredBets, 6);
   const monthlyROIData = getMonthlyROIData(filteredBets, 6);
+  const streakStats = calculateStreaks(filteredBets);
+  const oddsRangeData = getOddsRangePerformance(filteredBets);
+  const dayOfWeekData = getDayOfWeekPerformance(filteredBets);
+  const betSizeData = getBetSizePerformance(filteredBets);
+  const topHorses = getTopHorsePerformance(filteredBets, 5);
+  const topRaces = getTopRacePerformance(filteredBets, 5);
+  const weeklyData = getWeeklyPerformance(filteredBets, 12);
 
   const BET_TYPE_LABELS: Record<string, string> = {
     'win': 'Win',
@@ -253,6 +267,18 @@ export default function DashboardPage() {
           <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-white shadow">
             <Trophy className="h-4 w-4" />
             <span className="text-sm font-semibold">100 bets tracked! 🎉</span>
+          </div>
+        )}
+        {streakStats.currentStreak > 0 && (
+          <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-full shadow ${
+            streakStats.currentStreakType === 'win' 
+              ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white' 
+              : 'bg-gradient-to-r from-red-400 to-rose-500 text-white'
+          }`}>
+            <Flame className="h-4 w-4" />
+            <span className="text-sm font-semibold">
+              {streakStats.currentStreak} {streakStats.currentStreakType === 'win' ? 'Win' : 'Loss'} Streak {streakStats.currentStreakType === 'win' ? '🔥' : '⚠️'}
+            </span>
           </div>
         )}
       </div>
@@ -422,6 +448,221 @@ export default function DashboardPage() {
                 />
               </LineChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Advanced Insights Section */}
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 flex items-center gap-2">
+              <BarChart3 className="w-6 h-6" />
+              Advanced Insights
+            </h2>
+
+            {/* Streak Analysis Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <Flame className={`h-5 w-5 ${streakStats.currentStreakType === 'win' ? 'text-green-500' : streakStats.currentStreakType === 'loss' ? 'text-red-500' : 'text-gray-400'}`} />
+                  <p className="text-sm font-medium text-gray-500">Current Streak</p>
+                </div>
+                <p className={`text-3xl font-bold ${streakStats.currentStreakType === 'win' ? 'text-green-600' : streakStats.currentStreakType === 'loss' ? 'text-red-600' : 'text-gray-600'}`}>
+                  {streakStats.currentStreak} {streakStats.currentStreakType === 'win' ? 'Wins' : streakStats.currentStreakType === 'loss' ? 'Losses' : ''}
+                </p>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  <p className="text-sm font-medium text-gray-500">Longest Win Streak</p>
+                </div>
+                <p className="text-3xl font-bold text-green-600">{streakStats.longestWinStreak}</p>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingDown className="h-5 w-5 text-red-500" />
+                  <p className="text-sm font-medium text-gray-500">Longest Loss Streak</p>
+                </div>
+                <p className="text-3xl font-bold text-red-600">{streakStats.longestLossStreak}</p>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <Award className="h-5 w-5 text-purple-500" />
+                  <p className="text-sm font-medium text-gray-500">Best Streak Ratio</p>
+                </div>
+                <p className="text-3xl font-bold text-purple-600">
+                  {streakStats.longestWinStreak > 0 && streakStats.longestLossStreak > 0
+                    ? (streakStats.longestWinStreak / streakStats.longestLossStreak).toFixed(1)
+                    : streakStats.longestWinStreak > 0
+                    ? '∞'
+                    : '0'}
+                </p>
+              </div>
+            </div>
+
+            {/* Weekly Performance */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700 mb-6">
+              <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Weekly Performance Trend (Last 12 Weeks)
+              </h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={weeklyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="week" />
+                  <YAxis />
+                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                  <Bar dataKey="profit" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
+                    {weeklyData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.profit >= 0 ? '#10B981' : '#EF4444'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Odds Range & Day of Week Performance */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Performance by Odds Range</h2>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={oddsRangeData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="range" angle={-45} textAnchor="end" height={100} />
+                    <YAxis />
+                    <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                    <Bar dataKey="profit" fill="#2563eb" radius={[8, 8, 0, 0]}>
+                      {oddsRangeData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.profit >= 0 ? '#10B981' : '#EF4444'}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Performance by Day of Week</h2>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={dayOfWeekData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                    <Bar dataKey="profit" fill="#7c3aed" radius={[8, 8, 0, 0]}>
+                      {dayOfWeekData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.profit >= 0 ? '#10B981' : '#EF4444'}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Bet Size Performance */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700 mb-6">
+              <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 flex items-center gap-2">
+                <Coins className="w-5 h-5" />
+                Performance by Bet Size
+              </h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={betSizeData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="range" />
+                  <YAxis />
+                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                  <Bar dataKey="profit" fill="#f59e0b" radius={[8, 8, 0, 0]}>
+                    {betSizeData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.profit >= 0 ? '#10B981' : '#EF4444'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Top Horses & Races */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Top Performing Horses</h2>
+                {topHorses.length > 0 ? (
+                  <div className="space-y-3">
+                    {topHorses.map((horse, index) => (
+                      <div
+                        key={horse.horseName}
+                        className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                            index === 0 ? 'bg-yellow-400 text-yellow-900' :
+                            index === 1 ? 'bg-gray-300 text-gray-700' :
+                            index === 2 ? 'bg-amber-600 text-white' :
+                            'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900 dark:text-white">{horse.horseName}</p>
+                            <p className="text-xs text-gray-500">{horse.bets} bets • {horse.wins} wins ({horse.strikeRate.toFixed(1)}%)</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`font-bold ${horse.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            ${horse.profit.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-gray-500">Avg: {horse.averageOdds.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No horse data available</p>
+                )}
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Top Performing Races</h2>
+                {topRaces.length > 0 ? (
+                  <div className="space-y-3">
+                    {topRaces.map((race, index) => (
+                      <div
+                        key={race.raceName}
+                        className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50"
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
+                            index === 0 ? 'bg-yellow-400 text-yellow-900' :
+                            index === 1 ? 'bg-gray-300 text-gray-700' :
+                            index === 2 ? 'bg-amber-600 text-white' :
+                            'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-gray-900 dark:text-white truncate">{race.raceName}</p>
+                            <p className="text-xs text-gray-500">{race.bets} bets • {race.wins} wins ({race.strikeRate.toFixed(1)}%)</p>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0 ml-2">
+                          <p className={`font-bold ${race.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            ${race.profit.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No race data available</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

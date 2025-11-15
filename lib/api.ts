@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/client';
 export interface Bet {
   id: string;
   user_id: string;
-  race_name: string;
+  race_name: string | null;
   horse_name: string;
   bet_type:
     | 'win'
@@ -28,10 +28,17 @@ export interface Bet {
   exotic_numbers?: string | null;
   num_legs?: number | null;
   description?: string | null;
+  // Notes and strategy tracking
+  notes?: string | null;
+  strategy_tags?: string[] | null;
+  // Venue and race number
+  venue?: string | null;
+  race_number?: number | null;
+  race_class?: string | null;
 }
 
 export interface BetInput {
-  race_name: string;
+  race_name?: string | null;
   horse_name: string;
   bet_type:
     | 'win'
@@ -54,6 +61,13 @@ export interface BetInput {
   exotic_numbers?: string | null;
   num_legs?: number | null;
   description?: string | null;
+  // Notes and strategy tracking
+  notes?: string | null;
+  strategy_tags?: string[] | null;
+  // Venue and race number
+  venue?: string | null;
+  race_number?: number | null;
+  race_class?: string | null;
 }
 
 export type DateRange = 'all' | 'this-month' | 'last-month' | 'custom';

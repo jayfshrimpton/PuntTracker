@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Menu, X, Activity, Home, PlusCircle, Settings } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import ThemeToggle from '@/components/ThemeToggle';
 
 interface DashboardNavProps {
   user: User;
@@ -40,15 +41,16 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                 <Activity className="h-5 w-5 text-white drop-shadow" />
                 <h1 className="text-lg font-bold text-white drop-shadow">PuntTracker</h1>
               </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-white/90">{user.email}</span>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-md transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
+            <div className="flex items-center space-x-3">
+              <ThemeToggle />
+              <span className="text-sm text-white/90">{user.email}</span>
+              <button
+                onClick={handleLogout}
+                className="text-sm bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-md transition-colors"
+              >
+                Logout
+              </button>
+            </div>
             </div>
           </div>
           {mobileMenuOpen && (
@@ -89,7 +91,8 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               <Activity className="h-6 w-6 drop-shadow" />
               <h1 className="text-xl font-bold drop-shadow">PuntTracker</h1>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <ThemeToggle />
               <span className="text-sm text-white/90">{user.email}</span>
               <button
                 onClick={handleLogout}
