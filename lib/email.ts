@@ -2,7 +2,19 @@ import { Resend } from 'resend';
 import { MonthlyStats } from './stats';
 import { format } from 'date-fns';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization of Resend client to avoid errors during build
+let resendInstance: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resendInstance) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY is not configured');
+    }
+    resendInstance = new Resend(apiKey);
+  }
+  return resendInstance;
+}
 
 export interface MonthlySummaryEmailData {
   userEmail: string;
@@ -26,6 +38,7 @@ export async function sendMonthlySummaryEmail(data: MonthlySummaryEmailData): Pr
     const html = generateMonthlySummaryHTML(data);
     const text = generateMonthlySummaryText(data);
 
+    const resend = getResendClient();
     const { error } = await resend.emails.send({
       from: process.env.FROM_EMAIL,
       to: data.userEmail,

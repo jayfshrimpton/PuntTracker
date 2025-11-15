@@ -29,7 +29,7 @@ export default function VenueCombobox({ value, onChange, className = '' }: Venue
     : AUSTRALIAN_RACE_TRACKS;
 
   const tracksByState = getTracksByState();
-  const filteredByState: Record<string, typeof AUSTRALIAN_RACE_TRACKS> = {};
+  const filteredByState: Record<string, typeof AUSTRALIAN_RACE_TRACKS[number][]> = {};
 
   // Group filtered tracks by state
   filteredTracks.forEach((track) => {
@@ -66,7 +66,7 @@ export default function VenueCombobox({ value, onChange, className = '' }: Venue
     if (isOpen && filteredTracks.length > 0) {
       setHighlightedIndex(0);
     }
-  }, [searchTerm, isOpen]);
+  }, [searchTerm, isOpen, filteredTracks.length]);
 
   const handleSelect = (trackValue: string) => {
     onChange(trackValue);
@@ -214,4 +214,5 @@ export default function VenueCombobox({ value, onChange, className = '' }: Venue
     </div>
   );
 }
+
 

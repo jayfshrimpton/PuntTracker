@@ -220,7 +220,7 @@ export type TrackValue = typeof AUSTRALIAN_RACE_TRACKS[number]['value'];
  * Get tracks grouped by state
  */
 export function getTracksByState() {
-  const grouped: Record<string, typeof AUSTRALIAN_RACE_TRACKS> = {};
+  const grouped: Record<string, typeof AUSTRALIAN_RACE_TRACKS[number][]> = {};
   AUSTRALIAN_RACE_TRACKS.forEach((track) => {
     if (!grouped[track.state]) {
       grouped[track.state] = [];
@@ -238,4 +238,5 @@ export function getTrackLabel(value: string | null | undefined): string {
   const track = AUSTRALIAN_RACE_TRACKS.find((t) => t.value === value);
   return track ? track.label : value;
 }
+
 

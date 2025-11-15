@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
         // Send email
         const emailResult = await sendMonthlySummaryEmail({
           userEmail: userEmail,
-          userName: profile.full_name || undefined,
+          userName: profile?.full_name || undefined,
           month: format(lastMonth, 'MMMM'),
           year: lastMonth.getFullYear(),
           stats,

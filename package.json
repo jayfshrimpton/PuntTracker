@@ -16,7 +16,8 @@
     "@supabase/ssr": "^0.1.0",
     "recharts": "^2.10.4",
     "date-fns": "^3.3.1",
-    "lucide-react": "^0.344.0"
+    "lucide-react": "^0.344.0",
+    "resend": "^3.2.0"
   },
   "devDependencies": {
     "typescript": "^5.3.3",

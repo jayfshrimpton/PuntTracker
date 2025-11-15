@@ -626,7 +626,7 @@ export default function BetsPage() {
                 Venue
               </label>
               <VenueCombobox
-                value={formData.venue}
+                value={formData.venue ?? null}
                 onChange={(value) => setFormData({ ...formData, venue: value })}
               />
             </div>

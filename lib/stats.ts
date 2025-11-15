@@ -495,6 +495,7 @@ export function getTopRacePerformance(bets: Bet[], limit: number = 10): RacePerf
   const raceMap: Record<string, Bet[]> = {};
 
   bets.forEach((bet) => {
+    if (!bet.race_name) return; // Skip bets without a race name
     if (!raceMap[bet.race_name]) {
       raceMap[bet.race_name] = [];
     }
