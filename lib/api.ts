@@ -327,3 +327,298 @@ export async function fetchAllFeedback(): Promise<{
     };
   }
 }
+
+export interface Profile {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  email_notifications_enabled: boolean;
+  // Bankroll management
+  bankroll_starting_amount: number | null;
+  bankroll_current_amount: number | null;
+  bankroll_tracking_enabled: boolean;
+  // Goals and targets
+  monthly_profit_target: number | null;
+  monthly_roi_target: number | null;
+  strike_rate_target: number | null;
+  annual_profit_target: number | null;
+  goals_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProfileUpdate {
+  full_name?: string | null;
+  email_notifications_enabled?: boolean;
+  // Bankroll management
+  bankroll_starting_amount?: number | null;
+  bankroll_current_amount?: number | null;
+  bankroll_tracking_enabled?: boolean;
+  // Goals and targets
+  monthly_profit_target?: number | null;
+  monthly_roi_target?: number | null;
+  strike_rate_target?: number | null;
+  annual_profit_target?: number | null;
+  goals_enabled?: boolean;
+}
+
+export async function fetchProfile(): Promise<{
+  data: Profile | null;
+  error: Error | null;
+}> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { data: null, error: new Error('User not authenticated') };
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (error) {
+      return { data: null, error: new Error(error.message) };
+    }
+
+    if (data) {
+      return { data: data as Profile, error: null };
+    }
+
+    const baseProfile = {
+      id: user.id,
+      email: user.email,
+      email_notifications_enabled: true,
+      bankroll_tracking_enabled: false,
+      goals_enabled: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: insertedProfile, error: insertError } = await supabase
+      .from('profiles')
+      .upsert(baseProfile, { onConflict: 'id' })
+      .select('*')
+      .single();
+
+    if (insertError) {
+      return { data: null, error: new Error(insertError.message) };
+    }
+
+    return { data: insertedProfile as Profile, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error('Unknown error'),
+    };
+  }
+}
+
+export async function updateProfile(
+  profileData: ProfileUpdate
+): Promise<{ data: Profile | null; error: Error | null }> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { data: null, error: new Error('User not authenticated') };
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert(
+        {
+          id: user.id,
+          ...profileData,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      )
+      .select()
+      .single();
+
+    if (error) {
+      return { data: null, error: new Error(error.message) };
+    }
+
+    return { data: data as Profile, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error('Unknown error'),
+    };
+  }
+}
+
+export interface BetTemplate {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  bet_type: string;
+  price: number | null;
+  stake: number | null;
+  venue: string | null;
+  race_class: string | null;
+  strategy_tags: string[] | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BetTemplateInput {
+  name: string;
+  description?: string | null;
+  bet_type: string;
+  price?: number | null;
+  stake?: number | null;
+  venue?: string | null;
+  race_class?: string | null;
+  strategy_tags?: string[] | null;
+  notes?: string | null;
+}
+
+export async function fetchBetTemplates(): Promise<{
+  data: BetTemplate[] | null;
+  error: Error | null;
+}> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { data: null, error: new Error('User not authenticated') };
+    }
+
+    const { data, error } = await supabase
+      .from('bet_templates')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('name', { ascending: true });
+
+    if (error) {
+      return { data: null, error: new Error(error.message) };
+    }
+
+    return { data: data as BetTemplate[], error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error('Unknown error'),
+    };
+  }
+}
+
+export async function createBetTemplate(
+  templateData: BetTemplateInput
+): Promise<{ data: BetTemplate | null; error: Error | null }> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { data: null, error: new Error('User not authenticated') };
+    }
+
+    const { data, error } = await supabase
+      .from('bet_templates')
+      .insert({
+        ...templateData,
+        user_id: user.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return { data: null, error: new Error(error.message) };
+    }
+
+    return { data: data as BetTemplate, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error('Unknown error'),
+    };
+  }
+}
+
+export async function updateBetTemplate(
+  templateId: string,
+  templateData: Partial<BetTemplateInput>
+): Promise<{ data: BetTemplate | null; error: Error | null }> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { data: null, error: new Error('User not authenticated') };
+    }
+
+    const { data, error } = await supabase
+      .from('bet_templates')
+      .update({
+        ...templateData,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', templateId)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+
+    if (error) {
+      return { data: null, error: new Error(error.message) };
+    }
+
+    return { data: data as BetTemplate, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error('Unknown error'),
+    };
+  }
+}
+
+export async function deleteBetTemplate(
+  templateId: string
+): Promise<{ error: Error | null }> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { error: new Error('User not authenticated') };
+    }
+
+    const { error } = await supabase
+      .from('bet_templates')
+      .delete()
+      .eq('id', templateId)
+      .eq('user_id', user.id);
+
+    if (error) {
+      return { error: new Error(error.message) };
+    }
+
+    return { error: null };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error : new Error('Unknown error'),
+    };
+  }
+}

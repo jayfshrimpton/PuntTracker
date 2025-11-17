@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, X, Activity, Home, PlusCircle, Settings } from 'lucide-react';
+import { Menu, X, Activity, Home, PlusCircle, Settings, UserCog } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -76,6 +76,13 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Settings className="h-5 w-5" /> Feedback
+                </a>
+                <a
+                  href="/dashboard/settings"
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium hover:bg-white/10 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <UserCog className="h-5 w-5" /> Settings
                 </a>
               </nav>
             </div>

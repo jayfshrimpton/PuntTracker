@@ -35,6 +35,7 @@ import {
   Area,
   AreaChart,
 } from 'recharts';
+import type { PieLabelRenderProps } from 'recharts';
 import { format } from 'date-fns';
 import { TrendingUp, DollarSign, Target, Activity, Trophy, Calendar, Flame, BarChart3, Clock, Coins, TrendingDown, Award } from 'lucide-react';
 
@@ -151,6 +152,65 @@ export default function DashboardPage() {
   }));
 
   const COLORS = ALL_BET_TYPES.map((t) => BET_TYPE_COLORS[t]);
+
+  const RADIAN = Math.PI / 180;
+  const renderPieLabel = ({
+    cx = 0,
+    cy = 0,
+    midAngle = 0,
+    innerRadius = 0,
+    outerRadius = 0,
+    percent = 0,
+    name,
+  }: PieLabelRenderProps) => {
+    if (!percent || !name) return null;
+
+    const numericCx = typeof cx === 'number' ? cx : Number(cx) || 0;
+    const numericCy = typeof cy === 'number' ? cy : Number(cy) || 0;
+    const numericInner = typeof innerRadius === 'number' ? innerRadius : Number(innerRadius) || 0;
+    const numericOuter = typeof outerRadius === 'number' ? outerRadius : Number(outerRadius) || 0;
+    const radius = numericInner + (numericOuter - numericInner) * 1.25;
+    const x = numericCx + radius * Math.cos(-midAngle * RADIAN);
+    const y = numericCy + radius * Math.sin(-midAngle * RADIAN);
+
+    const isRightSide = x >= numericCx;
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#6b7280"
+        textAnchor={isRightSide ? 'start' : 'end'}
+        dominantBaseline="central"
+        style={{
+          fontSize: '0.85rem',
+          fontWeight: 600,
+        }}
+      >
+        {`${name}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
+  const sharedTooltipProps = {
+    contentStyle: {
+      backgroundColor: 'rgba(15,23,42,0.95)',
+      border: 'none',
+      borderRadius: '0.85rem',
+      color: '#f8fafc',
+      boxShadow: '0 20px 45px rgba(15,23,42,0.35)',
+      padding: '0.85rem 1rem',
+    },
+    labelStyle: {
+      color: '#cbd5f5',
+      fontWeight: 600,
+      marginBottom: '0.25rem',
+    },
+    itemStyle: {
+      color: '#f8fafc',
+      fontWeight: 500,
+    },
+  } as const;
 
   const strikeRateData = ALL_BET_TYPES.map((t) => ({
     type: BET_TYPE_LABELS[t],
@@ -353,6 +413,7 @@ export default function DashboardPage() {
                 />
                 <YAxis />
                 <Tooltip
+                  {...sharedTooltipProps}
                   formatter={(value: number) => `$${value.toFixed(2)}`}
                   labelFormatter={(value) => format(new Date(value), 'MMM dd, yyyy')}
                 />
@@ -375,7 +436,10 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                <Tooltip
+                  {...sharedTooltipProps}
+                  formatter={(value: number) => `$${value.toFixed(2)}`}
+                />
                 <Bar dataKey="profit" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
                   {monthlyProfitData.map((entry, index) => (
                     <Cell
@@ -397,7 +461,10 @@ export default function DashboardPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="type" />
                   <YAxis />
-                  <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
+                  <Tooltip
+                    {...sharedTooltipProps}
+                    formatter={(value: number) => `${value.toFixed(1)}%`}
+                  />
                   <Bar dataKey="strikeRate" fill="#2563eb" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -409,13 +476,12 @@ export default function DashboardPage() {
                 <PieChart>
                   <Pie
                     data={pieData}
-                    cx="50%"
+                    cx="40%"
                     cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) =>
-                      `${name}: ${(percent * 100).toFixed(0)}%`
-                    }
-                    outerRadius={80}
+                    labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                    label={renderPieLabel}
+                    outerRadius={95}
+                    paddingAngle={3}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -423,7 +489,17 @@ export default function DashboardPage() {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip
+                    {...sharedTooltipProps}
+                    formatter={(value: number, name) => [`${value} bets`, name as string]}
+                  />
+                  <Legend
+                    layout="vertical"
+                    verticalAlign="middle"
+                    align="right"
+                    iconType="circle"
+                    wrapperStyle={{ paddingLeft: 16 }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -437,7 +513,10 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
+                <Tooltip
+                  {...sharedTooltipProps}
+                  formatter={(value: number) => `${value.toFixed(1)}%`}
+                />
                 <Legend />
                 <Line
                   type="monotone"
@@ -508,7 +587,10 @@ export default function DashboardPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="week" />
                   <YAxis />
-                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                  <Tooltip
+                    {...sharedTooltipProps}
+                    formatter={(value: number) => `$${value.toFixed(2)}`}
+                  />
                   <Bar dataKey="profit" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
                     {weeklyData.map((entry, index) => (
                       <Cell
@@ -530,7 +612,10 @@ export default function DashboardPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="range" angle={-45} textAnchor="end" height={100} />
                     <YAxis />
-                    <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                    <Tooltip
+                      {...sharedTooltipProps}
+                      formatter={(value: number) => `$${value.toFixed(2)}`}
+                    />
                     <Bar dataKey="profit" fill="#2563eb" radius={[8, 8, 0, 0]}>
                       {oddsRangeData.map((entry, index) => (
                         <Cell
@@ -550,7 +635,10 @@ export default function DashboardPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="day" />
                     <YAxis />
-                    <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                    <Tooltip
+                      {...sharedTooltipProps}
+                      formatter={(value: number) => `$${value.toFixed(2)}`}
+                    />
                     <Bar dataKey="profit" fill="#7c3aed" radius={[8, 8, 0, 0]}>
                       {dayOfWeekData.map((entry, index) => (
                         <Cell
@@ -575,7 +663,10 @@ export default function DashboardPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="range" />
                   <YAxis />
-                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                  <Tooltip
+                    {...sharedTooltipProps}
+                    formatter={(value: number) => `$${value.toFixed(2)}`}
+                  />
                   <Bar dataKey="profit" fill="#f59e0b" radius={[8, 8, 0, 0]}>
                     {betSizeData.map((entry, index) => (
                       <Cell

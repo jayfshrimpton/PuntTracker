@@ -20,14 +20,16 @@ import {
   calculateExoticPL,
   calculateOtherPL,
 } from '@/lib/calculations';
-import { Edit2, Trash2, X, Check, PlusCircle, DollarSign, Target, CalendarDays, Activity, Award, Calendar, List, Download, Upload, Filter, XCircle } from 'lucide-react';
+import { Edit2, Trash2, X, Check, PlusCircle, DollarSign, Target, CalendarDays, Activity, Award, Calendar, List, Download, Upload, Filter, XCircle, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { showToast } from '@/lib/toast';
 import BetTypesGuide from '@/components/BetTypesGuide';
 import BetCalendar from '@/components/BetCalendar';
+import BetTemplates from '@/components/BetTemplates';
 import { exportBetsToCSV, downloadCSV, parseCSVToBets } from '@/lib/csv-utils';
 import { AUSTRALIAN_RACE_TRACKS, getTracksByState, getTrackLabel } from '@/lib/australian-tracks';
 import VenueCombobox from '@/components/VenueCombobox';
+import type { BetTemplate } from '@/lib/api';
 
 export default function BetsPage() {
   const [bets, setBets] = useState<Bet[]>([]);
@@ -63,6 +65,9 @@ export default function BetsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [isImporting, setIsImporting] = useState(false);
+  
+  // Enhanced search state
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Advanced filtering state
   const [showFilters, setShowFilters] = useState(false);
@@ -454,8 +459,27 @@ export default function BetsPage() {
     }
   };
 
-  // Apply filters to bets
+  // Apply filters and search to bets
   const filteredBets = bets.filter((bet) => {
+    // Enhanced search - searches across multiple fields
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      const searchableFields = [
+        bet.horse_name || '',
+        bet.race_name || '',
+        bet.venue || '',
+        bet.race_class || '',
+        bet.notes || '',
+        bet.description || '',
+        bet.exotic_numbers || '',
+        bet.strategy_tags?.join(' ') || '',
+      ].join(' ').toLowerCase();
+      
+      if (!searchableFields.includes(query)) {
+        return false;
+      }
+    }
+    
     // Odds range filter
     if (filters.oddsMin && Number(bet.price) < Number(filters.oddsMin)) return false;
     if (filters.oddsMax && Number(bet.price) > Number(filters.oddsMax)) return false;
@@ -496,7 +520,7 @@ export default function BetsPage() {
 
   const monthlyStats = calculateMonthlyStats(filteredBets);
   
-  const hasActiveFilters = Object.values(filters).some((value) => value !== '');
+  const hasActiveFilters = Object.values(filters).some((value) => value !== '') || searchQuery.trim() !== '';
   
   const clearFilters = () => {
     setFilters({
@@ -512,6 +536,20 @@ export default function BetsPage() {
       dateFrom: '',
       dateTo: '',
       profitLossType: '',
+    });
+    setSearchQuery('');
+  };
+
+  const handleApplyTemplate = (template: BetTemplate) => {
+    setFormData({
+      ...formData,
+      bet_type: template.bet_type as BetInput['bet_type'],
+      price: template.price || 0,
+      stake: template.stake || 0,
+      venue: template.venue || null,
+      race_class: template.race_class || null,
+      strategy_tags: template.strategy_tags || null,
+      notes: template.notes || null,
     });
   };
 
@@ -619,6 +657,10 @@ export default function BetsPage() {
             {error}
           </div>
         )}
+        {/* Bet Templates */}
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+          <BetTemplates onApplyTemplate={handleApplyTemplate} currentFormData={formData} />
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -1051,19 +1093,20 @@ export default function BetsPage() {
 
       {/* Bets Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-700 to-gray-800 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-white">All Bets</h2>
-            <p className="text-sm text-white/80 mt-1">
-              {filteredBets.length} bet{filteredBets.length !== 1 ? 's' : ''} {hasActiveFilters ? 'filtered' : 'total'}
-              {hasActiveFilters && bets.length !== filteredBets.length && (
-                <span className="ml-1 text-blue-300">
-                  (of {bets.length} total)
-                </span>
-              )}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-700 to-gray-800">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-white">All Bets</h2>
+              <p className="text-sm text-white/80 mt-1">
+                {filteredBets.length} bet{filteredBets.length !== 1 ? 's' : ''} {hasActiveFilters || searchQuery ? 'filtered' : 'total'}
+                {(hasActiveFilters || searchQuery) && bets.length !== filteredBets.length && (
+                  <span className="ml-1 text-blue-300">
+                    (of {bets.length} total)
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
@@ -1118,6 +1161,27 @@ export default function BetsPage() {
               <span className="hidden sm:inline">Export CSV</span>
               <span className="sm:hidden">Export</span>
             </button>
+          </div>
+          </div>
+          {/* Enhanced Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/60" />
+            <input
+              type="text"
+              placeholder="Search bets by horse, race, venue, notes, tags..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white"
+                title="Clear search"
+              >
+                <XCircle className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
         

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import DashboardNav from '@/components/DashboardNav';
-import { Home, PlusCircle, Settings } from 'lucide-react';
+import { Home, PlusCircle, Settings, UserCog } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Lazy load FeedbackButton to improve initial page load
@@ -55,6 +55,13 @@ export default async function DashboardLayout({
                   >
                     <Settings className="h-4 w-4" />
                     Feedback
+                  </a>
+                  <a
+                    href="/dashboard/settings"
+                    className="text-gray-900 dark:text-gray-100 hover:bg-gray-50 hover:text-blue-600 dark:hover:bg-gray-700 group flex items-center gap-2 px-2 py-2 text-sm font-medium rounded-md transition-colors"
+                  >
+                    <UserCog className="h-4 w-4" />
+                    Settings
                   </a>
                 </nav>
               </div>
