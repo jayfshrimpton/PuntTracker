@@ -58,33 +58,33 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background text-foreground">
       {/* SECTION 1: Hero Section */}
-      <section className="bg-slate-950 text-white min-h-screen flex items-center justify-center pt-20">
+      <section className="bg-foreground text-background min-h-screen flex items-center justify-center pt-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <div
-          ref={(el) => {
-            sectionRefs.current['hero'] = el;
-          }}
+            ref={(el) => {
+              sectionRefs.current['hero'] = el;
+            }}
             className="opacity-0 transition-opacity duration-700"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-tight">
               Track Your Punts With Ease
             </h1>
-            <p className="text-lg md:text-xl text-slate-200 mb-12 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-muted-foreground/80 mb-12 max-w-3xl mx-auto">
               Purpose-built for Australian horse racing punters. Keep the numbers clean, the workflow smooth, and the insights sharp.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
               <Link
                 href="/signup"
-                className="px-8 py-3 rounded-lg font-semibold text-base bg-slate-100 text-slate-900 hover:bg-white transition-colors duration-200"
+                className="px-8 py-3 rounded-lg font-semibold text-base bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200"
               >
                 Start Tracking Free
               </Link>
               <button
                 onClick={() => scrollToSection('features')}
-                className="px-8 py-3 rounded-lg font-semibold text-base border border-slate-500 text-white hover:border-white transition-colors duration-200"
+                className="px-8 py-3 rounded-lg font-semibold text-base border border-border text-background hover:bg-background/10 transition-colors duration-200"
               >
                 See How It Works
               </button>
@@ -99,11 +99,11 @@ export default function LandingPage() {
               ].map((stat, idx) => (
                 <div
                   key={idx}
-                  className="rounded-xl p-6 border border-slate-800 bg-slate-900/60 text-left"
+                  className="rounded-xl p-6 border border-border/20 bg-background/10 text-left backdrop-blur-sm"
                 >
                   <div className="text-2xl mb-2">{stat.icon}</div>
-                  <div className="text-2xl font-semibold text-white mb-1">{stat.value}</div>
-                  <div className="text-slate-400 text-sm">{stat.label}</div>
+                  <div className="text-2xl font-semibold mb-1">{stat.value}</div>
+                  <div className="text-muted-foreground/80 text-sm">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -112,17 +112,17 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 2: Problem Statement */}
-      <section className="py-20 bg-slate-50 dark:bg-slate-950">
+      <section className="py-20 bg-muted/50">
         <div
           ref={(el) => {
             sectionRefs.current['problem'] = el;
           }}
           className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
-          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12 text-slate-900 dark:text-white">
+          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12">
             Tired of Tracking Bets in Spreadsheets?
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -143,13 +143,13 @@ export default function LandingPage() {
             ].map((pain, idx) => (
               <div
                 key={idx}
-                className="rounded-xl p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+                className="rounded-xl p-8 bg-card border border-border shadow-sm"
               >
-                <div className="mb-4 inline-flex items-center justify-center h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-100">
+                <div className="mb-4 inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary">
                   <pain.icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-slate-900 dark:text-white">{pain.title}</h3>
-                <p className="text-slate-600 dark:text-slate-300">{pain.description}</p>
+                <h3 className="text-xl font-semibold mb-3">{pain.title}</h3>
+                <p className="text-muted-foreground">{pain.description}</p>
               </div>
             ))}
           </div>
@@ -157,20 +157,20 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 3: Features Grid */}
-      <section id="features" className="py-20 bg-white dark:bg-slate-950">
+      <section id="features" className="py-20 bg-background">
         <div
           ref={(el) => {
             sectionRefs.current['features'] = el;
           }}
           className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
-          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-4 text-slate-900 dark:text-white">
+          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-4">
             Everything You Need to Track Your Betting
           </h2>
-          <p className="text-center text-lg text-slate-600 dark:text-slate-300 mb-12">
+          <p className="text-center text-lg text-muted-foreground mb-12">
             Built specifically for Australian horse racing punters
           </p>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
@@ -206,13 +206,13 @@ export default function LandingPage() {
             ].map((feature, idx) => (
               <div
                 key={idx}
-                className="bg-white dark:bg-slate-900 rounded-xl p-8 border border-slate-200 dark:border-slate-800"
+                className="bg-card rounded-xl p-8 border border-border shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6">
-                  <feature.icon className="w-7 h-7 text-slate-700 dark:text-slate-100" />
+                <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+                  <feature.icon className="w-7 h-7 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-3 text-slate-900 dark:text-white">{feature.title}</h3>
-                <p className="text-slate-600 dark:text-slate-300">{feature.description}</p>
+                <h3 className="text-lg font-semibold mb-3">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -220,7 +220,7 @@ export default function LandingPage() {
           <div className="text-center mt-12">
             <Link
               href="/signup"
-              className="inline-block px-8 py-3 rounded-lg font-semibold text-base border border-slate-400 text-slate-900 dark:text-white hover:border-slate-900 dark:hover:border-white transition-colors"
+              className="inline-block px-8 py-3 rounded-lg font-semibold text-base border border-border hover:bg-muted transition-colors"
             >
               Start Tracking Free
             </Link>
@@ -229,21 +229,21 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 4: How It Works */}
-      <section id="how-it-works" className="py-20 bg-slate-50 dark:bg-slate-950">
+      <section id="how-it-works" className="py-20 bg-muted/50">
         <div
           ref={(el) => {
             sectionRefs.current['how-it-works'] = el;
           }}
           className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
-          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12 text-slate-900 dark:text-white">
+          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12">
             Start Tracking in 3 Simple Steps
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
             {/* Connecting line for desktop */}
-            <div className="hidden md:block absolute top-24 left-1/4 right-1/4 h-px bg-slate-200 dark:bg-slate-800"></div>
-            
+            <div className="hidden md:block absolute top-24 left-1/4 right-1/4 h-px bg-border"></div>
+
             {[
               {
                 number: 1,
@@ -265,15 +265,15 @@ export default function LandingPage() {
               },
             ].map((step, idx) => (
               <div key={idx} className="relative text-center">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center text-3xl font-semibold">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-3xl font-semibold shadow-lg">
                   {step.number}
                 </div>
-                <div className="bg-white dark:bg-slate-900 rounded-xl p-8 border border-slate-200 dark:border-slate-800">
-                  <div className="w-14 h-14 mx-auto mb-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                    <step.icon className="w-7 h-7 text-slate-700 dark:text-slate-100" />
+                <div className="bg-card rounded-xl p-8 border border-border shadow-sm">
+                  <div className="w-14 h-14 mx-auto mb-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <step.icon className="w-7 h-7 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-white">{step.title}</h3>
-                  <p className="text-slate-600 dark:text-slate-300">{step.description}</p>
+                  <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
+                  <p className="text-muted-foreground">{step.description}</p>
                 </div>
               </div>
             ))}
@@ -282,46 +282,46 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 5: Screenshot/Demo Section */}
-      <section className="py-20 bg-white dark:bg-slate-950">
+      <section className="py-20 bg-background">
         <div
           ref={(el) => {
             sectionRefs.current['demo'] = el;
           }}
           className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
-          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-4 text-slate-900 dark:text-white">
+          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-4">
             Built for Aussie Punters
           </h2>
-          <p className="text-center text-lg text-slate-600 dark:text-slate-300 mb-12">
+          <p className="text-center text-lg text-muted-foreground mb-12">
             See your betting performance at a glance
           </p>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
-              <div className="bg-slate-100 dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800">
-                <div className="bg-white dark:bg-slate-900 rounded-lg p-6 space-y-4 border border-slate-200/50 dark:border-slate-800/80">
+              <div className="bg-muted rounded-2xl p-8 border border-border">
+                <div className="bg-card rounded-lg p-6 space-y-4 border border-border shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">Total Profit</div>
+                      <div className="text-sm text-muted-foreground">Total Profit</div>
                       <div className="text-3xl font-bold text-green-600">$2,450</div>
                     </div>
-                    <BarChart3 className="w-10 h-10 text-slate-400" />
+                    <BarChart3 className="w-10 h-10 text-muted-foreground/50" />
                   </div>
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
                     <div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">Strike Rate</div>
-                      <div className="text-xl font-semibold text-slate-900 dark:text-white">68%</div>
+                      <div className="text-sm text-muted-foreground">Strike Rate</div>
+                      <div className="text-xl font-semibold">68%</div>
                     </div>
                     <div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">ROI</div>
-                      <div className="text-xl font-semibold text-emerald-500">+12.5%</div>
+                      <div className="text-sm text-muted-foreground">ROI</div>
+                      <div className="text-xl font-semibold text-green-600">+12.5%</div>
                     </div>
                   </div>
                   <div className="pt-4">
-                    <div className="text-sm text-slate-500 dark:text-slate-400 mb-2">Recent Bets</div>
+                    <div className="text-sm text-muted-foreground mb-2">Recent Bets</div>
                     <div className="space-y-2">
                       {['Win - $50 → $120', 'Place - $30 → $45', 'Each-Way - $40 → $0'].map((bet, idx) => (
-                        <div key={idx} className="text-sm bg-slate-50 dark:bg-slate-800 p-2 rounded">
+                        <div key={idx} className="text-sm bg-muted/50 p-2 rounded">
                           {bet}
                         </div>
                       ))}
@@ -330,7 +330,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="order-1 lg:order-2 space-y-6">
               {[
                 { icon: Activity, text: 'Real-time stats update as you log bets' },
@@ -339,11 +339,11 @@ export default function LandingPage() {
                 { icon: Smartphone, text: 'Works perfectly on mobile at the track' },
               ].map((feature, idx) => (
                 <div key={idx} className="flex items-start space-x-4">
-                  <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-900 flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="w-6 h-6 text-slate-700 dark:text-slate-100" />
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <feature.icon className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-base text-slate-600 dark:text-slate-300">{feature.text}</p>
+                    <p className="text-base text-muted-foreground">{feature.text}</p>
                   </div>
                 </div>
               ))}
@@ -353,41 +353,41 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 6: Built for You */}
-      <section className="py-20 bg-slate-50 dark:bg-slate-950">
+      <section className="py-20 bg-muted/50">
         <div
           ref={(el) => {
             sectionRefs.current['built-for-you'] = el;
           }}
           className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
-          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12 text-slate-900 dark:text-white">
+          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12">
             Why Aussie Punters Love PuntTracker
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
                 title: 'Track Every Bet Type',
                 description: 'Win, place, each-way, multis, quinellas, exactas, trifectas, first fours - we\'ve got you covered.',
-                borderColor: 'border-slate-300 dark:border-slate-700',
+                borderColor: 'border-primary',
               },
               {
                 title: 'Your Data, Your Privacy',
                 description: 'Completely private. Your bets are secure and only visible to you.',
-                borderColor: 'border-slate-300 dark:border-slate-700',
+                borderColor: 'border-primary',
               },
               {
                 title: 'Free to Start',
                 description: 'No hidden costs. Start tracking for free and see the value for yourself.',
-                borderColor: 'border-slate-300 dark:border-slate-700',
+                borderColor: 'border-primary',
               },
             ].map((benefit, idx) => (
               <div
                 key={idx}
-                className={`bg-white dark:bg-slate-900 rounded-xl p-8 border-l-4 ${benefit.borderColor} border border-slate-200 dark:border-slate-800`}
+                className={`bg-card rounded-xl p-8 border-l-4 ${benefit.borderColor} border-y border-r border-border shadow-sm`}
               >
-                <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-white">{benefit.title}</h3>
-                <p className="text-slate-600 dark:text-slate-300">{benefit.description}</p>
+                <h3 className="text-xl font-semibold mb-4">{benefit.title}</h3>
+                <p className="text-muted-foreground">{benefit.description}</p>
               </div>
             ))}
           </div>
@@ -395,7 +395,7 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 7: Pricing/CTA Section */}
-      <section id="pricing" className="py-20 bg-slate-950 text-white">
+      <section id="pricing" className="py-20 bg-foreground text-background">
         <div
           ref={(el) => {
             sectionRefs.current['pricing'] = el;
@@ -405,18 +405,18 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-semibold mb-6">
             Ready to Track Like a Pro?
           </h2>
-          <p className="text-lg text-slate-300 mb-10">
+          <p className="text-lg text-muted-foreground/80 mb-10">
             Join Australian punters already using PuntTracker
           </p>
-          
+
           <Link
             href="/signup"
-            className="inline-block px-8 py-3 rounded-lg font-semibold text-base bg-white text-slate-900 hover:bg-slate-100 transition-colors duration-200 mb-8"
+            className="inline-block px-8 py-3 rounded-lg font-semibold text-base bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 mb-8"
           >
             Start Tracking Free
           </Link>
-          
-          <div className="flex flex-wrap justify-center items-center gap-6 text-blue-100 mb-6">
+
+          <div className="flex flex-wrap justify-center items-center gap-6 text-primary-foreground/80 mb-6">
             <div className="flex items-center space-x-2">
               <Check className="w-5 h-5" />
               <span>No credit card required</span>
@@ -430,82 +430,82 @@ export default function LandingPage() {
               <span>Cancel anytime</span>
             </div>
           </div>
-          
-          <p className="text-sm text-slate-400">
+
+          <p className="text-sm text-muted-foreground/60">
             Currently free for all users while in beta
           </p>
         </div>
       </section>
 
       {/* SECTION 8: Footer */}
-      <footer className="bg-slate-950 text-white py-16">
+      <footer className="bg-background border-t border-border py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <TrendingUp className="w-6 h-6" />
+                <TrendingUp className="w-6 h-6 text-primary" />
                 <span className="text-xl font-bold">PuntTracker</span>
               </div>
-              <p className="text-gray-400 text-sm">
+              <p className="text-muted-foreground text-sm">
                 The bet tracker built for Australian horse racing punters.
               </p>
             </div>
-            
+
             <div>
               <h4 className="font-bold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <button onClick={() => scrollToSection('features')} className="hover:text-white transition-colors">
+                  <button onClick={() => scrollToSection('features')} className="hover:text-primary transition-colors">
                     Features
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => scrollToSection('how-it-works')} className="hover:text-white transition-colors">
+                  <button onClick={() => scrollToSection('how-it-works')} className="hover:text-primary transition-colors">
                     How It Works
                   </button>
                 </li>
                 <li>
-                  <Link href="/dashboard/feedback" className="hover:text-white transition-colors">
+                  <Link href="/dashboard/feedback" className="hover:text-primary transition-colors">
                     Feedback
                   </Link>
                 </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-bold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/about" className="hover:text-white transition-colors">
+                  <Link href="/about" className="hover:text-primary transition-colors">
                     About
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="hover:text-white transition-colors">
+                  <Link href="/contact" className="hover:text-primary transition-colors">
                     Contact
                   </Link>
                 </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-bold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/privacy" className="hover:text-white transition-colors">
+                  <Link href="/privacy" className="hover:text-primary transition-colors">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="hover:text-white transition-colors">
+                  <Link href="/terms" className="hover:text-primary transition-colors">
                     Terms of Service
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
-          
-          <div className="border-t border-gray-700 pt-8 text-center text-sm text-gray-400">
+
+          <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
             <p>© 2024 PuntTracker. Built for Aussie punters.</p>
           </div>
         </div>

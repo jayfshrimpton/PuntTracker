@@ -205,7 +205,7 @@ export default function FeedbackPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            className="w-full md:w-auto px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all hover:scale-105"
           >
             {submitting ? 'Submitting...' : 'Submit Feedback'}
           </button>
@@ -214,7 +214,7 @@ export default function FeedbackPage() {
 
       {/* Previous Feedback */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-700 to-gray-800">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-card border-b border-border">
           <h2 className="text-lg font-semibold text-white">Your Previous Feedback</h2>
         </div>
         <div className="divide-y divide-gray-200 dark:divide-gray-700">

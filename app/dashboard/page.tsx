@@ -104,7 +104,7 @@ export default function DashboardPage() {
     }
   };
 
-  
+
 
   const stats = calculateMonthlyStats(filteredBets);
   const betTypeStats = calculateStatsByBetType(filteredBets);
@@ -133,16 +133,16 @@ export default function DashboardPage() {
   };
 
   const BET_TYPE_COLORS: Record<string, string> = {
-    'win': '#2563eb',
-    'place': '#10B981',
-    'each-way': '#7c3aed',
-    'lay': '#ef4444',
+    'win': 'hsl(var(--primary))',
+    'place': 'hsl(var(--secondary))',
+    'each-way': 'hsl(var(--accent))',
+    'lay': 'hsl(var(--destructive))',
     'multi': '#f59e0b',
     'quinella': '#14b8a6',
     'exacta': '#0ea5e9',
     'trifecta': '#06b6d4',
     'first-four': '#0891b2',
-    'other': '#6b7280',
+    'other': 'hsl(var(--muted-foreground))',
   };
 
   const pieData = ALL_BET_TYPES.map((t) => ({
@@ -179,7 +179,7 @@ export default function DashboardPage() {
       <text
         x={x}
         y={y}
-        fill="#6b7280"
+        fill="hsl(var(--muted-foreground))"
         textAnchor={isRightSide ? 'start' : 'end'}
         dominantBaseline="central"
         style={{
@@ -194,20 +194,20 @@ export default function DashboardPage() {
 
   const sharedTooltipProps = {
     contentStyle: {
-      backgroundColor: 'rgba(15,23,42,0.95)',
-      border: 'none',
-      borderRadius: '0.85rem',
-      color: '#f8fafc',
-      boxShadow: '0 20px 45px rgba(15,23,42,0.35)',
-      padding: '0.85rem 1rem',
+      backgroundColor: 'hsl(var(--popover))',
+      border: '1px solid hsl(var(--border))',
+      borderRadius: 'var(--radius)',
+      color: 'hsl(var(--popover-foreground))',
+      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+      padding: '0.75rem',
     },
     labelStyle: {
-      color: '#cbd5f5',
+      color: 'hsl(var(--muted-foreground))',
       fontWeight: 600,
       marginBottom: '0.25rem',
     },
     itemStyle: {
-      color: '#f8fafc',
+      color: 'hsl(var(--popover-foreground))',
       fontWeight: 500,
     },
   } as const;
@@ -220,7 +220,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-900">Loading dashboard...</div>
+        <div className="text-muted-foreground">Loading dashboard...</div>
       </div>
     );
   }
@@ -230,32 +230,34 @@ export default function DashboardPage() {
     stats.profitToday > 0
       ? `+$${stats.profitToday.toFixed(2)}`
       : stats.profitToday < 0
-      ? `-$${Math.abs(stats.profitToday).toFixed(2)}`
-      : '$0.00';
+        ? `-$${Math.abs(stats.profitToday).toFixed(2)}`
+        : '$0.00';
 
   return (
     <div className="space-y-6">
       {/* Hero Section */}
-      <div className="rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 text-white shadow-lg">
+      <div className="rounded-2xl p-6 sm:p-8 bg-card border border-border shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold drop-shadow">Welcome back{userEmail ? `, ${userEmail.split('@')[0]}` : ''}!</h2>
-            <p className="mt-1 text-white/90">Here’s a quick snapshot of your performance.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Welcome back{userEmail ? `, ${userEmail.split('@')[0]}` : ''}!</h2>
+            <p className="mt-1 text-muted-foreground">Here’s a quick snapshot of your performance.</p>
           </div>
           <div className="flex gap-4">
-            <div className="px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm shadow-md">
-              <div className="flex items-center gap-2 text-white">
+            <div className="px-4 py-3 rounded-xl bg-muted/50 border border-border">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <DollarSign className="h-4 w-4" />
                 <span className="text-sm">Monthly P&L</span>
               </div>
-              <div className="text-xl font-bold">${stats.totalProfit.toFixed(2)}</div>
+              <div className={`text-xl font-bold ${stats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                ${stats.totalProfit.toFixed(2)}
+              </div>
             </div>
-            <div className="px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm shadow-md">
-              <div className="flex items-center gap-2 text-white">
+            <div className="px-4 py-3 rounded-xl bg-muted/50 border border-border">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Target className="h-4 w-4" />
                 <span className="text-sm">Strike Rate</span>
               </div>
-              <div className="text-xl font-bold">{stats.strikeRate.toFixed(1)}%</div>
+              <div className="text-xl font-bold text-foreground">{stats.strikeRate.toFixed(1)}%</div>
             </div>
           </div>
         </div>
@@ -263,14 +265,14 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{currentMonth}</p>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{currentMonth}</p>
         </div>
         <div className="mt-4 sm:mt-0">
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value as DateRange)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500 transition-colors"
+            className="px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground bg-background transition-colors"
           >
             <option value="all">All Time</option>
             <option value="this-month">This Month</option>
@@ -281,41 +283,41 @@ export default function DashboardPage() {
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-xl shadow-lg p-6 text-white bg-gradient-to-r from-green-500 to-teal-500 hover:shadow-2xl transition-shadow">
+        <div className="rounded-xl shadow-sm p-6 bg-card border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-white/90">Total Profit/Loss</p>
-            <DollarSign className="h-5 w-5 opacity-90" />
+            <p className="text-sm font-medium text-muted-foreground">Total Profit/Loss</p>
+            <DollarSign className="h-5 w-5 text-primary" />
           </div>
           <p
-            className={`text-4xl font-bold mt-2 drop-shadow`}
+            className={`text-4xl font-bold mt-2 ${stats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}
           >
             ${stats.totalProfit.toFixed(2)}
           </p>
         </div>
-        <div className="rounded-xl shadow-lg p-6 text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-2xl transition-shadow">
+        <div className="rounded-xl shadow-sm p-6 bg-card border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-white/90">Strike Rate</p>
-            <Target className="h-5 w-5 opacity-90" />
+            <p className="text-sm font-medium text-muted-foreground">Strike Rate</p>
+            <Target className="h-5 w-5 text-primary" />
           </div>
-          <p className="text-4xl font-bold mt-2">
+          <p className="text-4xl font-bold mt-2 text-foreground">
             {stats.strikeRate.toFixed(1)}%
           </p>
         </div>
-        <div className="rounded-xl shadow-lg p-6 text-white bg-gradient-to-r from-purple-600 to-pink-500 hover:shadow-2xl transition-shadow">
+        <div className="rounded-xl shadow-sm p-6 bg-card border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-white/90">POT (Profit on Turnover)</p>
-            <TrendingUp className="h-5 w-5 opacity-90" />
+            <p className="text-sm font-medium text-muted-foreground">POT (Profit on Turnover)</p>
+            <TrendingUp className="h-5 w-5 text-primary" />
           </div>
-          <p className="text-4xl font-bold mt-2">
+          <p className={`text-4xl font-bold mt-2 ${stats.pot >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {stats.pot.toFixed(1)}%
           </p>
         </div>
-        <div className="rounded-xl shadow-lg p-6 text-white bg-gradient-to-r from-teal-500 to-cyan-500 hover:shadow-2xl transition-shadow">
+        <div className="rounded-xl shadow-sm p-6 bg-card border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-white/90">Total Turnover</p>
-            <Activity className="h-5 w-5 opacity-90" />
+            <p className="text-sm font-medium text-muted-foreground">Total Turnover</p>
+            <Activity className="h-5 w-5 text-primary" />
           </div>
-          <p className="text-4xl font-bold mt-2">
+          <p className="text-4xl font-bold mt-2 text-foreground">
             ${stats.totalStake.toFixed(2)}
           </p>
         </div>
@@ -324,17 +326,16 @@ export default function DashboardPage() {
       {/* Celebrations & Milestones */}
       <div className="flex flex-wrap gap-3">
         {stats.totalBets >= 100 && (
-          <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-white shadow">
+          <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
             <Trophy className="h-4 w-4" />
             <span className="text-sm font-semibold">100 bets tracked! 🎉</span>
           </div>
         )}
         {streakStats.currentStreak > 0 && (
-          <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-full shadow ${
-            streakStats.currentStreakType === 'win' 
-              ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white' 
-              : 'bg-gradient-to-r from-red-400 to-rose-500 text-white'
-          }`}>
+          <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-full border ${streakStats.currentStreakType === 'win'
+              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800'
+              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800'
+            }`}>
             <Flame className="h-4 w-4" />
             <span className="text-sm font-semibold">
               {streakStats.currentStreak} {streakStats.currentStreakType === 'win' ? 'Win' : 'Loss'} Streak {streakStats.currentStreakType === 'win' ? '🔥' : '⚠️'}
@@ -345,35 +346,34 @@ export default function DashboardPage() {
 
       {/* Additional Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-          <p className="text-sm font-medium text-gray-500">Total Bets</p>
-          <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">{stats.totalBets}</p>
+        <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+          <p className="text-sm font-medium text-muted-foreground">Total Bets</p>
+          <p className="text-3xl font-bold mt-2 text-foreground">{stats.totalBets}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-          <p className="text-sm font-medium text-gray-500">Average Odds</p>
-          <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">
+        <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+          <p className="text-sm font-medium text-muted-foreground">Average Odds</p>
+          <p className="text-3xl font-bold mt-2 text-foreground">
             {stats.averageOdds.toFixed(2)}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
+        <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-500">Today&apos;s Profit/Loss</p>
-            <Calendar className="h-5 w-5 text-gray-400" />
+            <p className="text-sm font-medium text-muted-foreground">Today&apos;s Profit/Loss</p>
+            <Calendar className="h-5 w-5 text-muted-foreground" />
           </div>
           <p
-            className={`text-3xl font-bold mt-2 ${
-              stats.profitToday > 0
+            className={`text-3xl font-bold mt-2 ${stats.profitToday > 0
                 ? 'text-green-600'
                 : stats.profitToday < 0
-                ? 'text-red-600'
-                : 'text-gray-900 dark:text-white'
-            }`}
+                  ? 'text-red-600'
+                  : 'text-foreground'
+              }`}
           >
             {profitTodayDisplay}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-          <p className="text-sm font-medium text-gray-500">Best Win</p>
+        <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+          <p className="text-sm font-medium text-muted-foreground">Best Win</p>
           <p className="text-3xl font-bold mt-2 text-green-600">
             ${stats.bestWin.toFixed(2)}
           </p>
@@ -382,14 +382,14 @@ export default function DashboardPage() {
 
       {/* Charts Section */}
       {filteredBets.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-gray-900">No data available. Add some bets to see statistics!</p>
+        <div className="bg-card rounded-lg shadow-sm p-12 text-center border border-border">
+          <p className="text-muted-foreground">No data available. Add some bets to see statistics!</p>
         </div>
       ) : (
         <div className="space-y-6">
           {/* Profit/Loss Over Time */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Profit/Loss Over Time</h2>
+          <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Profit/Loss Over Time</h2>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={profitLossData}>
                 <defs>
@@ -406,12 +406,13 @@ export default function DashboardPage() {
                     />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="date"
                   tickFormatter={(value) => format(new Date(value), 'MMM dd')}
+                  stroke="hsl(var(--muted-foreground))"
                 />
-                <YAxis />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   {...sharedTooltipProps}
                   formatter={(value: number) => `$${value.toFixed(2)}`}
@@ -429,18 +430,18 @@ export default function DashboardPage() {
           </div>
 
           {/* Monthly Comparison */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Monthly Comparison (Last 6 Months)</h2>
+          <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Monthly Comparison (Last 6 Months)</h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={monthlyProfitData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" />
-                <YAxis />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   {...sharedTooltipProps}
                   formatter={(value: number) => `$${value.toFixed(2)}`}
                 />
-                <Bar dataKey="profit" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
+                <Bar dataKey="profit" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
                   {monthlyProfitData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
@@ -454,31 +455,31 @@ export default function DashboardPage() {
 
           {/* Strike Rate by Bet Type and Bet Distribution */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Strike Rate by Bet Type</h2>
+            <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+              <h2 className="text-lg font-semibold mb-4 text-foreground">Strike Rate by Bet Type</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={strikeRateData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="type" />
-                  <YAxis />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="type" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
                   <Tooltip
                     {...sharedTooltipProps}
                     formatter={(value: number) => `${value.toFixed(1)}%`}
                   />
-                  <Bar dataKey="strikeRate" fill="#2563eb" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="strikeRate" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Bet Distribution</h2>
+            <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+              <h2 className="text-lg font-semibold mb-4 text-foreground">Bet Distribution</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
                     data={pieData}
                     cx="40%"
                     cy="50%"
-                    labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                    labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
                     label={renderPieLabel}
                     outerRadius={95}
                     paddingAngle={3}
@@ -506,13 +507,13 @@ export default function DashboardPage() {
           </div>
 
           {/* ROI Trend */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">ROI Trend (Last 6 Months)</h2>
+          <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">ROI Trend (Last 6 Months)</h2>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={monthlyROIData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" />
-                <YAxis />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   {...sharedTooltipProps}
                   formatter={(value: number) => `${value.toFixed(1)}%`}
@@ -521,7 +522,7 @@ export default function DashboardPage() {
                 <Line
                   type="monotone"
                   dataKey="roi"
-                  stroke="#2563eb"
+                  stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   name="ROI %"
                 />
@@ -531,67 +532,67 @@ export default function DashboardPage() {
 
           {/* Advanced Insights Section */}
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 flex items-center gap-2">
-              <BarChart3 className="w-6 h-6" />
+            <h2 className="text-2xl font-bold mb-6 text-foreground flex items-center gap-2">
+              <BarChart3 className="w-6 h-6 text-primary" />
               Advanced Insights
             </h2>
 
             {/* Streak Analysis Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
                 <div className="flex items-center gap-2 mb-2">
-                  <Flame className={`h-5 w-5 ${streakStats.currentStreakType === 'win' ? 'text-green-500' : streakStats.currentStreakType === 'loss' ? 'text-red-500' : 'text-gray-400'}`} />
-                  <p className="text-sm font-medium text-gray-500">Current Streak</p>
+                  <Flame className={`h-5 w-5 ${streakStats.currentStreakType === 'win' ? 'text-green-500' : streakStats.currentStreakType === 'loss' ? 'text-red-500' : 'text-muted-foreground'}`} />
+                  <p className="text-sm font-medium text-muted-foreground">Current Streak</p>
                 </div>
-                <p className={`text-3xl font-bold ${streakStats.currentStreakType === 'win' ? 'text-green-600' : streakStats.currentStreakType === 'loss' ? 'text-red-600' : 'text-gray-600'}`}>
+                <p className={`text-3xl font-bold ${streakStats.currentStreakType === 'win' ? 'text-green-600' : streakStats.currentStreakType === 'loss' ? 'text-red-600' : 'text-foreground'}`}>
                   {streakStats.currentStreak} {streakStats.currentStreakType === 'win' ? 'Wins' : streakStats.currentStreakType === 'loss' ? 'Losses' : ''}
                 </p>
               </div>
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="h-5 w-5 text-green-500" />
-                  <p className="text-sm font-medium text-gray-500">Longest Win Streak</p>
+                  <p className="text-sm font-medium text-muted-foreground">Longest Win Streak</p>
                 </div>
                 <p className="text-3xl font-bold text-green-600">{streakStats.longestWinStreak}</p>
               </div>
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingDown className="h-5 w-5 text-red-500" />
-                  <p className="text-sm font-medium text-gray-500">Longest Loss Streak</p>
+                  <p className="text-sm font-medium text-muted-foreground">Longest Loss Streak</p>
                 </div>
                 <p className="text-3xl font-bold text-red-600">{streakStats.longestLossStreak}</p>
               </div>
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
                 <div className="flex items-center gap-2 mb-2">
                   <Award className="h-5 w-5 text-purple-500" />
-                  <p className="text-sm font-medium text-gray-500">Best Streak Ratio</p>
+                  <p className="text-sm font-medium text-muted-foreground">Best Streak Ratio</p>
                 </div>
                 <p className="text-3xl font-bold text-purple-600">
                   {streakStats.longestWinStreak > 0 && streakStats.longestLossStreak > 0
                     ? (streakStats.longestWinStreak / streakStats.longestLossStreak).toFixed(1)
                     : streakStats.longestWinStreak > 0
-                    ? '∞'
-                    : '0'}
+                      ? '∞'
+                      : '0'}
                 </p>
               </div>
             </div>
 
             {/* Weekly Performance */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700 mb-6">
-              <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 flex items-center gap-2">
-                <Clock className="w-5 h-5" />
+            <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border mb-6">
+              <h2 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
+                <Clock className="w-5 h-5 text-primary" />
                 Weekly Performance Trend (Last 12 Weeks)
               </h2>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="week" />
-                  <YAxis />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
                   <Tooltip
                     {...sharedTooltipProps}
                     formatter={(value: number) => `$${value.toFixed(2)}`}
                   />
-                  <Bar dataKey="profit" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
+                  <Bar dataKey="profit" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
                     {weeklyData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
@@ -605,18 +606,18 @@ export default function DashboardPage() {
 
             {/* Odds Range & Day of Week Performance */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Performance by Odds Range</h2>
+              <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+                <h2 className="text-lg font-semibold mb-4 text-foreground">Performance by Odds Range</h2>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={oddsRangeData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="range" angle={-45} textAnchor="end" height={100} />
-                    <YAxis />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="range" angle={-45} textAnchor="end" height={100} stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
                     <Tooltip
                       {...sharedTooltipProps}
                       formatter={(value: number) => `$${value.toFixed(2)}`}
                     />
-                    <Bar dataKey="profit" fill="#2563eb" radius={[8, 8, 0, 0]}>
+                    <Bar dataKey="profit" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
                       {oddsRangeData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
@@ -628,18 +629,18 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Performance by Day of Week</h2>
+              <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+                <h2 className="text-lg font-semibold mb-4 text-foreground">Performance by Day of Week</h2>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={dayOfWeekData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
                     <Tooltip
                       {...sharedTooltipProps}
                       formatter={(value: number) => `$${value.toFixed(2)}`}
                     />
-                    <Bar dataKey="profit" fill="#7c3aed" radius={[8, 8, 0, 0]}>
+                    <Bar dataKey="profit" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
                       {dayOfWeekData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
@@ -653,21 +654,21 @@ export default function DashboardPage() {
             </div>
 
             {/* Bet Size Performance */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700 mb-6">
-              <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 flex items-center gap-2">
-                <Coins className="w-5 h-5" />
+            <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border mb-6">
+              <h2 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
+                <Coins className="w-5 h-5 text-primary" />
                 Performance by Bet Size
               </h2>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={betSizeData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="range" />
-                  <YAxis />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="range" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
                   <Tooltip
                     {...sharedTooltipProps}
                     formatter={(value: number) => `$${value.toFixed(2)}`}
                   />
-                  <Bar dataKey="profit" fill="#f59e0b" radius={[8, 8, 0, 0]}>
+                  <Bar dataKey="profit" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
                     {betSizeData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
@@ -681,64 +682,62 @@ export default function DashboardPage() {
 
             {/* Top Horses & Races */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Top Performing Horses</h2>
+              <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+                <h2 className="text-lg font-semibold mb-4 text-foreground">Top Performing Horses</h2>
                 {topHorses.length > 0 ? (
                   <div className="space-y-3">
                     {topHorses.map((horse, index) => (
                       <div
                         key={horse.horseName}
-                        className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50"
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                            index === 0 ? 'bg-yellow-400 text-yellow-900' :
-                            index === 1 ? 'bg-gray-300 text-gray-700' :
-                            index === 2 ? 'bg-amber-600 text-white' :
-                            'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                          }`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${index === 0 ? 'bg-yellow-400 text-yellow-900' :
+                              index === 1 ? 'bg-gray-300 text-gray-700' :
+                                index === 2 ? 'bg-amber-600 text-white' :
+                                  'bg-muted text-muted-foreground'
+                            }`}>
                             {index + 1}
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900 dark:text-white">{horse.horseName}</p>
-                            <p className="text-xs text-gray-500">{horse.bets} bets • {horse.wins} wins ({horse.strikeRate.toFixed(1)}%)</p>
+                            <p className="font-semibold text-foreground">{horse.horseName}</p>
+                            <p className="text-xs text-muted-foreground">{horse.bets} bets • {horse.wins} wins ({horse.strikeRate.toFixed(1)}%)</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <p className={`font-bold ${horse.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             ${horse.profit.toFixed(2)}
                           </p>
-                          <p className="text-xs text-gray-500">Avg: {horse.averageOdds.toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">Avg: {horse.averageOdds.toFixed(2)}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-8">No horse data available</p>
+                  <p className="text-muted-foreground text-center py-8">No horse data available</p>
                 )}
               </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Top Performing Races</h2>
+              <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-border">
+                <h2 className="text-lg font-semibold mb-4 text-foreground">Top Performing Races</h2>
                 {topRaces.length > 0 ? (
                   <div className="space-y-3">
                     {topRaces.map((race, index) => (
                       <div
                         key={race.raceName}
-                        className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50"
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
-                            index === 0 ? 'bg-yellow-400 text-yellow-900' :
-                            index === 1 ? 'bg-gray-300 text-gray-700' :
-                            index === 2 ? 'bg-amber-600 text-white' :
-                            'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                          }`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${index === 0 ? 'bg-yellow-400 text-yellow-900' :
+                              index === 1 ? 'bg-gray-300 text-gray-700' :
+                                index === 2 ? 'bg-amber-600 text-white' :
+                                  'bg-muted text-muted-foreground'
+                            }`}>
                             {index + 1}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-gray-900 dark:text-white truncate">{race.raceName}</p>
-                            <p className="text-xs text-gray-500">{race.bets} bets • {race.wins} wins ({race.strikeRate.toFixed(1)}%)</p>
+                            <p className="font-semibold text-foreground truncate">{race.raceName}</p>
+                            <p className="text-xs text-muted-foreground">{race.bets} bets • {race.wins} wins ({race.strikeRate.toFixed(1)}%)</p>
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0 ml-2">
@@ -750,7 +749,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-8">No race data available</p>
+                  <p className="text-muted-foreground text-center py-8">No race data available</p>
                 )}
               </div>
             </div>

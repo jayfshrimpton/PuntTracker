@@ -65,10 +65,10 @@ export default function BetsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [isImporting, setIsImporting] = useState(false);
-  
+
   // Enhanced search state
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Advanced filtering state
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -190,8 +190,8 @@ export default function BetsPage() {
         name === 'price' || name === 'stake'
           ? parseFloat(value) || 0
           : name === 'finishing_position'
-          ? value === '' ? null : parseInt(value, 10)
-          : value,
+            ? value === '' ? null : parseInt(value, 10)
+            : value,
     };
 
     // Auto-calculate profit/loss when position is entered (unless manually editing)
@@ -278,17 +278,17 @@ export default function BetsPage() {
         name === 'price' || name === 'stake' || name === 'profit_loss'
           ? parseFloat(value) || 0
           : name === 'finishing_position'
-          ? value === '' ? null : parseInt(value, 10)
-          : value,
+            ? value === '' ? null : parseInt(value, 10)
+            : value,
     };
 
     // Recalculate profit/loss (skip if manually editing profit_loss)
     if (
       name !== 'profit_loss' &&
       (name === 'finishing_position' ||
-      name === 'bet_type' ||
-      name === 'price' ||
-      name === 'stake')
+        name === 'bet_type' ||
+        name === 'price' ||
+        name === 'stake')
     ) {
       const position =
         name === 'finishing_position'
@@ -474,25 +474,25 @@ export default function BetsPage() {
         bet.exotic_numbers || '',
         bet.strategy_tags?.join(' ') || '',
       ].join(' ').toLowerCase();
-      
+
       if (!searchableFields.includes(query)) {
         return false;
       }
     }
-    
+
     // Odds range filter
     if (filters.oddsMin && Number(bet.price) < Number(filters.oddsMin)) return false;
     if (filters.oddsMax && Number(bet.price) > Number(filters.oddsMax)) return false;
-    
+
     // Stake range filter
     if (filters.stakeMin && Number(bet.stake) < Number(filters.stakeMin)) return false;
     if (filters.stakeMax && Number(bet.stake) > Number(filters.stakeMax)) return false;
-    
+
     // Profit/Loss range filter
     if (bet.profit_loss !== null) {
       if (filters.profitLossMin && Number(bet.profit_loss) < Number(filters.profitLossMin)) return false;
       if (filters.profitLossMax && Number(bet.profit_loss) > Number(filters.profitLossMax)) return false;
-      
+
       // Profit/Loss type filter
       if (filters.profitLossType === 'win' && Number(bet.profit_loss) <= 0) return false;
       if (filters.profitLossType === 'loss' && Number(bet.profit_loss) >= 0) return false;
@@ -501,27 +501,27 @@ export default function BetsPage() {
       // If profit_loss is null and we're filtering for win/loss, exclude it
       if (filters.profitLossType === 'win' || filters.profitLossType === 'loss' || filters.profitLossType === 'neutral') return false;
     }
-    
+
     // Bet type filter
     if (filters.betType && bet.bet_type !== filters.betType) return false;
-    
+
     // Venue filter
     if (filters.venue && bet.venue !== filters.venue) return false;
-    
+
     // Horse name filter (case-insensitive)
     if (filters.horseName && !bet.horse_name.toLowerCase().includes(filters.horseName.toLowerCase())) return false;
-    
+
     // Date range filter
     if (filters.dateFrom && bet.bet_date < filters.dateFrom) return false;
     if (filters.dateTo && bet.bet_date > filters.dateTo) return false;
-    
+
     return true;
   });
 
   const monthlyStats = calculateMonthlyStats(filteredBets);
-  
+
   const hasActiveFilters = Object.values(filters).some((value) => value !== '') || searchQuery.trim() !== '';
-  
+
   const clearFilters = () => {
     setFilters({
       oddsMin: '',
@@ -580,11 +580,10 @@ export default function BetsPage() {
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setViewMode('calendar')}
-            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
-              viewMode === 'calendar'
+            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${viewMode === 'calendar'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
+              }`}
           >
             <Calendar className="w-4 h-4" />
             <span className="hidden sm:inline">Calendar</span>
@@ -592,11 +591,10 @@ export default function BetsPage() {
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
-              viewMode === 'list'
+            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${viewMode === 'list'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
+              }`}
           >
             <List className="w-4 h-4" />
             List
@@ -615,7 +613,7 @@ export default function BetsPage() {
 
       {/* Monthly Totals */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-shadow">
-        <h2 className="text-lg font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Monthly Totals</h2>
+        <h2 className="text-lg font-semibold mb-4 text-foreground">Monthly Totals</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><DollarSign className="h-4 w-4" /> Total Stake</p>
@@ -626,9 +624,8 @@ export default function BetsPage() {
           <div>
             <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><Award className="h-4 w-4" /> Total P&L</p>
             <p
-              className={`text-2xl font-semibold ${
-                monthlyStats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}
+              className={`text-2xl font-semibold ${monthlyStats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}
             >
               ${monthlyStats.totalProfit.toFixed(2)}
             </p>
@@ -649,7 +646,7 @@ export default function BetsPage() {
       {/* Bet Entry Form */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-shadow">
         <div className="flex items-center mb-4">
-          <h2 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Add New Bet</h2>
+          <h2 className="text-lg font-semibold text-foreground">Add New Bet</h2>
           <BetTypesGuide />
         </div>
         {error && (
@@ -882,7 +879,7 @@ export default function BetsPage() {
                     placeholder='[{"race":"R3","horse":"#4","result":"Won"}]'
                     onChange={(e) => {
                       let json: any = null;
-                      try { json = JSON.parse(e.target.value); } catch {}
+                      try { json = JSON.parse(e.target.value); } catch { }
                       setFormData({ ...formData, selections: json });
                     }}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
@@ -1069,15 +1066,13 @@ export default function BetsPage() {
                     const value = e.target.value === '' ? null : parseFloat(e.target.value) || 0;
                     setFormData({ ...formData, profit_loss: value });
                   }}
-                  className={`w-full px-4 py-3 border rounded-lg ${
-                    manualProfitEdit ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'
-                  } ${
-                    formData.profit_loss !== null && formData.profit_loss !== undefined && Number(formData.profit_loss) >= 0
+                  className={`w-full px-4 py-3 border rounded-lg ${manualProfitEdit ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'
+                    } ${formData.profit_loss !== null && formData.profit_loss !== undefined && Number(formData.profit_loss) >= 0
                       ? 'border-green-300 text-green-700 dark:text-green-400'
                       : formData.profit_loss !== null && formData.profit_loss !== undefined
-                      ? 'border-red-300 text-red-700 dark:text-red-400'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
-                  }`}
+                        ? 'border-red-300 text-red-700 dark:text-red-400'
+                        : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
+                    }`}
                 />
               </div>
             )}
@@ -1107,61 +1102,58 @@ export default function BetsPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                showFilters || hasActiveFilters
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-white/10 hover:bg-white/20 text-white'
-              }`}
-            >
-              <Filter className="h-4 w-4" />
-              <span className="hidden sm:inline">Filters</span>
-              {hasActiveFilters && (
-                <span className="bg-white/20 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
-                  {Object.values(filters).filter((v) => v !== '').length}
-                </span>
-              )}
-            </button>
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleImportCSV}
-              disabled={isImporting}
-              className="hidden"
-              id="csv-import-input"
-            />
-            <label
-              htmlFor="csv-import-input"
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${
-                isImporting
-                  ? 'bg-gray-500 text-white cursor-not-allowed'
-                  : 'bg-green-600 hover:bg-green-700 text-white'
-              }`}
-            >
-              <Upload className="h-4 w-4" />
-              <span className="hidden sm:inline">{isImporting ? 'Importing...' : 'Import CSV'}</span>
-              <span className="sm:hidden">{isImporting ? '...' : 'Import'}</span>
-            </label>
-            <button
-              onClick={() => {
-                const csvContent = exportBetsToCSV(filteredBets);
-                const filename = `bets_export_${format(new Date(), 'yyyy-MM-dd')}.csv`;
-                downloadCSV(csvContent, filename);
-                showToast('Filtered bets exported successfully!', 'success');
-              }}
-              disabled={filteredBets.length === 0}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                filteredBets.length === 0
-                  ? 'bg-gray-500 text-white cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
-            >
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Export CSV</span>
-              <span className="sm:hidden">Export</span>
-            </button>
-          </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${showFilters || hasActiveFilters
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                  }`}
+              >
+                <Filter className="h-4 w-4" />
+                <span className="hidden sm:inline">Filters</span>
+                {hasActiveFilters && (
+                  <span className="bg-white/20 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+                    {Object.values(filters).filter((v) => v !== '').length}
+                  </span>
+                )}
+              </button>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleImportCSV}
+                disabled={isImporting}
+                className="hidden"
+                id="csv-import-input"
+              />
+              <label
+                htmlFor="csv-import-input"
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${isImporting
+                    ? 'bg-gray-500 text-white cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                  }`}
+              >
+                <Upload className="h-4 w-4" />
+                <span className="hidden sm:inline">{isImporting ? 'Importing...' : 'Import CSV'}</span>
+                <span className="sm:hidden">{isImporting ? '...' : 'Import'}</span>
+              </label>
+              <button
+                onClick={() => {
+                  const csvContent = exportBetsToCSV(filteredBets);
+                  const filename = `bets_export_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+                  downloadCSV(csvContent, filename);
+                  showToast('Filtered bets exported successfully!', 'success');
+                }}
+                disabled={filteredBets.length === 0}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${filteredBets.length === 0
+                    ? 'bg-gray-500 text-white cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Export CSV</span>
+                <span className="sm:hidden">Export</span>
+              </button>
+            </div>
           </div>
           {/* Enhanced Search */}
           <div className="relative">
@@ -1184,7 +1176,7 @@ export default function BetsPage() {
             )}
           </div>
         </div>
-        
+
         {/* Advanced Filters Panel */}
         {showFilters && (
           <div className="p-6 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
@@ -1380,7 +1372,7 @@ export default function BetsPage() {
             </div>
           </div>
         )}
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gradient-to-r from-gray-700 to-gray-800">
@@ -1556,13 +1548,12 @@ export default function BetsPage() {
                             step="0.01"
                             value={editForm.profit_loss !== null && editForm.profit_loss !== undefined ? Number(editForm.profit_loss) : ''}
                             onChange={handleEditChange}
-                            className={`w-full px-2 py-1 border rounded text-sm ${
-                              (editForm.profit_loss !== null && editForm.profit_loss !== undefined && Number(editForm.profit_loss) >= 0)
+                            className={`w-full px-2 py-1 border rounded text-sm ${(editForm.profit_loss !== null && editForm.profit_loss !== undefined && Number(editForm.profit_loss) >= 0)
                                 ? 'border-green-300 text-green-700 dark:text-green-400'
                                 : editForm.profit_loss !== null && editForm.profit_loss !== undefined
-                                ? 'border-red-300 text-red-700 dark:text-red-400'
-                                : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
-                            }`}
+                                  ? 'border-red-300 text-red-700 dark:text-red-400'
+                                  : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
+                              }`}
                           />
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
@@ -1676,30 +1667,30 @@ export default function BetsPage() {
                             (bet.bet_type === 'win'
                               ? 'bg-gradient-to-r from-blue-600 to-indigo-600'
                               : bet.bet_type === 'place'
-                              ? 'bg-gradient-to-r from-green-500 to-teal-500'
-                              : bet.bet_type === 'each-way'
-                              ? 'bg-gradient-to-r from-purple-600 to-pink-600'
-                              : bet.bet_type === 'lay'
-                              ? 'bg-gradient-to-r from-red-500 to-pink-500'
-                              : bet.bet_type === 'multi'
-                              ? 'bg-gradient-to-r from-orange-500 to-amber-500'
-                              : bet.bet_type === 'other'
-                              ? 'bg-gradient-to-r from-gray-500 to-gray-700'
-                              : 'bg-gradient-to-r from-teal-500 to-cyan-500')
+                                ? 'bg-gradient-to-r from-green-500 to-teal-500'
+                                : bet.bet_type === 'each-way'
+                                  ? 'bg-gradient-to-r from-purple-600 to-pink-600'
+                                  : bet.bet_type === 'lay'
+                                    ? 'bg-gradient-to-r from-red-500 to-pink-500'
+                                    : bet.bet_type === 'multi'
+                                      ? 'bg-gradient-to-r from-orange-500 to-amber-500'
+                                      : bet.bet_type === 'other'
+                                        ? 'bg-gradient-to-r from-gray-500 to-gray-700'
+                                        : 'bg-gradient-to-r from-teal-500 to-cyan-500')
                           }
                           title={bet.bet_type}
                         >
                           {bet.bet_type === 'each-way'
                             ? 'E/W'
                             : bet.bet_type === 'quinella'
-                            ? 'Q'
-                            : bet.bet_type === 'exacta'
-                            ? 'E'
-                            : bet.bet_type === 'trifecta'
-                            ? 'T'
-                            : bet.bet_type === 'first-four'
-                            ? 'FF'
-                            : bet.bet_type.toUpperCase()}
+                              ? 'Q'
+                              : bet.bet_type === 'exacta'
+                                ? 'E'
+                                : bet.bet_type === 'trifecta'
+                                  ? 'T'
+                                  : bet.bet_type === 'first-four'
+                                    ? 'FF'
+                                    : bet.bet_type.toUpperCase()}
                         </span>
                         {bet.bet_type === 'multi' && bet.num_legs ? (
                           <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">{bet.num_legs}-leg</span>
@@ -1715,13 +1706,12 @@ export default function BetsPage() {
                         {bet.finishing_position || '-'}
                       </td>
                       <td
-                        className={`px-4 py-3 whitespace-nowrap text-sm font-semibold ${
-                          bet.profit_loss !== null && Number(bet.profit_loss) >= 0
+                        className={`px-4 py-3 whitespace-nowrap text-sm font-semibold ${bet.profit_loss !== null && Number(bet.profit_loss) >= 0
                             ? 'text-green-600'
                             : bet.profit_loss !== null
-                            ? 'text-red-600'
-                            : 'text-gray-500'
-                        }`}
+                              ? 'text-red-600'
+                              : 'text-gray-500'
+                          }`}
                       >
                         {bet.profit_loss !== null
                           ? `$${Number(bet.profit_loss).toFixed(2)}`

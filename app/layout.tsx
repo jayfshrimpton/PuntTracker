@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/lib/theme";
@@ -12,6 +12,15 @@ export const metadata: Metadata = {
     description: "Track your horse racing bets with ease. Automatic stats, beautiful charts, and insights. Built for Aussie punters.",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -37,7 +46,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-gray-100">
+      <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider>
           {children}
           <ToastProvider />
