@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
   fetchUserBets,
@@ -90,12 +90,19 @@ export default function BetsPage() {
     loadBets();
   }, []);
 
+  const formRef = useRef<HTMLDivElement>(null);
+
   // Update form date when selected date changes
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
       bet_date: format(selectedDate, 'yyyy-MM-dd'),
     }));
+
+    // Auto-scroll to form on mobile/desktop when date is selected
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }, [selectedDate]);
 
   const handleDateSelect = (date: Date) => {
@@ -581,8 +588,8 @@ export default function BetsPage() {
           <button
             onClick={() => setViewMode('calendar')}
             className={`flex-1 sm:flex-none px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${viewMode === 'calendar'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
           >
             <Calendar className="w-4 h-4" />
@@ -592,8 +599,8 @@ export default function BetsPage() {
           <button
             onClick={() => setViewMode('list')}
             className={`flex-1 sm:flex-none px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${viewMode === 'list'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
           >
             <List className="w-4 h-4" />
@@ -644,7 +651,7 @@ export default function BetsPage() {
       </div>
 
       {/* Bet Entry Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-shadow">
+      <div ref={formRef} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-shadow">
         <div className="flex items-center mb-4">
           <h2 className="text-lg font-semibold text-foreground">Add New Bet</h2>
           <BetTypesGuide />
@@ -1105,8 +1112,8 @@ export default function BetsPage() {
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${showFilters || hasActiveFilters
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : 'bg-white/10 hover:bg-white/20 text-white'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-white/10 hover:bg-white/20 text-white'
                   }`}
               >
                 <Filter className="h-4 w-4" />
@@ -1128,8 +1135,8 @@ export default function BetsPage() {
               <label
                 htmlFor="csv-import-input"
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${isImporting
-                    ? 'bg-gray-500 text-white cursor-not-allowed'
-                    : 'bg-green-600 hover:bg-green-700 text-white'
+                  ? 'bg-gray-500 text-white cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700 text-white'
                   }`}
               >
                 <Upload className="h-4 w-4" />
@@ -1145,8 +1152,8 @@ export default function BetsPage() {
                 }}
                 disabled={filteredBets.length === 0}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${filteredBets.length === 0
-                    ? 'bg-gray-500 text-white cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  ? 'bg-gray-500 text-white cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
               >
                 <Download className="h-4 w-4" />
@@ -1373,7 +1380,184 @@ export default function BetsPage() {
           </div>
         )}
 
-        <div className="overflow-x-auto">
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4 px-4 pb-4">
+          {filteredBets.length === 0 ? (
+            <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+              <Activity className="h-10 w-10 text-blue-600 mx-auto mb-3" />
+              <p className="text-gray-900 dark:text-gray-100 font-medium">No bets yet</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Track your first bet to see stats.</p>
+            </div>
+          ) : (
+            filteredBets.map((bet) => (
+              <div key={bet.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+                {editingBet === bet.id ? (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2">
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Date</label>
+                        <input
+                          type="date"
+                          name="bet_date"
+                          value={editForm.bet_date || ''}
+                          onChange={handleEditChange}
+                          className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 dark:text-white"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Venue</label>
+                        <VenueCombobox
+                          value={editForm.venue || null}
+                          onChange={(value) => setEditForm({ ...editForm, venue: value })}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Race #</label>
+                        <input
+                          type="number"
+                          name="race_number"
+                          value={editForm.race_number || ''}
+                          onChange={(e) => setEditForm({ ...editForm, race_number: e.target.value ? parseInt(e.target.value) : null })}
+                          className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Horse</label>
+                        <input
+                          type="text"
+                          name="horse_name"
+                          value={editForm.horse_name || ''}
+                          onChange={handleEditChange}
+                          className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Stake</label>
+                        <input
+                          type="number"
+                          name="stake"
+                          value={editForm.stake || ''}
+                          onChange={handleEditChange}
+                          className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Odds</label>
+                        <input
+                          type="number"
+                          name="price"
+                          value={editForm.price || ''}
+                          onChange={handleEditChange}
+                          className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Position</label>
+                        <input
+                          type="number"
+                          name="finishing_position"
+                          value={editForm.finishing_position || ''}
+                          onChange={handleEditChange}
+                          className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">P&L</label>
+                        <input
+                          type="number"
+                          name="profit_loss"
+                          value={editForm.profit_loss !== null ? editForm.profit_loss : ''}
+                          onChange={handleEditChange}
+                          className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                      <button onClick={() => setEditingBet(null)} className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><X className="w-5 h-5" /></button>
+                      <button onClick={() => handleUpdate(bet.id)} className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"><Check className="w-5 h-5" /></button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
+                          <span>{format(new Date(bet.bet_date), 'MMM dd')}</span>
+                          <span>•</span>
+                          <span>{bet.venue || 'Unknown Venue'}</span>
+                          {bet.race_number && <span>• R{bet.race_number}</span>}
+                        </div>
+                        <h3 className="font-bold text-gray-900 dark:text-white text-lg">
+                          {bet.horse_name || (bet.exotic_numbers ? `#${bet.exotic_numbers}` : bet.description || 'No Selection')}
+                        </h3>
+                      </div>
+                      <span
+                        className={
+                          'px-2.5 py-1 rounded-full text-xs font-semibold text-white ' +
+                          (bet.bet_type === 'win'
+                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600'
+                            : bet.bet_type === 'place'
+                              ? 'bg-gradient-to-r from-green-500 to-teal-500'
+                              : bet.bet_type === 'each-way'
+                                ? 'bg-gradient-to-r from-purple-600 to-pink-600'
+                                : bet.bet_type === 'lay'
+                                  ? 'bg-gradient-to-r from-red-500 to-pink-500'
+                                  : bet.bet_type === 'multi'
+                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500'
+                                    : bet.bet_type === 'other'
+                                      ? 'bg-gradient-to-r from-gray-500 to-gray-700'
+                                      : 'bg-gradient-to-r from-teal-500 to-cyan-500')
+                        }
+                      >
+                        {bet.bet_type === 'each-way' ? 'E/W' : bet.bet_type.toUpperCase()}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 py-2 border-t border-b border-gray-100 dark:border-gray-700">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Stake</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">${Number(bet.stake).toFixed(2)}</p>
+                      </div>
+                      <div className="text-center border-l border-r border-gray-100 dark:border-gray-700">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Odds</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">{Number(bet.price).toFixed(2)}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">P&L</p>
+                        <p className={`font-bold ${Number(bet.profit_loss) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {bet.profit_loss !== null ? `$${Number(bet.profit_loss).toFixed(2)}` : '-'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-1">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {bet.finishing_position && <span>Finished: {bet.finishing_position}</span>}
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleEdit(bet)}
+                          className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                        >
+                          <Edit2 className="h-4 w-4" /> Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(bet.id)}
+                          className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700 dark:text-red-400"
+                        >
+                          <Trash2 className="h-4 w-4" /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gradient-to-r from-gray-700 to-gray-800">
               <tr>
@@ -1404,7 +1588,7 @@ export default function BetsPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   P&L
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider sticky right-0 bg-gray-800 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
                   Actions
                 </th>
               </tr>
@@ -1549,14 +1733,14 @@ export default function BetsPage() {
                             value={editForm.profit_loss !== null && editForm.profit_loss !== undefined ? Number(editForm.profit_loss) : ''}
                             onChange={handleEditChange}
                             className={`w-full px-2 py-1 border rounded text-sm ${(editForm.profit_loss !== null && editForm.profit_loss !== undefined && Number(editForm.profit_loss) >= 0)
-                                ? 'border-green-300 text-green-700 dark:text-green-400'
-                                : editForm.profit_loss !== null && editForm.profit_loss !== undefined
-                                  ? 'border-red-300 text-red-700 dark:text-red-400'
-                                  : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
+                              ? 'border-green-300 text-green-700 dark:text-green-400'
+                              : editForm.profit_loss !== null && editForm.profit_loss !== undefined
+                                ? 'border-red-300 text-red-700 dark:text-red-400'
+                                : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
                               }`}
                           />
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap sticky right-0 bg-amber-50 dark:bg-gray-700 z-20 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleUpdate(bet.id)}
@@ -1618,7 +1802,7 @@ export default function BetsPage() {
                       </tr>
                     </>
                   ) : (
-                    <tr key={bet.id} className={`${(idx % 2 === 0) ? 'bg-white dark:bg-gray-800/50' : 'bg-gray-50 dark:bg-gray-800/30'} hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors`}>
+                    <tr key={bet.id} className={`${(idx % 2 === 0) ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900'} hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors`}>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {format(new Date(bet.bet_date), 'MMM dd, yyyy')}
                       </td>
@@ -1707,17 +1891,17 @@ export default function BetsPage() {
                       </td>
                       <td
                         className={`px-4 py-3 whitespace-nowrap text-sm font-semibold ${bet.profit_loss !== null && Number(bet.profit_loss) >= 0
-                            ? 'text-green-600'
-                            : bet.profit_loss !== null
-                              ? 'text-red-600'
-                              : 'text-gray-500'
+                          ? 'text-green-600'
+                          : bet.profit_loss !== null
+                            ? 'text-red-600'
+                            : 'text-gray-500'
                           }`}
                       >
                         {bet.profit_loss !== null
                           ? `$${Number(bet.profit_loss).toFixed(2)}`
                           : '-'}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm">
+                      <td className={`px-4 py-3 whitespace-nowrap text-sm sticky right-0 z-20 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] ${(idx % 2 === 0) ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900'}`}>
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEdit(bet)}
@@ -1736,13 +1920,14 @@ export default function BetsPage() {
                         </div>
                       </td>
                     </tr>
+
                   )
                 )
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+            </tbody >
+          </table >
+        </div >
+      </div >
+    </div >
   );
 }
