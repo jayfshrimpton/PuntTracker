@@ -6,16 +6,16 @@ export interface Bet {
   race_name: string | null;
   horse_name: string;
   bet_type:
-    | 'win'
-    | 'place'
-    | 'lay'
-    | 'each-way'
-    | 'multi'
-    | 'quinella'
-    | 'exacta'
-    | 'trifecta'
-    | 'first-four'
-    | 'other';
+  | 'win'
+  | 'place'
+  | 'lay'
+  | 'each-way'
+  | 'multi'
+  | 'quinella'
+  | 'exacta'
+  | 'trifecta'
+  | 'first-four'
+  | 'other';
   price: number;
   stake: number;
   finishing_position: number | null;
@@ -41,16 +41,16 @@ export interface BetInput {
   race_name?: string | null;
   horse_name: string;
   bet_type:
-    | 'win'
-    | 'place'
-    | 'lay'
-    | 'each-way'
-    | 'multi'
-    | 'quinella'
-    | 'exacta'
-    | 'trifecta'
-    | 'first-four'
-    | 'other';
+  | 'win'
+  | 'place'
+  | 'lay'
+  | 'each-way'
+  | 'multi'
+  | 'quinella'
+  | 'exacta'
+  | 'trifecta'
+  | 'first-four'
+  | 'other';
   price: number;
   stake: number;
   finishing_position?: number | null;
@@ -343,6 +343,8 @@ export interface Profile {
   strike_rate_target: number | null;
   annual_profit_target: number | null;
   goals_enabled: boolean;
+  unit_size: number; // Default 10
+  display_units: boolean; // Default false
   created_at: string;
   updated_at: string;
 }
@@ -360,6 +362,8 @@ export interface ProfileUpdate {
   strike_rate_target?: number | null;
   annual_profit_target?: number | null;
   goals_enabled?: boolean;
+  unit_size?: number;
+  display_units?: boolean;
 }
 
 export async function fetchProfile(): Promise<{

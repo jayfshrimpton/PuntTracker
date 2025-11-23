@@ -572,3 +572,83 @@ export function getWeeklyPerformance(bets: Bet[], weeks: number = 12): WeeklyPer
 
   return result;
 }
+
+// Insights Analysis
+export interface Insight {
+  type: 'warning' | 'success' | 'info';
+  title: string;
+  description: string;
+  metric: string;
+  value: number;
+  priority: number; // Higher number = higher priority
+}
+
+export function getPerformanceInsights(bets: Bet[]): Insight[] {
+  if (bets.length < 5) return []; // Need some data to generate insights
+
+  const insights: Insight[] = [];
+
+  // 1. Analyze Odds Ranges
+  const oddsStats = getOddsRangePerformance(bets);
+  oddsStats.forEach(stat => {
+    if (stat.bets >= 3 && stat.profit < 0) {
+      insights.push({
+        type: 'info',
+        title: `Optimization: ${stat.range} Odds`,
+        description: `This range presents an opportunity to refine your strategy. Review your selection process for these odds.`,
+        metric: 'Loss',
+        value: stat.profit,
+        priority: Math.abs(stat.profit)
+      });
+    }
+  });
+
+  // 2. Analyze Days of Week
+  const dayStats = getDayOfWeekPerformance(bets);
+  dayStats.forEach(stat => {
+    if (stat.bets >= 3 && stat.profit < 0) {
+      insights.push({
+        type: 'info',
+        title: `${stat.day} Strategy Review`,
+        description: `Performance on ${stat.day}s could be improved. Consider adjusting your approach on this day.`,
+        metric: 'Loss',
+        value: stat.profit,
+        priority: Math.abs(stat.profit) * 0.8 // Slightly lower priority than odds
+      });
+    }
+  });
+
+  // 3. Analyze Bet Types
+  const betTypeStats = calculateStatsByBetType(bets);
+  Object.entries(betTypeStats).forEach(([type, stats]) => {
+    if (stats.totalBets >= 3 && stats.totalProfit < 0) {
+      const formattedType = type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ');
+      insights.push({
+        type: 'info',
+        title: `Refine ${formattedType} Bets`,
+        description: `Your ${formattedType} bets have room for optimization. Analyzing past results might reveal patterns.`,
+        metric: 'Loss',
+        value: stats.totalProfit,
+        priority: Math.abs(stats.totalProfit) * 0.9
+      });
+    }
+  });
+
+  // 4. Analyze Bet Sizes
+  const betSizeStats = getBetSizePerformance(bets);
+  betSizeStats.forEach(stat => {
+    if (stat.bets >= 3 && stat.profit < 0) {
+      insights.push({
+        type: 'info',
+        title: `Bet Size Adjustment: ${stat.range}`,
+        description: `Consider reviewing your stake sizing for bets in this range to maximize long-term growth.`,
+        metric: 'Loss',
+        value: stat.profit,
+        priority: Math.abs(stat.profit)
+      });
+    }
+  });
+
+  // Sort by priority (highest impact first)
+  return insights.sort((a, b) => b.priority - a.priority).slice(0, 3); // Return top 3 insights
+}

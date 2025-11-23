@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, X, Activity, Home, PlusCircle, Settings, UserCog } from 'lucide-react';
+import { Menu, X, Activity, Home, PlusCircle, Settings, UserCog, Coins, DollarSign } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
+import { useCurrency } from '@/components/CurrencyContext';
 
 interface DashboardNavProps {
   user: User;
@@ -14,6 +15,7 @@ interface DashboardNavProps {
 export default function DashboardNav({ user }: DashboardNavProps) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { mode, toggleMode } = useCurrency();
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -42,6 +44,22 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               </div>
               <div className="flex items-center space-x-3">
                 <ThemeToggle />
+                <button
+                  onClick={toggleMode}
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                >
+                  {mode === 'currency' ? (
+                    <>
+                      <DollarSign className="h-4 w-4" />
+                      <span>Currency</span>
+                    </>
+                  ) : (
+                    <>
+                      <Coins className="h-4 w-4" />
+                      <span>Units</span>
+                    </>
+                  )}
+                </button>
                 <span className="text-sm text-muted-foreground">{user.email}</span>
                 <button
                   onClick={handleLogout}
@@ -99,6 +117,22 @@ export default function DashboardNav({ user }: DashboardNavProps) {
             </div>
             <div className="flex items-center space-x-3">
               <ThemeToggle />
+              <button
+                onClick={toggleMode}
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
+                {mode === 'currency' ? (
+                  <>
+                    <DollarSign className="h-4 w-4" />
+                    <span>Currency</span>
+                  </>
+                ) : (
+                  <>
+                    <Coins className="h-4 w-4" />
+                    <span>Units</span>
+                  </>
+                )}
+              </button>
               <span className="text-sm text-muted-foreground">{user.email}</span>
               <button
                 onClick={handleLogout}

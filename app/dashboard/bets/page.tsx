@@ -30,6 +30,7 @@ import { exportBetsToCSV, downloadCSV, parseCSVToBets } from '@/lib/csv-utils';
 import { AUSTRALIAN_RACE_TRACKS, getTracksByState, getTrackLabel } from '@/lib/australian-tracks';
 import VenueCombobox from '@/components/VenueCombobox';
 import type { BetTemplate } from '@/lib/api';
+import { useCurrency } from '@/components/CurrencyContext';
 
 export default function BetsPage() {
   const [bets, setBets] = useState<Bet[]>([]);
@@ -37,6 +38,7 @@ export default function BetsPage() {
   const [error, setError] = useState<string | null>(null);
   const [editingBet, setEditingBet] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Bet>>({});
+  const { formatValue } = useCurrency();
 
   // Form state
   const [formData, setFormData] = useState<BetInput>({
@@ -625,7 +627,7 @@ export default function BetsPage() {
           <div>
             <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><DollarSign className="h-4 w-4" /> Total Stake</p>
             <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-              ${monthlyStats.totalStake.toFixed(2)}
+              {formatValue(monthlyStats.totalStake)}
             </p>
           </div>
           <div>
@@ -634,7 +636,7 @@ export default function BetsPage() {
               className={`text-2xl font-semibold ${monthlyStats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}
             >
-              ${monthlyStats.totalProfit.toFixed(2)}
+              {formatValue(monthlyStats.totalProfit)}
             </p>
           </div>
           <div>
@@ -1295,7 +1297,7 @@ export default function BetsPage() {
                   onChange={(e) => setFilters({ ...filters, profitLossType: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm"
                 >
-                  <option value="">All Results</option>
+                  <option value="">All Types</option>
                   <option value="win">Winning Bets</option>
                   <option value="loss">Losing Bets</option>
                   <option value="neutral">Break Even</option>
@@ -1517,7 +1519,7 @@ export default function BetsPage() {
                     <div className="grid grid-cols-3 gap-2 py-2 border-t border-b border-gray-100 dark:border-gray-700">
                       <div className="text-center">
                         <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Stake</p>
-                        <p className="font-semibold text-gray-900 dark:text-white">${Number(bet.stake).toFixed(2)}</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">{formatValue(bet.stake)}</p>
                       </div>
                       <div className="text-center border-l border-r border-gray-100 dark:border-gray-700">
                         <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Odds</p>
@@ -1526,7 +1528,7 @@ export default function BetsPage() {
                       <div className="text-center">
                         <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">P&L</p>
                         <p className={`font-bold ${Number(bet.profit_loss) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {bet.profit_loss !== null ? `$${Number(bet.profit_loss).toFixed(2)}` : '-'}
+                          {bet.profit_loss !== null ? formatValue(bet.profit_loss) : '-'}
                         </p>
                       </div>
                     </div>
@@ -1576,16 +1578,16 @@ export default function BetsPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Odds
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Stake
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Position
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   P&L
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider sticky right-0 bg-gray-800 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
@@ -1696,7 +1698,7 @@ export default function BetsPage() {
                             <option value="other">Other</option>
                           </select>
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="number"
                             name="price"
@@ -1706,7 +1708,7 @@ export default function BetsPage() {
                             className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
                           />
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="number"
                             name="stake"
@@ -1725,7 +1727,7 @@ export default function BetsPage() {
                             className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
                           />
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="number"
                             name="profit_loss"
@@ -1880,17 +1882,17 @@ export default function BetsPage() {
                           <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">{bet.num_legs}-leg</span>
                         ) : null}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                         {Number(bet.price).toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        ${Number(bet.stake).toFixed(2)}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        {formatValue(bet.stake)}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {bet.finishing_position || '-'}
                       </td>
                       <td
-                        className={`px-4 py-3 whitespace-nowrap text-sm font-semibold ${bet.profit_loss !== null && Number(bet.profit_loss) >= 0
+                        className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${bet.profit_loss !== null && Number(bet.profit_loss) >= 0
                           ? 'text-green-600'
                           : bet.profit_loss !== null
                             ? 'text-red-600'

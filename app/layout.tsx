@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { CurrencyProvider } from '@/components/CurrencyContext';
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/lib/theme";
@@ -47,10 +48,12 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <ThemeProvider>
-          {children}
-          <ToastProvider />
-        </ThemeProvider>
+        <CurrencyProvider>
+          <ThemeProvider>
+            {children}
+            <ToastProvider />
+          </ThemeProvider>
+        </CurrencyProvider>
       </body>
     </html>
   );

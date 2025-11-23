@@ -1,19 +1,17 @@
 'use client';
 
 import { useTheme } from '@/lib/theme';
-import { Sun, Moon, Monitor } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
-  const themes: Array<{ value: 'light' | 'dark' | 'system'; icon: React.ReactNode; label: string }> = [
+  const themes: Array<{ value: 'light' | 'dark'; icon: React.ReactNode; label: string }> = [
     { value: 'light', icon: <Sun className="w-4 h-4" />, label: 'Light' },
     { value: 'dark', icon: <Moon className="w-4 h-4" />, label: 'Dark' },
-    { value: 'system', icon: <Monitor className="w-4 h-4" />, label: 'System' },
   ];
 
-  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
-    console.log('Theme toggle clicked:', newTheme);
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
     setTheme(newTheme);
   };
 
@@ -26,10 +24,9 @@ export default function ThemeToggle() {
             onClick={() => handleThemeChange(t.value)}
             className={`
               flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all
-              ${
-                theme === t.value
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-white/10 dark:hover:bg-gray-700/50'
+              ${theme === t.value
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-white/10 dark:hover:bg-gray-700/50'
               }
             `}
             title={`Switch to ${t.label} mode`}
@@ -43,4 +40,3 @@ export default function ThemeToggle() {
     </div>
   );
 }
-

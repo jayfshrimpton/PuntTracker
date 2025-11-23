@@ -4,12 +4,19 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fetchProfile, updateProfile, type Profile } from '@/lib/api';
 import { showToast } from '@/lib/toast';
-import { User, Mail, Bell, Save, Loader2, Wallet, Target } from 'lucide-react';
+import { User, Mail, Bell, Save, Loader2, Wallet, Target, DollarSign } from 'lucide-react';
+import { useCurrency } from '@/components/CurrencyContext';
+
+// Assuming ProfileUpdate is a type derived from Profile or separately defined in '@/lib/api'
+// For this edit, we'll assume it's available or compatible with Profile.
+type ProfileUpdate = Partial<Profile> & { unit_size?: number | null };
 
 export default function SettingsPage() {
+  const { mode, setUnitSize: setGlobalUnitSize } = useCurrency();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [unitSize, setUnitSize] = useState<string>('10');
   const [userEmail, setUserEmail] = useState<string>('');
   const [formData, setFormData] = useState({
     full_name: '',
@@ -37,13 +44,13 @@ export default function SettingsPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      
+
       if (user?.email) {
         setUserEmail(user.email);
       }
 
       const { data, error } = await fetchProfile();
-      
+
       if (error) {
         showToast('Failed to load profile', 'error');
         return;
@@ -65,6 +72,7 @@ export default function SettingsPage() {
           annual_profit_target: data.annual_profit_target?.toString() || '',
           goals_enabled: data.goals_enabled ?? false,
         });
+        if (data.unit_size) setUnitSize(data.unit_size.toString());
       }
     } catch (err) {
       showToast('Failed to load profile', 'error');
@@ -78,7 +86,7 @@ export default function SettingsPage() {
     setSaving(true);
 
     try {
-      const { data, error } = await updateProfile({
+      const updates: ProfileUpdate = {
         full_name: formData.full_name || null,
         email_notifications_enabled: formData.email_notifications_enabled,
         // Bankroll management
@@ -91,7 +99,10 @@ export default function SettingsPage() {
         strike_rate_target: formData.strike_rate_target ? parseFloat(formData.strike_rate_target) : null,
         annual_profit_target: formData.annual_profit_target ? parseFloat(formData.annual_profit_target) : null,
         goals_enabled: formData.goals_enabled,
-      });
+        unit_size: parseFloat(unitSize) || 10,
+        display_units: mode === 'units',
+      };
+      const { data, error } = await updateProfile(updates);
 
       if (error) {
         showToast('Failed to update settings', 'error');
@@ -100,6 +111,7 @@ export default function SettingsPage() {
 
       if (data) {
         setProfile(data);
+        setGlobalUnitSize(data.unit_size);
         showToast('Settings saved successfully', 'success');
       }
     } catch (err) {
@@ -343,6 +355,46 @@ export default function SettingsPage() {
                   />
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Your current bankroll amount
+                  </p>
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label htmlFor="unitSize" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Unit Size ($)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <DollarSign className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      id="unitSize"
+                      type="number"
+                      value={unitSize}
+                      onChange={(e) => setUnitSize(e.target.value)}
+                      placeholder="10"
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                    />
+                  </div>
+                  {formData.bankroll_starting_amount && !isNaN(parseFloat(formData.bankroll_starting_amount)) && (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => setUnitSize((parseFloat(formData.bankroll_starting_amount) * 0.01).toFixed(2))}
+                        className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                      >
+                        1% (${(parseFloat(formData.bankroll_starting_amount) * 0.01).toFixed(0)})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUnitSize((parseFloat(formData.bankroll_starting_amount) * 0.02).toFixed(2))}
+                        className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                      >
+                        2% (${(parseFloat(formData.bankroll_starting_amount) * 0.02).toFixed(0)})
+                      </button>
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Recommended: 1-2% of your total bankroll.
                   </p>
                 </div>
               </div>
