@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { CurrencyProvider } from '@/components/CurrencyContext';
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
@@ -52,6 +53,7 @@ export default function RootLayout({
           <ThemeProvider>
             {children}
             <ToastProvider />
+            <Analytics />
           </ThemeProvider>
         </CurrencyProvider>
       </body>
