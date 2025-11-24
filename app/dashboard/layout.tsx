@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import DashboardNav from '@/components/DashboardNav';
+import VerificationBanner from '@/components/VerificationBanner';
 import { Home, PlusCircle, Settings, UserCog } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -23,8 +24,12 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
+  // Check if email is confirmed
+  const isVerified = !!user.email_confirmed_at;
+
   return (
     <div className="min-h-screen">
+      <VerificationBanner email={user.email || ''} isVerified={isVerified} />
       <DashboardNav user={user} />
       <div className="flex">
         <aside className="hidden lg:flex lg:flex-shrink-0">

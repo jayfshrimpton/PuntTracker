@@ -39,8 +39,13 @@ import {
 } from 'recharts';
 import type { PieLabelRenderProps } from 'recharts';
 import { format } from 'date-fns';
-import { TrendingUp, DollarSign, Target, Activity, Trophy, Calendar, Flame, BarChart3, Clock, Coins, TrendingDown, Award, Lightbulb } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, Activity, Trophy, Calendar, Flame, BarChart3, Clock, Coins, TrendingDown, Award, Lightbulb, HelpCircle } from 'lucide-react';
 import { useCurrency } from '@/components/CurrencyContext';
+import { useRouter } from 'next/navigation';
+import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
+import { EmptyState } from '@/components/onboarding/EmptyState';
+import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
+import { Celebration } from '@/components/onboarding/Celebration';
 
 export default function DashboardPage() {
   const [bets, setBets] = useState<Bet[]>([]);
@@ -50,6 +55,17 @@ export default function DashboardPage() {
   const [userEmail, setUserEmail] = useState<string>('');
   const [profile, setProfile] = useState<Profile | null>(null);
   const { formatValue, mode } = useCurrency();
+  const router = useRouter();
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('welcome_dismissed');
+    if (dismissed === 'true') {
+      setWelcomeDismissed(true);
+    }
+  }, []);
 
   useEffect(() => {
     loadBets();
@@ -107,12 +123,35 @@ export default function DashboardPage() {
       }
 
       const { data } = await fetchUserBets(user.id, 'all');
-      setBets(data || []);
+      const userBets = data || [];
+      setBets(userBets);
+
+      // FTUE Logic
+      if (userBets.length === 0 && !localStorage.getItem('welcome_dismissed')) {
+        setShowWelcome(true);
+      }
+
+      // Check for first bet celebration
+      if (userBets.length > 0 && !localStorage.getItem('has_celebrated_first_bet')) {
+        setShowCelebration(true);
+        localStorage.setItem('has_celebrated_first_bet', 'true');
+      }
+
     } catch (err) {
       console.error('Failed to load bets:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleWelcomeClose = () => {
+    setShowWelcome(false);
+    setWelcomeDismissed(true);
+    localStorage.setItem('welcome_dismissed', 'true');
+  };
+
+  const handleAddFirstBet = () => {
+    router.push('/dashboard/bets');
   };
 
 
@@ -290,9 +329,19 @@ export default function DashboardPage() {
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-xl shadow-sm p-6 bg-card border border-border hover:shadow-md transition-shadow">
+        <div className="rounded-xl shadow-sm p-6 bg-card border border-border hover:shadow-md transition-shadow group relative">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-muted-foreground">Total Profit/Loss</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium text-muted-foreground">Total Profit/Loss</p>
+              {bets.length === 0 && (
+                <div className="relative group/tooltip">
+                  <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-lg border border-border opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                    This will show your profit once you have results
+                  </div>
+                </div>
+              )}
+            </div>
             <DollarSign className="h-5 w-5 text-primary" />
           </div>
           <p
@@ -479,9 +528,13 @@ export default function DashboardPage() {
       {/* Charts Section */}
       {
         filteredBets.length === 0 ? (
-          <div className="bg-card rounded-lg shadow-sm p-12 text-center border border-border">
-            <p className="text-muted-foreground">No data available. Add some bets to see statistics!</p>
-          </div>
+          bets.length === 0 ? (
+            <EmptyState onAddFirstBet={handleAddFirstBet} />
+          ) : (
+            <div className="bg-card rounded-lg shadow-sm p-12 text-center border border-border">
+              <p className="text-muted-foreground">No data available for this period.</p>
+            </div>
+          )
         ) : (
           <div className="space-y-6">
             {/* Profit/Loss Over Time */}
@@ -855,6 +908,22 @@ export default function DashboardPage() {
           </div>
         )
       }
+      <WelcomeModal
+        isOpen={showWelcome}
+        onClose={handleWelcomeClose}
+        onAddFirstBet={handleAddFirstBet}
+      />
+
+      <Celebration
+        show={showCelebration}
+        onClose={() => setShowCelebration(false)}
+      />
+
+      <OnboardingChecklist
+        hasBets={bets.length > 0}
+        hasResults={bets.some(b => b.profit_loss !== null)}
+        viewedStats={true} // They are on the dashboard
+      />
     </div >
   );
 }

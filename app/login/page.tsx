@@ -11,11 +11,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    setNeedsVerification(false);
 
     try {
       const supabase = createClient();
@@ -25,7 +28,12 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setError(error.message);
+        if (error.message.includes('Email not confirmed')) {
+          setNeedsVerification(true);
+          setError('Please verify your email address to log in.');
+        } else {
+          setError(error.message);
+        }
         setLoading(false);
         return;
       }
@@ -35,6 +43,26 @@ export default function LoginPage() {
     } catch (err) {
       setError('An unexpected error occurred');
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResendStatus('sending');
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+
+      setResendStatus('success');
+    } catch (err) {
+      setResendStatus('error');
     }
   };
 
@@ -61,7 +89,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-              className="appearance-none rounded-none relative block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 placeholder:text-gray-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 placeholder:text-gray-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -77,7 +105,7 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-              className="appearance-none rounded-none relative block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 placeholder:text-gray-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 placeholder:text-gray-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -88,6 +116,29 @@ export default function LoginPage() {
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <div className="text-sm text-red-800">{error}</div>
+              {needsVerification && (
+                <div className="mt-3">
+                  {resendStatus === 'success' ? (
+                    <p className="text-sm text-green-600 font-medium">
+                      Verification email sent! Please check your inbox (and spam folder).
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleResendVerification}
+                      disabled={resendStatus === 'sending'}
+                      className="text-sm font-medium text-red-800 underline hover:text-red-900"
+                    >
+                      {resendStatus === 'sending' ? 'Sending...' : 'Resend verification email'}
+                    </button>
+                  )}
+                  {resendStatus === 'error' && (
+                    <p className="mt-1 text-xs text-red-600">
+                      Failed to send email. Please try again later.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
