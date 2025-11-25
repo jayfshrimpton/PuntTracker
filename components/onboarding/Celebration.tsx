@@ -42,6 +42,11 @@ export function Celebration({ show, onClose }: CelebrationProps) {
 
             frame();
 
+            const handleClose = () => {
+                setVisible(false);
+                setTimeout(onClose, 300);
+            };
+
             // Auto hide after 5 seconds
             const timer = setTimeout(() => {
                 handleClose();
@@ -49,12 +54,7 @@ export function Celebration({ show, onClose }: CelebrationProps) {
 
             return () => clearTimeout(timer);
         }
-    }, [show]);
-
-    const handleClose = () => {
-        setVisible(false);
-        setTimeout(onClose, 300);
-    };
+    }, [show, onClose]);
 
     if (!visible && !show) return null;
 

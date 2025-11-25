@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, BookOpen } from 'lucide-react';
 
 interface WelcomeModalProps {
     isOpen: boolean;
@@ -36,9 +36,7 @@ export function WelcomeModal({ isOpen, onClose, onAddFirstBet }: WelcomeModalPro
                 <div className="text-center space-y-4 pt-4">
                     <div className="text-4xl animate-bounce">🐴</div>
                     <h2 className="text-2xl font-bold text-foreground">Welcome to Punters Journal!</h2>
-                    <p className="text-muted-foreground">
-                        Let's log your first bet to get started tracking your performance like a pro.
-                    </p>
+                    Let&apos;s log your first bet to get started tracking your performance like a pro.
 
                     <div className="pt-4 space-y-3">
                         <button
@@ -51,8 +49,19 @@ export function WelcomeModal({ isOpen, onClose, onAddFirstBet }: WelcomeModalPro
                             onClick={onClose}
                             className="w-full py-2 px-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
-                            I'll do it later
+                            I&apos;ll do it later
                         </button>
+
+                        <div className="pt-2 border-t border-border mt-4">
+                            <a
+                                href="/dashboard/guide"
+                                className="flex items-center justify-center gap-2 text-sm text-primary hover:underline py-2"
+                                onClick={onClose}
+                            >
+                                <BookOpen className="h-4 w-4" />
+                                Read the User Guide
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

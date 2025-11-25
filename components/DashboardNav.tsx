@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, X, Activity, Home, PlusCircle, Settings, UserCog, Coins, DollarSign } from 'lucide-react';
+import { Menu, X, Activity, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -88,6 +88,13 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                   <PlusCircle className="h-5 w-5 text-primary" /> Enter Bets
                 </a>
                 <a
+                  href="/dashboard/guide"
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-muted transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <BookOpen className="h-5 w-5 text-primary" /> User Guide
+                </a>
+                <a
                   href="/dashboard/feedback"
                   className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium text-foreground hover:bg-muted transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
@@ -140,6 +147,14 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               >
                 Logout
               </button>
+              <div className="h-6 w-px bg-border mx-2" />
+              <a
+                href="/dashboard/guide"
+                className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                title="User Guide"
+              >
+                <BookOpen className="h-5 w-5" />
+              </a>
             </div>
           </div>
         </div>
