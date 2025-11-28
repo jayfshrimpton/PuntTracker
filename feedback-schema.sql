@@ -20,15 +20,15 @@ ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 
 -- Create policy: Users can only see their own feedback
 CREATE POLICY "Users can view own feedback" ON feedback
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING ((select auth.uid()) = user_id);
 
 -- Create policy: Users can insert their own feedback
 CREATE POLICY "Users can insert own feedback" ON feedback
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
 
 -- Create policy: Users can update their own feedback
 CREATE POLICY "Users can update own feedback" ON feedback
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING ((select auth.uid()) = user_id);
 
 -- Note: Users cannot delete feedback (only admin can via Supabase dashboard)
 -- Admin access should be handled via service role key in admin views

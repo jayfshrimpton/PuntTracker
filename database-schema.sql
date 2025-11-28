@@ -26,19 +26,19 @@ ALTER TABLE bets ENABLE ROW LEVEL SECURITY;
 
 -- Create policy: Users can only see their own bets
 CREATE POLICY "Users can view own bets" ON bets
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING ((select auth.uid()) = user_id);
 
 -- Create policy: Users can insert their own bets
 CREATE POLICY "Users can insert own bets" ON bets
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
 
 -- Create policy: Users can update their own bets
 CREATE POLICY "Users can update own bets" ON bets
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING ((select auth.uid()) = user_id);
 
 -- Create policy: Users can delete their own bets
 CREATE POLICY "Users can delete own bets" ON bets
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE USING ((select auth.uid()) = user_id);
 
 -- Optional columns for new bet types (idempotent)
 ALTER TABLE bets ADD COLUMN IF NOT EXISTS selections JSONB;

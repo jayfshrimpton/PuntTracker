@@ -29,19 +29,19 @@ ALTER TABLE bet_templates ENABLE ROW LEVEL SECURITY;
 
 -- Create policy: Users can only see their own templates
 CREATE POLICY "Users can view own templates" ON bet_templates
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING ((select auth.uid()) = user_id);
 
 -- Create policy: Users can insert their own templates
 CREATE POLICY "Users can insert own templates" ON bet_templates
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
 
 -- Create policy: Users can update their own templates
 CREATE POLICY "Users can update own templates" ON bet_templates
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING ((select auth.uid()) = user_id);
 
 -- Create policy: Users can delete their own templates
 CREATE POLICY "Users can delete own templates" ON bet_templates
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE USING ((select auth.uid()) = user_id);
 
 
 
