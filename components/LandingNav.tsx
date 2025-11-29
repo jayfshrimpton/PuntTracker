@@ -29,8 +29,8 @@ export default function LandingNav() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${isScrolled
-          ? 'bg-background/95 backdrop-blur-md shadow-sm border-border'
-          : 'bg-background/80 backdrop-blur-sm border-transparent'
+        ? 'bg-background/95 backdrop-blur-md shadow-sm border-border'
+        : 'bg-background/80 backdrop-blur-sm border-transparent'
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,6 +42,9 @@ export default function LandingNav() {
           >
             <TrendingUp className="w-8 h-8" />
             <span>PuntTracker</span>
+            <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-primary/10 text-primary rounded-full border border-primary/20">
+              BETA
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

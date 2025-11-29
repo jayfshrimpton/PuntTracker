@@ -19,6 +19,7 @@ import {
   Check,
   TrendingUp,
 } from 'lucide-react';
+import CountdownTimer from './CountdownTimer';
 
 export default function LandingPage() {
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -68,11 +69,21 @@ export default function LandingPage() {
             }}
             className="opacity-0 transition-opacity duration-700"
           >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 mb-8 animate-fade-in">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+              <span className="text-sm font-medium">Public Beta Now Live</span>
+            </div>
+
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-tight">
               Track Your Punts With Ease
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground/80 mb-12 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-foreground/90 mb-12 max-w-3xl mx-auto font-medium">
               Purpose-built for Australian horse racing punters. Keep the numbers clean, the workflow smooth, and the insights sharp.
+              <br />
+              <span className="text-primary font-bold mt-2 block">Currently free for all users during beta.</span>
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
@@ -90,23 +101,7 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Floating stats cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {[
-                { label: 'Bets Tracked', value: '10,000+', icon: '📊' },
-                { label: 'Active Users', value: '500+', icon: '👥' },
-                { label: 'Avg. ROI', value: '+12%', icon: '📈' },
-              ].map((stat, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl p-6 border border-border/20 bg-background/10 text-left backdrop-blur-sm"
-                >
-                  <div className="text-2xl mb-2">{stat.icon}</div>
-                  <div className="text-2xl font-semibold mb-1">{stat.value}</div>
-                  <div className="text-muted-foreground/80 text-sm">{stat.label}</div>
-                </div>
-              ))}
-            </div>
+            <CountdownTimer />
           </div>
         </div>
       </section>
@@ -148,8 +143,8 @@ export default function LandingPage() {
                 <div className="mb-4 inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary">
                   <pain.icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{pain.title}</h3>
-                <p className="text-muted-foreground">{pain.description}</p>
+                <h3 className="text-xl font-bold mb-3">{pain.title}</h3>
+                <p className="text-foreground/80 text-lg">{pain.description}</p>
               </div>
             ))}
           </div>
@@ -167,7 +162,7 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-semibold text-center mb-4">
             Everything You Need to Track Your Betting
           </h2>
-          <p className="text-center text-lg text-muted-foreground mb-12">
+          <p className="text-center text-xl text-foreground/80 mb-12 max-w-2xl mx-auto">
             Built specifically for Australian horse racing punters
           </p>
 
@@ -211,8 +206,8 @@ export default function LandingPage() {
                 <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
                   <feature.icon className="w-7 h-7 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                <p className="text-foreground/80 text-lg leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -272,8 +267,8 @@ export default function LandingPage() {
                   <div className="w-14 h-14 mx-auto mb-6 rounded-lg bg-primary/10 flex items-center justify-center">
                     <step.icon className="w-7 h-7 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
-                  <p className="text-muted-foreground">{step.description}</p>
+                  <h3 className="text-xl font-bold mb-4">{step.title}</h3>
+                  <p className="text-foreground/80 text-lg">{step.description}</p>
                 </div>
               </div>
             ))}
@@ -292,7 +287,7 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-semibold text-center mb-4">
             Built for Aussie Punters
           </h2>
-          <p className="text-center text-lg text-muted-foreground mb-12">
+          <p className="text-center text-xl text-foreground/80 mb-12">
             See your betting performance at a glance
           </p>
 
@@ -343,7 +338,7 @@ export default function LandingPage() {
                     <feature.icon className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-base text-muted-foreground">{feature.text}</p>
+                    <p className="text-lg text-foreground/90 font-medium">{feature.text}</p>
                   </div>
                 </div>
               ))}
@@ -386,8 +381,8 @@ export default function LandingPage() {
                 key={idx}
                 className={`bg-card rounded-xl p-8 border-l-4 ${benefit.borderColor} border-y border-r border-border shadow-sm`}
               >
-                <h3 className="text-xl font-semibold mb-4">{benefit.title}</h3>
-                <p className="text-muted-foreground">{benefit.description}</p>
+                <h3 className="text-xl font-bold mb-4">{benefit.title}</h3>
+                <p className="text-foreground/80 text-lg">{benefit.description}</p>
               </div>
             ))}
           </div>
@@ -405,7 +400,7 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-semibold mb-6">
             Ready to Track Like a Pro?
           </h2>
-          <p className="text-lg text-muted-foreground/80 mb-10">
+          <p className="text-xl text-foreground/90 mb-10">
             Join Australian punters already using PuntTracker
           </p>
 
@@ -431,7 +426,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <p className="text-sm text-muted-foreground/60">
+          <p className="text-sm text-muted-foreground/110">
             Currently free for all users while in beta
           </p>
         </div>
@@ -506,7 +501,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2024 PuntTracker. Built for Aussie punters.</p>
+            <p>© 2025 PuntTracker. Built for Aussie punters.</p>
           </div>
         </div>
       </footer>
