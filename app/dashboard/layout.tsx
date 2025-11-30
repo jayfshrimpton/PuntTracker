@@ -2,8 +2,9 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import DashboardNav from '@/components/DashboardNav';
 import VerificationBanner from '@/components/VerificationBanner';
-import { Home, PlusCircle, Settings, UserCog } from 'lucide-react';
+import { Home, PlusCircle, Settings, UserCog, Activity, BookOpen, MessageSquare } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 
 // Lazy load FeedbackButton to improve initial page load
 const FeedbackButton = dynamic(() => import('@/components/FeedbackButton'), {
@@ -27,62 +28,68 @@ export default async function DashboardLayout({
   // Check if email is confirmed
   const isVerified = !!user.email_confirmed_at;
 
+  const navLinks = [
+    { href: '/dashboard', label: 'Dashboard', icon: Home },
+    { href: '/dashboard/bets', label: 'Enter Bets', icon: PlusCircle },
+    { href: '/dashboard/guide', label: 'User Guide', icon: BookOpen },
+    { href: '/dashboard/feedback', label: 'Feedback', icon: MessageSquare },
+    { href: '/dashboard/settings', label: 'Settings', icon: UserCog },
+  ];
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <VerificationBanner email={user.email || ''} isVerified={isVerified} />
-      <DashboardNav user={user} />
-      <div className="flex">
-        <aside className="hidden lg:flex lg:flex-shrink-0">
-          <div className="flex flex-col w-64">
-            <div className="flex flex-col flex-grow bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 pt-5 pb-4 overflow-y-auto">
-              <div className="flex items-center flex-shrink-0 px-4">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">PuntTracker</h1>
+
+      <div className="flex h-screen overflow-hidden">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:flex w-72 flex-col fixed inset-y-0 z-50">
+          <div className="flex flex-col flex-grow glass border-r border-white/20 dark:border-gray-800/50 pt-6 pb-4">
+            <div className="flex items-center gap-3 px-8 mb-8">
+              <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2 rounded-xl shadow-lg shadow-blue-500/20">
+                <Activity className="h-6 w-6 text-white" />
               </div>
-              <div className="mt-5 flex-grow flex flex-col">
-                <nav className="flex-1 px-2 space-y-1">
-                  <a
-                    href="/dashboard"
-                    className="group flex items-center gap-2 px-2 py-2 text-sm font-medium rounded-md text-gray-900 dark:text-gray-100 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <Home className="h-4 w-4" />
-                    Dashboard
-                  </a>
-                  <a
-                    href="/dashboard/bets"
-                    className="text-gray-900 dark:text-gray-100 hover:bg-gray-50 hover:text-blue-600 dark:hover:bg-gray-700 group flex items-center gap-2 px-2 py-2 text-sm font-medium rounded-md transition-colors"
-                  >
-                    <PlusCircle className="h-4 w-4" />
-                    Enter Bets
-                  </a>
-                  <a
-                    href="/dashboard/feedback"
-                    className="text-gray-900 dark:text-gray-100 hover:bg-gray-50 hover:text-blue-600 dark:hover:bg-gray-700 group flex items-center gap-2 px-2 py-2 text-sm font-medium rounded-md transition-colors"
-                  >
-                    <Settings className="h-4 w-4" />
-                    Feedback
-                  </a>
-                  <a
-                    href="/dashboard/settings"
-                    className="text-gray-900 dark:text-gray-100 hover:bg-gray-50 hover:text-blue-600 dark:hover:bg-gray-700 group flex items-center gap-2 px-2 py-2 text-sm font-medium rounded-md transition-colors"
-                  >
-                    <UserCog className="h-4 w-4" />
-                    Settings
-                  </a>
-                </nav>
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+                PuntTracker
+              </span>
+            </div>
+
+            <nav className="flex-1 px-4 space-y-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 text-muted-foreground"
+                >
+                  <link.icon className="h-5 w-5 transition-transform group-hover:scale-110" />
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
+            <div className="px-8 mt-auto">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg">
+                <h4 className="font-semibold mb-1">Pro Plan</h4>
+                <p className="text-xs text-blue-100 mb-3">Get access to advanced insights and unlimited tracking.</p>
+                <button className="text-xs bg-white/20 hover:bg-white/30 transition-colors px-3 py-1.5 rounded-lg font-medium w-full">
+                  Upgrade Now
+                </button>
               </div>
             </div>
           </div>
         </aside>
-        <div className="flex flex-col w-0 flex-1 overflow-hidden">
-          <main className="flex-1 relative overflow-y-auto focus:outline-none">
-            <div className="py-6">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                {children}
-              </div>
+
+        {/* Main Content */}
+        <div className="flex flex-col flex-1 lg:pl-72 w-full">
+          <DashboardNav user={user} />
+
+          <main className="flex-1 overflow-y-auto focus:outline-none pb-20 lg:pb-8 scroll-smooth">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8">
+              {children}
             </div>
           </main>
         </div>
       </div>
+
       <FeedbackButton />
     </div>
   );
