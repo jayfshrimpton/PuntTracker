@@ -20,7 +20,7 @@ export function DashboardHeader({ userEmail, dateRange, setDateRange }: Dashboar
                     Welcome back, {username}! 👋
                 </h1>
                 <p className="mt-2 text-muted-foreground">
-                    Here's what's happening with your betting portfolio this {currentMonth}.
+                    Here&apos;s what&apos;s happening with your betting portfolio this {currentMonth}.
                 </p>
             </div>
 
