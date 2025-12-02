@@ -251,3 +251,5 @@ export default function BetTemplates({ onApplyTemplate, currentFormData }: BetTe
     </div>
   );
 }
+
+

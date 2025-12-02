@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import DashboardNav from '@/components/DashboardNav';
 import VerificationBanner from '@/components/VerificationBanner';
-import { Home, PlusCircle, Settings, UserCog, Activity, BookOpen, MessageSquare } from 'lucide-react';
+import { Home, PlusCircle, Settings, UserCog, Activity, BookOpen, MessageSquare, CreditCard } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
@@ -31,6 +31,7 @@ export default async function DashboardLayout({
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: Home },
     { href: '/dashboard/bets', label: 'Enter Bets', icon: PlusCircle },
+    { href: '/dashboard/subscription', label: 'Subscription', icon: CreditCard },
     { href: '/dashboard/guide', label: 'User Guide', icon: BookOpen },
     { href: '/dashboard/feedback', label: 'Feedback', icon: MessageSquare },
     { href: '/dashboard/settings', label: 'Settings', icon: UserCog },
@@ -70,9 +71,12 @@ export default async function DashboardLayout({
               <div className="p-4 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg">
                 <h4 className="font-semibold mb-1">Pro Plan</h4>
                 <p className="text-xs text-blue-100 mb-3">Get access to advanced insights and unlimited tracking.</p>
-                <button className="text-xs bg-white/20 hover:bg-white/30 transition-colors px-3 py-1.5 rounded-lg font-medium w-full">
+                <Link 
+                  href="/pricing"
+                  className="block text-xs bg-white/20 hover:bg-white/30 transition-colors px-3 py-1.5 rounded-lg font-medium w-full text-center"
+                >
                   Upgrade Now
-                </button>
+                </Link>
               </div>
             </div>
           </div>

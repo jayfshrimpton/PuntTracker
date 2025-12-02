@@ -45,3 +45,5 @@ CREATE POLICY "Users can delete own templates" ON bet_templates
 
 
 
+
+

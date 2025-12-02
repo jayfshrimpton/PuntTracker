@@ -5,6 +5,8 @@ import { calculateMonthlyStats } from '@/lib/stats';
 import { sendMonthlySummaryEmail } from '@/lib/email';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient();

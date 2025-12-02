@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Menu, X, Activity, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles } from 'lucide-react';
+import { Menu, X, Activity, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles, CreditCard } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useCurrency } from '@/components/CurrencyContext';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface DashboardNavProps {
   user: User;
@@ -30,6 +30,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
     { href: '/dashboard', label: 'Home', icon: Home },
     { href: '/dashboard/bets', label: 'Bets', icon: PlusCircle },
     { href: '/dashboard/insights', label: 'AI Insights', icon: Sparkles },
+    { href: '/dashboard/subscription', label: 'Subscription', icon: CreditCard },
     { href: '/dashboard/guide', label: 'Guide', icon: BookOpen },
     { href: '/dashboard/settings', label: 'Settings', icon: UserCog },
   ];

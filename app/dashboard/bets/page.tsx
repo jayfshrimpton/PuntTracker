@@ -731,7 +731,7 @@ export default function BetsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Horse Name
+                Horse/Dog Name
               </label>
               <input
                 type="text"

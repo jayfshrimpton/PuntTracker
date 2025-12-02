@@ -1,218 +1,207 @@
 /**
- * List of Australian horse racing tracks/venues
- * Organized by state for easier selection
+ * List of Australian racing tracks/venues
+ * Organized by state and racing type for easier selection
  */
+
+export type RacingType = 'thoroughbred' | 'greyhound' | 'harness';
+
 export const AUSTRALIAN_RACE_TRACKS = [
-  // New South Wales
-  { value: 'randwick', label: 'Randwick', state: 'NSW' },
-  { value: 'rosehill', label: 'Rosehill Gardens', state: 'NSW' },
-  { value: 'warwick-farm', label: 'Warwick Farm', state: 'NSW' },
-  { value: 'canterbury', label: 'Canterbury Park', state: 'NSW' },
-  { value: 'kembla-grange', label: 'Kembla Grange', state: 'NSW' },
-  { value: 'newcastle', label: 'Newcastle', state: 'NSW' },
-  { value: 'gosford', label: 'Gosford', state: 'NSW' },
-  { value: 'hawkesbury', label: 'Hawkesbury', state: 'NSW' },
-  { value: 'wyong', label: 'Wyong', state: 'NSW' },
-  { value: 'kempsey', label: 'Kempsey', state: 'NSW' },
-  { value: 'port-macquarie', label: 'Port Macquarie', state: 'NSW' },
-  { value: 'taree', label: 'Taree', state: 'NSW' },
-  { value: 'coffs-harbour', label: 'Coffs Harbour', state: 'NSW' },
-  { value: 'grafton', label: 'Grafton', state: 'NSW' },
-  { value: 'lismore', label: 'Lismore', state: 'NSW' },
-  { value: 'ballina', label: 'Ballina', state: 'NSW' },
-  { value: 'wagga-wagga', label: 'Wagga Wagga', state: 'NSW' },
-  { value: 'albury', label: 'Albury', state: 'NSW' },
-  { value: 'goulburn', label: 'Goulburn', state: 'NSW' },
-  { value: 'nowra', label: 'Nowra', state: 'NSW' },
-  { value: 'sapphire-coast', label: 'Sapphire Coast', state: 'NSW' },
-  { value: 'gunnedah', label: 'Gunnedah', state: 'NSW' },
-  { value: 'tamworth', label: 'Tamworth', state: 'NSW' },
-  { value: 'armidale', label: 'Armidale', state: 'NSW' },
-  { value: 'moree', label: 'Moree', state: 'NSW' },
-  { value: 'narromine', label: 'Narromine', state: 'NSW' },
-  { value: 'dubbo', label: 'Dubbo', state: 'NSW' },
-  { value: 'orange', label: 'Orange', state: 'NSW' },
-  { value: 'bathurst', label: 'Bathurst', state: 'NSW' },
-  { value: 'mudgee', label: 'Mudgee', state: 'NSW' },
-  { value: 'parkes', label: 'Parkes', state: 'NSW' },
-  { value: 'forbes', label: 'Forbes', state: 'NSW' },
-  { value: 'cowra', label: 'Cowra', state: 'NSW' },
-  { value: 'young', label: 'Young', state: 'NSW' },
-  { value: 'gundagai', label: 'Gundagai', state: 'NSW' },
-  { value: 'corowa', label: 'Corowa', state: 'NSW' },
-  { value: 'deniliquin', label: 'Deniliquin', state: 'NSW' },
-  { value: 'griffith', label: 'Griffith', state: 'NSW' },
-  { value: 'leeton', label: 'Leeton', state: 'NSW' },
-  { value: 'narrandera', label: 'Narrandera', state: 'NSW' },
-  { value: 'broken-hill', label: 'Broken Hill', state: 'NSW' },
+  // ========== THOROUGHBRED RACING ==========
 
-  // Victoria
-  { value: 'flemington', label: 'Flemington', state: 'VIC' },
-  { value: 'caulfield', label: 'Caulfield', state: 'VIC' },
-  { value: 'moonee-valley', label: 'Moonee Valley', state: 'VIC' },
-  { value: 'sandown', label: 'Sandown', state: 'VIC' },
-  { value: 'geelong', label: 'Geelong', state: 'VIC' },
-  { value: 'ballarat', label: 'Ballarat', state: 'VIC' },
-  { value: 'bendigo', label: 'Bendigo', state: 'VIC' },
-  { value: 'werribee', label: 'Werribee', state: 'VIC' },
-  { value: 'cranbourne', label: 'Cranbourne', state: 'VIC' },
-  { value: 'pakenham', label: 'Pakenham', state: 'VIC' },
-  { value: 'moe', label: 'Moe', state: 'VIC' },
-  { value: 'sale', label: 'Sale', state: 'VIC' },
-  { value: 'bairnsdale', label: 'Bairnsdale', state: 'VIC' },
-  { value: 'traralgon', label: 'Traralgon', state: 'VIC' },
-  { value: 'warrnambool', label: 'Warrnambool', state: 'VIC' },
-  { value: 'hamilton', label: 'Hamilton', state: 'VIC' },
-  { value: 'colac', label: 'Colac', state: 'VIC' },
-  { value: 'camperdown', label: 'Camperdown', state: 'VIC' },
-  { value: 'terang', label: 'Terang', state: 'VIC' },
-  { value: 'mortlake', label: 'Mortlake', state: 'VIC' },
-  { value: 'casterton', label: 'Casterton', state: 'VIC' },
-  { value: 'horsham', label: 'Horsham', state: 'VIC' },
-  { value: 'stawell', label: 'Stawell', state: 'VIC' },
-  { value: 'ararat', label: 'Ararat', state: 'VIC' },
-  { value: 'avoca', label: 'Avoca', state: 'VIC' },
-  { value: 'stony-creek', label: 'Stony Creek', state: 'VIC' },
-  { value: 'yarram', label: 'Yarram', state: 'VIC' },
-  { value: 'kilmore', label: 'Kilmore', state: 'VIC' },
-  { value: 'kyneton', label: 'Kyneton', state: 'VIC' },
-  { value: 'echuca', label: 'Echuca', state: 'VIC' },
-  { value: 'swan-hill', label: 'Swan Hill', state: 'VIC' },
-  { value: 'kerang', label: 'Kerang', state: 'VIC' },
-  { value: 'mildura', label: 'Mildura', state: 'VIC' },
-  { value: 'oakbank', label: 'Oakbank', state: 'VIC' },
-  { value: 'murtoa', label: 'Murtoa', state: 'VIC' },
-  { value: 'warracknabeal', label: 'Warracknabeal', state: 'VIC' },
-  { value: 'nhill', label: 'Nhill', state: 'VIC' },
-  { value: 'edenhope', label: 'Edenhope', state: 'VIC' },
-  { value: 'naracoorte', label: 'Naracoorte', state: 'VIC' },
-  { value: 'penola', label: 'Penola', state: 'VIC' },
-  { value: 'mount-gambier', label: 'Mount Gambier', state: 'VIC' },
+  // New South Wales - Thoroughbred
+  { value: 'randwick', label: 'Randwick', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'rosehill', label: 'Rosehill Gardens', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'warwick-farm', label: 'Warwick Farm', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'canterbury', label: 'Canterbury Park', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'kembla-grange', label: 'Kembla Grange', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'newcastle', label: 'Newcastle', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'gosford', label: 'Gosford', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'hawkesbury', label: 'Hawkesbury', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'wyong', label: 'Wyong', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'kempsey', label: 'Kempsey', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'port-macquarie', label: 'Port Macquarie', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'taree', label: 'Taree', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'coffs-harbour', label: 'Coffs Harbour', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'grafton', label: 'Grafton', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'lismore', label: 'Lismore', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'ballina', label: 'Ballina', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'wagga-wagga', label: 'Wagga Wagga', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'albury', label: 'Albury', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'goulburn', label: 'Goulburn', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'nowra', label: 'Nowra', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'sapphire-coast', label: 'Sapphire Coast', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'gunnedah', label: 'Gunnedah', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'tamworth', label: 'Tamworth', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'armidale', label: 'Armidale', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'moree', label: 'Moree', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'narromine', label: 'Narromine', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'dubbo', label: 'Dubbo', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'orange', label: 'Orange', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'bathurst', label: 'Bathurst', state: 'NSW', type: 'thoroughbred' as RacingType },
+  { value: 'mudgee', label: 'Mudgee', state: 'NSW', type: 'thoroughbred' as RacingType },
 
-  // Queensland
-  { value: 'eagle-farm', label: 'Eagle Farm', state: 'QLD' },
-  { value: 'doomben', label: 'Doomben', state: 'QLD' },
-  { value: 'caloundra', label: 'Caloundra', state: 'QLD' },
-  { value: 'sunshine-coast', label: 'Sunshine Coast', state: 'QLD' },
-  { value: 'gold-coast', label: 'Gold Coast', state: 'QLD' },
-  { value: 'ipswich', label: 'Ipswich', state: 'QLD' },
-  { value: 'toowoomba', label: 'Toowoomba', state: 'QLD' },
-  { value: 'warwick', label: 'Warwick', state: 'QLD' },
-  { value: 'dalby', label: 'Dalby', state: 'QLD' },
-  { value: 'gympie', label: 'Gympie', state: 'QLD' },
-  { value: 'bundaberg', label: 'Bundaberg', state: 'QLD' },
-  { value: 'rockhampton', label: 'Rockhampton', state: 'QLD' },
-  { value: 'mackay', label: 'Mackay', state: 'QLD' },
-  { value: 'townsville', label: 'Townsville', state: 'QLD' },
-  { value: 'cairns', label: 'Cairns', state: 'QLD' },
-  { value: 'innisfail', label: 'Innisfail', state: 'QLD' },
-  { value: 'mount-isa', label: 'Mount Isa', state: 'QLD' },
-  { value: 'longreach', label: 'Longreach', state: 'QLD' },
-  { value: 'roma', label: 'Roma', state: 'QLD' },
-  { value: 'charleville', label: 'Charleville', state: 'QLD' },
-  { value: 'cunnamulla', label: 'Cunnamulla', state: 'QLD' },
-  { value: 'thangool', label: 'Thangool', state: 'QLD' },
-  { value: 'biloela', label: 'Biloela', state: 'QLD' },
-  { value: 'emerald', label: 'Emerald', state: 'QLD' },
-  { value: 'clermont', label: 'Clermont', state: 'QLD' },
-  { value: 'charters-towers', label: 'Charters Towers', state: 'QLD' },
-  { value: 'bowen', label: 'Bowen', state: 'QLD' },
-  { value: 'airlie-beach', label: 'Airlie Beach', state: 'QLD' },
-  { value: 'yeppoon', label: 'Yeppoon', state: 'QLD' },
-  { value: 'gladstone', label: 'Gladstone', state: 'QLD' },
-  { value: 'maryborough', label: 'Maryborough', state: 'QLD' },
-  { value: 'nanango', label: 'Nanango', state: 'QLD' },
-  { value: 'kilcoy', label: 'Kilcoy', state: 'QLD' },
-  { value: 'beaudesert', label: 'Beaudesert', state: 'QLD' },
-  { value: 'grafton', label: 'Grafton', state: 'QLD' },
+  // Victoria - Thoroughbred
+  { value: 'flemington', label: 'Flemington', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'caulfield', label: 'Caulfield', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'moonee-valley', label: 'Moonee Valley', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'sandown-thoroughbred', label: 'Sandown', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'geelong', label: 'Geelong', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'ballarat', label: 'Ballarat', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'bendigo', label: 'Bendigo', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'werribee', label: 'Werribee', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'cranbourne', label: 'Cranbourne', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'pakenham', label: 'Pakenham', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'moe', label: 'Moe', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'sale', label: 'Sale', state: 'VIC', type: 'thoroughbred' as RacingType },
+  { value: 'warrnambool', label: 'Warrnambool', state: 'VIC', type: 'thoroughbred' as RacingType },
 
-  // South Australia
-  { value: 'morphettville', label: 'Morphettville', state: 'SA' },
-  { value: 'gawler', label: 'Gawler', state: 'SA' },
-  { value: 'murray-bridge', label: 'Murray Bridge', state: 'SA' },
-  { value: 'strathalbyn', label: 'Strathalbyn', state: 'SA' },
-  { value: 'victor-harbor', label: 'Victor Harbor', state: 'SA' },
-  { value: 'port-lincoln', label: 'Port Lincoln', state: 'SA' },
-  { value: 'whyalla', label: 'Whyalla', state: 'SA' },
-  { value: 'port-augusta', label: 'Port Augusta', state: 'SA' },
-  { value: 'port-pirie', label: 'Port Pirie', state: 'SA' },
-  { value: 'clare', label: 'Clare', state: 'SA' },
-  { value: 'kapunda', label: 'Kapunda', state: 'SA' },
-  { value: 'gawler', label: 'Gawler', state: 'SA' },
-  { value: 'balaklava', label: 'Balaklava', state: 'SA' },
-  { value: 'burra', label: 'Burra', state: 'SA' },
-  { value: 'jamestown', label: 'Jamestown', state: 'SA' },
-  { value: 'peterborough', label: 'Peterborough', state: 'SA' },
-  { value: 'orroroo', label: 'Orroroo', state: 'SA' },
-  { value: 'quorn', label: 'Quorn', state: 'SA' },
-  { value: 'hawker', label: 'Hawker', state: 'SA' },
-  { value: 'coober-pedy', label: 'Coober Pedy', state: 'SA' },
+  // Queensland - Thoroughbred
+  { value: 'eagle-farm', label: 'Eagle Farm', state: 'QLD', type: 'thoroughbred' as RacingType },
+  { value: 'doomben', label: 'Doomben', state: 'QLD', type: 'thoroughbred' as RacingType },
+  { value: 'sunshine-coast', label: 'Sunshine Coast', state: 'QLD', type: 'thoroughbred' as RacingType },
+  { value: 'gold-coast', label: 'Gold Coast', state: 'QLD', type: 'thoroughbred' as RacingType },
+  { value: 'ipswich', label: 'Ipswich', state: 'QLD', type: 'thoroughbred' as RacingType },
+  { value: 'toowoomba', label: 'Toowoomba', state: 'QLD', type: 'thoroughbred' as RacingType },
+  { value: 'cairns', label: 'Cairns', state: 'QLD', type: 'thoroughbred' as RacingType },
+  { value: 'townsville', label: 'Townsville', state: 'QLD', type: 'thoroughbred' as RacingType },
+  { value: 'rockhampton', label: 'Rockhampton', state: 'QLD', type: 'thoroughbred' as RacingType },
 
-  // Western Australia
-  { value: 'ascot', label: 'Ascot', state: 'WA' },
-  { value: 'belmont', label: 'Belmont Park', state: 'WA' },
-  { value: 'pinjarra', label: 'Pinjarra', state: 'WA' },
-  { value: 'bunbury', label: 'Bunbury', state: 'WA' },
-  { value: 'albany', label: 'Albany', state: 'WA' },
-  { value: 'esperance', label: 'Esperance', state: 'WA' },
-  { value: 'kalgoorlie', label: 'Kalgoorlie', state: 'WA' },
-  { value: 'geraldton', label: 'Geraldton', state: 'WA' },
-  { value: 'carnarvon', label: 'Carnarvon', state: 'WA' },
-  { value: 'broome', label: 'Broome', state: 'WA' },
-  { value: 'port-hedland', label: 'Port Hedland', state: 'WA' },
-  { value: 'newman', label: 'Newman', state: 'WA' },
-  { value: 'northam', label: 'Northam', state: 'WA' },
-  { value: 'york', label: 'York', state: 'WA' },
-  { value: 'toodyay', label: 'Toodyay', state: 'WA' },
-  { value: 'moore', label: 'Moore', state: 'WA' },
-  { value: 'wongan-hills', label: 'Wongan Hills', state: 'WA' },
-  { value: 'merredin', label: 'Merredin', state: 'WA' },
-  { value: 'kellerberrin', label: 'Kellerberrin', state: 'WA' },
-  { value: 'narrogin', label: 'Narrogin', state: 'WA' },
-  { value: 'katanning', label: 'Katanning', state: 'WA' },
-  { value: 'mount-barker', label: 'Mount Barker', state: 'WA' },
-  { value: 'manjimup', label: 'Manjimup', state: 'WA' },
-  { value: 'collie', label: 'Collie', state: 'WA' },
-  { value: 'harvey', label: 'Harvey', state: 'WA' },
-  { value: 'mandurah', label: 'Mandurah', state: 'WA' },
-  { value: 'wagin', label: 'Wagin', state: 'WA' },
-  { value: 'kulin', label: 'Kulin', state: 'WA' },
-  { value: 'hyden', label: 'Hyden', state: 'WA' },
-  { value: 'lake-grace', label: 'Lake Grace', state: 'WA' },
-  { value: 'ravensthorpe', label: 'Ravensthorpe', state: 'WA' },
-  { value: 'ongerup', label: 'Ongerup', state: 'WA' },
-  { value: 'jerramungup', label: 'Jerramungup', state: 'WA' },
-  { value: 'bremer-bay', label: 'Bremer Bay', state: 'WA' },
-  { value: 'denmark', label: 'Denmark', state: 'WA' },
-  { value: 'mount-barker', label: 'Mount Barker', state: 'WA' },
+  // South Australia - Thoroughbred
+  { value: 'morphettville', label: 'Morphettville', state: 'SA', type: 'thoroughbred' as RacingType },
+  { value: 'gawler', label: 'Gawler', state: 'SA', type: 'thoroughbred' as RacingType },
+  { value: 'murray-bridge', label: 'Murray Bridge', state: 'SA', type: 'thoroughbred' as RacingType },
+  { value: 'port-lincoln', label: 'Port Lincoln', state: 'SA', type: 'thoroughbred' as RacingType },
 
-  // Tasmania
-  { value: 'elwick', label: 'Elwick', state: 'TAS' },
-  { value: 'launceston', label: 'Launceston', state: 'TAS' },
-  { value: 'devonport', label: 'Devonport', state: 'TAS' },
-  { value: 'spreyton', label: 'Spreyton', state: 'TAS' },
-  { value: 'hobart', label: 'Hobart', state: 'TAS' },
-  { value: 'longford', label: 'Longford', state: 'TAS' },
-  { value: 'scottsdale', label: 'Scottsdale', state: 'TAS' },
-  { value: 'st-helens', label: 'St Helens', state: 'TAS' },
-  { value: 'wynyard', label: 'Wynyard', state: 'TAS' },
-  { value: 'burnie', label: 'Burnie', state: 'TAS' },
-  { value: 'king-island', label: 'King Island', state: 'TAS' },
-  { value: 'flinders-island', label: 'Flinders Island', state: 'TAS' },
+  // Western Australia - Thoroughbred
+  { value: 'ascot', label: 'Ascot', state: 'WA', type: 'thoroughbred' as RacingType },
+  { value: 'belmont', label: 'Belmont Park', state: 'WA', type: 'thoroughbred' as RacingType },
+  { value: 'pinjarra', label: 'Pinjarra', state: 'WA', type: 'thoroughbred' as RacingType },
+  { value: 'bunbury', label: 'Bunbury', state: 'WA', type: 'thoroughbred' as RacingType },
+  { value: 'albany', label: 'Albany', state: 'WA', type: 'thoroughbred' as RacingType },
+  { value: 'kalgoorlie', label: 'Kalgoorlie', state: 'WA', type: 'thoroughbred' as RacingType },
 
-  // Northern Territory
-  { value: 'fannie-bay', label: 'Fannie Bay', state: 'NT' },
-  { value: 'alice-springs', label: 'Alice Springs', state: 'NT' },
-  { value: 'katherine', label: 'Katherine', state: 'NT' },
-  { value: 'tennant-creek', label: 'Tennant Creek', state: 'NT' },
-  { value: 'pine-creek', label: 'Pine Creek', state: 'NT' },
-  { value: 'adelaide-river', label: 'Adelaide River', state: 'NT' },
-  { value: 'humpty-doo', label: 'Humpty Doo', state: 'NT' },
-  { value: 'darwin', label: 'Darwin', state: 'NT' },
+  // Tasmania - Thoroughbred
+  { value: 'elwick', label: 'Elwick', state: 'TAS', type: 'thoroughbred' as RacingType },
+  { value: 'launceston', label: 'Launceston', state: 'TAS', type: 'thoroughbred' as RacingType },
+  { value: 'devonport', label: 'Devonport', state: 'TAS', type: 'thoroughbred' as RacingType },
 
-  // Australian Capital Territory
-  { value: 'canberra', label: 'Canberra', state: 'ACT' },
+  // Northern Territory - Thoroughbred
+  { value: 'fannie-bay', label: 'Fannie Bay', state: 'NT', type: 'thoroughbred' as RacingType },
+  { value: 'alice-springs', label: 'Alice Springs', state: 'NT', type: 'thoroughbred' as RacingType },
+
+  // ACT - Thoroughbred
+  { value: 'canberra', label: 'Canberra', state: 'ACT', type: 'thoroughbred' as RacingType },
+
+  // ========== GREYHOUND RACING ==========
+
+  // New South Wales - Greyhound
+  { value: 'wentworth-park', label: 'Wentworth Park', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'richmond-greyhound', label: 'Richmond', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'dapto', label: 'Dapto', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'bulli', label: 'Bulli', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'newcastle-greyhound', label: 'Newcastle', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'gosford-greyhound', label: 'Gosford', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'the-gardens', label: 'The Gardens', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'dubbo-greyhound', label: 'Dubbo', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'wagga-greyhound', label: 'Wagga Wagga', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'bathurst-greyhound', label: 'Bathurst', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'goulburn-greyhound', label: 'Goulburn', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'temora', label: 'Temora', state: 'NSW', type: 'greyhound' as RacingType },
+  { value: 'broken-hill-greyhound', label: 'Broken Hill', state: 'NSW', type: 'greyhound' as RacingType },
+
+  // Victoria - Greyhound
+  { value: 'the-meadows', label: 'The Meadows', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'sandown-greyhound', label: 'Sandown Park', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'geelong-greyhound', label: 'Geelong', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'warrnambool-greyhound', label: 'Warrnambool', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'ballarat-greyhound', label: 'Ballarat', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'bendigo-greyhound', label: 'Bendigo', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'horsham-greyhound', label: 'Horsham', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'shepparton', label: 'Shepparton', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'sale-greyhound', label: 'Sale', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'traralgon-greyhound', label: 'Traralgon', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'cranbourne-greyhound', label: 'Cranbourne', state: 'VIC', type: 'greyhound' as RacingType },
+  { value: 'healesville', label: 'Healesville', state: 'VIC', type: 'greyhound' as RacingType },
+
+  // Queensland - Greyhound
+  { value: 'albion-park-greyhound', label: 'Albion Park', state: 'QLD', type: 'greyhound' as RacingType },
+  { value: 'ipswich-greyhound', label: 'Ipswich', state: 'QLD', type: 'greyhound' as RacingType },
+  { value: 'gold-coast-greyhound', label: 'Gold Coast', state: 'QLD', type: 'greyhound' as RacingType },
+  { value: 'capalaba', label: 'Capalaba', state: 'QLD', type: 'greyhound' as RacingType },
+  { value: 'townsville-greyhound', label: 'Townsville', state: 'QLD', type: 'greyhound' as RacingType },
+  { value: 'rockhampton-greyhound', label: 'Rockhampton', state: 'QLD', type: 'greyhound' as RacingType },
+  { value: 'cairns-greyhound', label: 'Cairns', state: 'QLD', type: 'greyhound' as RacingType },
+  { value: 'mackay-greyhound', label: 'Mackay', state: 'QLD', type: 'greyhound' as RacingType },
+  { value: 'bundaberg-greyhound', label: 'Bundaberg', state: 'QLD', type: 'greyhound' as RacingType },
+
+  // South Australia - Greyhound
+  { value: 'angle-park', label: 'Angle Park', state: 'SA', type: 'greyhound' as RacingType },
+  { value: 'gawler-greyhound', label: 'Gawler', state: 'SA', type: 'greyhound' as RacingType },
+  { value: 'murray-bridge-greyhound', label: 'Murray Bridge', state: 'SA', type: 'greyhound' as RacingType },
+  { value: 'mount-gambier-greyhound', label: 'Mount Gambier', state: 'SA', type: 'greyhound' as RacingType },
+
+  // Western Australia - Greyhound
+  { value: 'cannington', label: 'Cannington', state: 'WA', type: 'greyhound' as RacingType },
+  { value: 'mandurah-greyhound', label: 'Mandurah', state: 'WA', type: 'greyhound' as RacingType },
+
+  // Tasmania - Greyhound
+  { value: 'hobart-greyhound', label: 'Hobart', state: 'TAS', type: 'greyhound' as RacingType },
+  { value: 'launceston-greyhound', label: 'Launceston', state: 'TAS', type: 'greyhound' as RacingType },
+  { value: 'devonport-greyhound', label: 'Devonport', state: 'TAS', type: 'greyhound' as RacingType },
+
+  // Northern Territory - Greyhound
+  { value: 'fannie-bay-greyhound', label: 'Fannie Bay', state: 'NT', type: 'greyhound' as RacingType },
+
+  // ========== HARNESS RACING (TROTS) ==========
+
+  // New South Wales - Harness
+  { value: 'menangle', label: 'Menangle', state: 'NSW', type: 'harness' as RacingType },
+  { value: 'newcastle-harness', label: 'Newcastle', state: 'NSW', type: 'harness' as RacingType },
+  { value: 'bathurst-harness', label: 'Bathurst', state: 'NSW', type: 'harness' as RacingType },
+  { value: 'wagga-harness', label: 'Wagga Wagga', state: 'NSW', type: 'harness' as RacingType },
+  { value: 'dubbo-harness', label: 'Dubbo', state: 'NSW', type: 'harness' as RacingType },
+  { value: 'tamworth-harness', label: 'Tamworth', state: 'NSW', type: 'harness' as RacingType },
+  { value: 'bankstown', label: 'Bankstown', state: 'NSW', type: 'harness' as RacingType },
+  { value: 'penrith', label: 'Penrith', state: 'NSW', type: 'harness' as RacingType },
+
+  // Victoria - Harness
+  { value: 'tabcorp-park-melton', label: 'Tabcorp Park Melton', state: 'VIC', type: 'harness' as RacingType },
+  { value: 'tabcorp-park-melb', label: 'Tabcorp Park Melbourne', state: 'VIC', type: 'harness' as RacingType },
+  { value: 'geelong-harness', label: 'Geelong', state: 'VIC', type: 'harness' as RacingType },
+  { value: 'ballarat-harness', label: 'Ballarat', state: 'VIC', type: 'harness' as RacingType },
+  { value: 'bendigo-harness', label: 'Bendigo', state: 'VIC', type: 'harness' as RacingType },
+  { value: 'shepparton-harness', label: 'Shepparton', state: 'VIC', type: 'harness' as RacingType },
+  { value: 'maryborough-harness', label: 'Maryborough', state: 'VIC', type: 'harness' as RacingType },
+  { value: 'warrnambool-harness', label: 'Warrnambool', state: 'VIC', type: 'harness' as RacingType },
+  { value: 'cranbourne-harness', label: 'Cranbourne', state: 'VIC', type: 'harness' as RacingType },
+
+  // Queensland - Harness
+  { value: 'albion-park-harness', label: 'Albion Park', state: 'QLD', type: 'harness' as RacingType },
+  { value: 'redcliffe', label: 'Redcliffe', state: 'QLD', type: 'harness' as RacingType },
+  { value: 'marburg', label: 'Marburg', state: 'QLD', type: 'harness' as RacingType },
+  { value: 'townsville-harness', label: 'Townsville', state: 'QLD', type: 'harness' as RacingType },
+  { value: 'cairns-harness', label: 'Cairns', state: 'QLD', type: 'harness' as RacingType },
+
+  // South Australia - Harness
+  { value: 'globe-derby-park', label: 'Globe Derby Park', state: 'SA', type: 'harness' as RacingType },
+  { value: 'gawler-harness', label: 'Gawler', state: 'SA', type: 'harness' as RacingType },
+  { value: 'port-pirie-harness', label: 'Port Pirie', state: 'SA', type: 'harness' as RacingType },
+
+  // Western Australia - Harness
+  { value: 'gloucester-park', label: 'Gloucester Park', state: 'WA', type: 'harness' as RacingType },
+  { value: 'pinjarra-harness', label: 'Pinjarra', state: 'WA', type: 'harness' as RacingType },
+  { value: 'bunbury-harness', label: 'Bunbury', state: 'WA', type: 'harness' as RacingType },
+  { value: 'northam-harness', label: 'Northam', state: 'WA', type: 'harness' as RacingType },
+
+  // Tasmania - Harness
+  { value: 'hobart-harness', label: 'Hobart', state: 'TAS', type: 'harness' as RacingType },
+  { value: 'launceston-harness', label: 'Launceston', state: 'TAS', type: 'harness' as RacingType },
+  { value: 'devonport-harness', label: 'Devonport', state: 'TAS', type: 'harness' as RacingType },
+
+  // Northern Territory - Harness
+  { value: 'darwin-harness', label: 'Darwin', state: 'NT', type: 'harness' as RacingType },
 ] as const;
+
 
 export type TrackValue = typeof AUSTRALIAN_RACE_TRACKS[number]['value'];
 
@@ -231,12 +220,68 @@ export function getTracksByState() {
 }
 
 /**
+ * Get tracks grouped by racing type
+ */
+export function getTracksByType() {
+  const grouped: Record<RacingType, typeof AUSTRALIAN_RACE_TRACKS[number][]> = {
+    thoroughbred: [],
+    greyhound: [],
+    harness: [],
+  };
+  AUSTRALIAN_RACE_TRACKS.forEach((track) => {
+    grouped[track.type].push(track);
+  });
+  return grouped;
+}
+
+/**
+ * Get tracks filtered by racing type
+ */
+export function getTracksByRacingType(type: RacingType | null) {
+  if (!type) return AUSTRALIAN_RACE_TRACKS;
+  return AUSTRALIAN_RACE_TRACKS.filter((track) => track.type === type);
+}
+
+/**
  * Get track label by value
  */
 export function getTrackLabel(value: string | null | undefined): string {
   if (!value) return '';
   const track = AUSTRALIAN_RACE_TRACKS.find((t) => t.value === value);
   return track ? track.label : value;
+}
+
+/**
+ * Get track type by value
+ */
+export function getTrackType(value: string | null | undefined): RacingType | null {
+  if (!value) return null;
+  const track = AUSTRALIAN_RACE_TRACKS.find((t) => t.value === value);
+  return track ? track.type : null;
+}
+
+/**
+ * Get racing type display name
+ */
+export function getRacingTypeLabel(type: RacingType): string {
+  const labels: Record<RacingType, string> = {
+    thoroughbred: 'Thoroughbred',
+    greyhound: 'Greyhound',
+    harness: 'Harness (Trots)',
+  };
+  return labels[type];
+}
+
+/**
+ * Get racing type icon emoji
+ */
+export function getRacingTypeIcon(type: RacingType): string {
+  const icons: Record<RacingType, string> = {
+    thoroughbred: '🐴',
+    greyhound: '🐕',
+    harness: '🏇',
+  };
+  return icons[type];
 }
 
 

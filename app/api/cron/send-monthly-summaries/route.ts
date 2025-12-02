@@ -8,6 +8,8 @@ import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 // This endpoint should be protected with a secret token
 // You can call this from a cron service like cron-job.org, Vercel Cron, etc.
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Verify the request has the correct secret token

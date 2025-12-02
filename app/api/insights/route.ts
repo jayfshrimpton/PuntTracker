@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -24,6 +26,17 @@ export async function POST(request: Request) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
+            );
+        }
+
+        // Check feature access
+        const { checkFeatureAccess } = await import('@/utils/subscription');
+        const hasAccess = await checkFeatureAccess('ai_insights');
+
+        if (!hasAccess) {
+            return NextResponse.json(
+                { error: 'Upgrade to Pro to access AI Insights', upgradeRequired: true },
+                { status: 403 }
             );
         }
 
