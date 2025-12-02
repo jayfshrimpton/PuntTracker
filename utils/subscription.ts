@@ -1,6 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { cache } from 'react';
 
+// Price IDs for each tier (from Stripe)
+const PRO_PRICE_ID = 'price_1SZVqG7Uv9v0RZydSebiiCsw';
+const ELITE_PRICE_ID = 'price_1SZVQM7Uv9v0RZydzVRWIcPs';
+
+export type SubscriptionTier = 'free' | 'pro' | 'elite';
+
 export const getSubscription = cache(async () => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -17,47 +23,53 @@ export const getSubscription = cache(async () => {
     return subscription;
 });
 
+export const getSubscriptionTier = cache(async (): Promise<SubscriptionTier> => {
+    const subscription = await getSubscription();
+
+    if (!subscription) {
+        return 'free';
+    }
+
+    const priceId = subscription.price_id;
+
+    if (priceId === ELITE_PRICE_ID) {
+        return 'elite';
+    } else if (priceId === PRO_PRICE_ID) {
+        return 'pro';
+    }
+
+    // Default to free if price ID doesn't match known tiers
+    return 'free';
+});
+
 export const getSubscriptionStatus = cache(async () => {
     const subscription = await getSubscription();
     return subscription ? subscription.status : 'none';
 });
 
-export const checkFeatureAccess = cache(async (feature: 'unlimited_bets' | 'ai_insights') => {
-    const subscription = await getSubscription();
+export const checkFeatureAccess = cache(async (
+    feature: 'unlimited_bets' | 'ai_insights' | 'csv_import_export'
+): Promise<boolean> => {
+    const tier = await getSubscriptionTier();
 
     // Define tiers and their features
-    // This could be moved to a config or database
-    const tiers = {
+    const tiers: Record<SubscriptionTier, Record<string, boolean>> = {
         free: {
             unlimited_bets: false,
             ai_insights: false,
+            csv_import_export: false,
         },
         pro: {
             unlimited_bets: true,
-            ai_insights: true,
+            ai_insights: false, // Elite-only
+            csv_import_export: false, // Elite-only
         },
         elite: {
             unlimited_bets: true,
             ai_insights: true,
+            csv_import_export: true,
         }
     };
 
-    // If no subscription, assume free tier
-    if (!subscription) {
-        // Check if we need to enforce limits for free users
-        if (feature === 'unlimited_bets') {
-            // We need to check bet count for free users
-            // This logic might need to be elsewhere or we return false here and caller checks count
-            return false;
-        }
-        return false;
-    }
-
-    // Map price/product to tier
-    // For now, let's assume we can determine tier from price metadata or product metadata
-    // Or we just check if subscription is active
-
-    // Simple check: if active subscription, allow everything for now (Pro)
-    // We need to refine this based on actual products
-    return true;
+    return tiers[tier][feature] || false;
 });

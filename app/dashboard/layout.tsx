@@ -69,8 +69,8 @@ export default async function DashboardLayout({
 
             <div className="px-8 mt-auto">
               <div className="p-4 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg">
-                <h4 className="font-semibold mb-1">Pro Plan</h4>
-                <p className="text-xs text-blue-100 mb-3">Get access to advanced insights and unlimited tracking.</p>
+                <h4 className="font-semibold mb-1">Pro & Elite Plans</h4>
+                <p className="text-xs text-blue-100 mb-3">Unlock advanced features including AI Insights and CSV import/export.</p>
                 <Link 
                   href="/pricing"
                   className="block text-xs bg-white/20 hover:bg-white/30 transition-colors px-3 py-1.5 rounded-lg font-medium w-full text-center"

@@ -67,6 +67,8 @@ export default function BetsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [isImporting, setIsImporting] = useState(false);
+  const [hasCSVAccess, setHasCSVAccess] = useState(false);
+  const [checkingCSVAccess, setCheckingCSVAccess] = useState(true);
 
   // Enhanced search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -90,7 +92,21 @@ export default function BetsPage() {
 
   useEffect(() => {
     loadBets();
+    checkCSVFeatureAccess();
   }, []);
+
+  const checkCSVFeatureAccess = async () => {
+    try {
+      const response = await fetch('/api/check-feature?feature=csv_import_export');
+      const data = await response.json();
+      setHasCSVAccess(data.hasAccess || false);
+    } catch (error) {
+      console.error('Error checking CSV feature access:', error);
+      setHasCSVAccess(false);
+    } finally {
+      setCheckingCSVAccess(false);
+    }
+  };
 
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -390,6 +406,11 @@ export default function BetsPage() {
   };
 
   const handleExportCSV = () => {
+    if (!hasCSVAccess) {
+      showToast('CSV Export is available for Elite members only. Upgrade to Elite to access this feature.', 'error');
+      return;
+    }
+
     try {
       if (bets.length === 0) {
         showToast('No bets to export', 'error');
@@ -409,6 +430,12 @@ export default function BetsPage() {
   const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
+      return;
+    }
+
+    if (!hasCSVAccess) {
+      showToast('CSV Import is available for Elite members only. Upgrade to Elite to access this feature.', 'error');
+      event.target.value = '';
       return;
     }
 
@@ -1136,31 +1163,45 @@ export default function BetsPage() {
               />
               <label
                 htmlFor="csv-import-input"
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${isImporting
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isImporting || !hasCSVAccess || checkingCSVAccess
                   ? 'bg-gray-500 text-white cursor-not-allowed'
-                  : 'bg-green-600 hover:bg-green-700 text-white'
+                  : 'bg-green-600 hover:bg-green-700 text-white cursor-pointer'
                   }`}
+                title={!hasCSVAccess ? 'Elite feature - Upgrade to access CSV Import' : ''}
               >
                 <Upload className="h-4 w-4" />
-                <span className="hidden sm:inline">{isImporting ? 'Importing...' : 'Import CSV'}</span>
-                <span className="sm:hidden">{isImporting ? '...' : 'Import'}</span>
+                <span className="hidden sm:inline">
+                  {isImporting ? 'Importing...' : checkingCSVAccess ? 'Loading...' : !hasCSVAccess ? 'Import CSV (Elite)' : 'Import CSV'}
+                </span>
+                <span className="sm:hidden">
+                  {isImporting ? '...' : checkingCSVAccess ? '...' : !hasCSVAccess ? 'Import (Elite)' : 'Import'}
+                </span>
               </label>
               <button
                 onClick={() => {
+                  if (!hasCSVAccess) {
+                    showToast('CSV Export is available for Elite members only. Upgrade to Elite to access this feature.', 'error');
+                    return;
+                  }
                   const csvContent = exportBetsToCSV(filteredBets);
                   const filename = `bets_export_${format(new Date(), 'yyyy-MM-dd')}.csv`;
                   downloadCSV(csvContent, filename);
                   showToast('Filtered bets exported successfully!', 'success');
                 }}
-                disabled={filteredBets.length === 0}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${filteredBets.length === 0
+                disabled={filteredBets.length === 0 || !hasCSVAccess || checkingCSVAccess}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${filteredBets.length === 0 || !hasCSVAccess || checkingCSVAccess
                   ? 'bg-gray-500 text-white cursor-not-allowed'
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
+                title={!hasCSVAccess ? 'Elite feature - Upgrade to access CSV Export' : ''}
               >
                 <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Export CSV</span>
-                <span className="sm:hidden">Export</span>
+                <span className="hidden sm:inline">
+                  {checkingCSVAccess ? 'Loading...' : !hasCSVAccess ? 'Export CSV (Elite)' : 'Export CSV'}
+                </span>
+                <span className="sm:hidden">
+                  {checkingCSVAccess ? '...' : !hasCSVAccess ? 'Export (Elite)' : 'Export'}
+                </span>
               </button>
             </div>
           </div>

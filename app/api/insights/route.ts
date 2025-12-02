@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
         if (!hasAccess) {
             return NextResponse.json(
-                { error: 'Upgrade to Pro to access AI Insights', upgradeRequired: true },
+                { error: 'Upgrade to Elite to access AI Insights', upgradeRequired: true },
                 { status: 403 }
             );
         }

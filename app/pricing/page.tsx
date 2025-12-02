@@ -27,8 +27,6 @@ const plans = [
         features: [
             'Unlimited bets',
             'Advanced analytics',
-            'AI Insights',
-            'CSV Import/Export',
             'Priority support',
         ],
         // IMPORTANT: Use Price ID (starts with 'price_'), NOT Product ID (starts with 'prod_')
@@ -43,7 +41,8 @@ const plans = [
         description: 'Best value for pros',
         features: [
             'All Pro features',
-            '2 months free',
+            'AI Insights',
+            'CSV Import/Export',
             'Early access to new features',
             'Exclusive discord role',
         ],
