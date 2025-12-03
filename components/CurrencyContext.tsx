@@ -11,6 +11,7 @@ interface CurrencyContextType {
     toggleMode: () => void;
     formatValue: (value: number, decimals?: number, showSign?: boolean) => string;
     setUnitSize: (size: number) => void;
+    isLoading: boolean;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
@@ -18,26 +19,31 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 export function CurrencyProvider({ children }: { children: ReactNode }) {
     const [mode, setMode] = useState<CurrencyMode>('currency');
     const [unitSize, setUnitSizeState] = useState<number>(10); // Default to $10
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     // Load preference from profile on mount
     useEffect(() => {
         const fetchSettings = async () => {
-            const supabase = createClient();
-            const { data: { user } } = await supabase.auth.getUser();
+            try {
+                const supabase = createClient();
+                const { data: { user } } = await supabase.auth.getUser();
 
-            if (user) {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('unit_size, display_units')
-                    .eq('id', user.id)
-                    .single();
+                if (user) {
+                    const { data } = await supabase
+                        .from('profiles')
+                        .select('unit_size, display_units')
+                        .eq('id', user.id)
+                        .single();
 
-                if (data) {
-                    if (data.unit_size) setUnitSizeState(data.unit_size);
-                    if (data.display_units !== undefined) {
-                        setMode(data.display_units ? 'units' : 'currency');
+                    if (data) {
+                        if (data.unit_size) setUnitSizeState(data.unit_size);
+                        if (data.display_units !== undefined) {
+                            setMode(data.display_units ? 'units' : 'currency');
+                        }
                     }
                 }
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchSettings();
@@ -75,7 +81,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <CurrencyContext.Provider value={{ mode, unitSize, toggleMode, formatValue, setUnitSize }}>
+        <CurrencyContext.Provider value={{ mode, unitSize, toggleMode, formatValue, setUnitSize, isLoading }}>
             {children}
         </CurrencyContext.Provider>
     );

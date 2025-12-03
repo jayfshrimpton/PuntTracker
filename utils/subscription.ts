@@ -56,12 +56,12 @@ export const checkFeatureAccess = cache(async (
     const tiers: Record<SubscriptionTier, Record<string, boolean>> = {
         free: {
             unlimited_bets: false,
-            ai_insights: false,
+            ai_insights: true, // Enabled for Beta
             csv_import_export: false,
         },
         pro: {
             unlimited_bets: true,
-            ai_insights: false, // Elite-only
+            ai_insights: true, // Enabled for Beta
             csv_import_export: false, // Elite-only
         },
         elite: {

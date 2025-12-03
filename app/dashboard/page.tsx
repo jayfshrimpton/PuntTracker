@@ -33,7 +33,7 @@ export default function DashboardPage() {
   const [filteredBets, setFilteredBets] = useState<Bet[]>([]);
   const [userEmail, setUserEmail] = useState<string>('');
   const [profile, setProfile] = useState<Profile | null>(null);
-  const { formatValue } = useCurrency();
+  const { formatValue, isLoading: currencyLoading } = useCurrency();
   const router = useRouter();
   const [showWelcome, setShowWelcome] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -168,7 +168,7 @@ export default function DashboardPage() {
     strikeRate: (betTypeStats as any)[t]?.totalBets > 0 ? (betTypeStats as any)[t].strikeRate : 0,
   }));
 
-  if (loading) {
+  if (loading || currencyLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-muted-foreground">Loading dashboard...</div>

@@ -38,7 +38,7 @@ export default function BetsPage() {
   const [error, setError] = useState<string | null>(null);
   const [editingBet, setEditingBet] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Bet>>({});
-  const { formatValue } = useCurrency();
+  const { formatValue, isLoading: currencyLoading } = useCurrency();
 
   // Form state
   const [formData, setFormData] = useState<BetInput>({
@@ -589,7 +589,7 @@ export default function BetsPage() {
     });
   };
 
-  if (loading) {
+  if (loading || currencyLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-gray-900">Loading bets...</div>

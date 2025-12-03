@@ -63,6 +63,10 @@ export async function POST(request: Request) {
             });
         }
 
+        // Determine if user wants full history analysis
+        const isFullAnalysis = /all|history|everything|entire|complete/i.test(question);
+        const betsToAnalyze = isFullAnalysis ? bets : bets.slice(0, 50);
+
         // Calculate basic stats for context
         const totalBets = bets.length;
         const totalStake = bets.reduce((sum, bet) => sum + (Number(bet.stake) || 0), 0);
@@ -70,6 +74,7 @@ export async function POST(request: Request) {
         const winners = bets.filter(bet => (Number(bet.profit_loss) || 0) > 0).length;
         const strikeRate = ((winners / totalBets) * 100).toFixed(1);
         const roi = totalStake > 0 ? ((totalPL / totalStake) * 100).toFixed(1) : '0.0';
+        const averageOdds = totalBets > 0 ? (bets.reduce((sum, bet) => sum + (Number(bet.price) || 0), 0) / totalBets).toFixed(2) : '0.00';
 
         // Group by bet type
         const betTypeStats = bets.reduce((acc: any, bet) => {
@@ -91,13 +96,23 @@ export async function POST(request: Request) {
             totalPL: totalPL.toFixed(2),
             strikeRate,
             roi,
+            averageOdds,
             betTypeStats,
-            recentBets: bets.slice(0, 20).map(bet => ({
+            recentBets: betsToAnalyze.map(bet => ({
+                date: bet.bet_date,
                 type: bet.bet_type,
+                horse: bet.horse_name,
+                venue: bet.venue || 'N/A',
+                race: bet.race_number ? `R${bet.race_number}` : 'N/A',
+                class: bet.race_class || 'N/A',
                 odds: bet.price,
                 stake: bet.stake,
                 result: bet.profit_loss,
-                date: bet.bet_date
+                position: bet.finishing_position || 'N/A',
+                notes: bet.notes || '',
+                strategies: bet.strategy_tags?.join(', ') || '',
+                exotic_numbers: bet.exotic_numbers || '',
+                selections: bet.selections ? JSON.stringify(bet.selections) : ''
             }))
         };
 
@@ -110,15 +125,16 @@ Here is their betting data:
 - ROI: ${roi}%
 - Total P&L: $${totalPL.toFixed(2)}
 - Total staked: $${totalStake.toFixed(2)}
+- Average Odds: $${averageOdds}
 
 Bet type breakdown:
 ${Object.entries(betTypeStats).map(([type, stats]: [string, any]) =>
             `${type}: ${stats.count} bets, ${((stats.winners / stats.count) * 100).toFixed(1)}% strike rate, $${stats.pl.toFixed(2)} P&L`
         ).join('\n')}
 
-Recent Bets (Last 20):
+${isFullAnalysis ? 'Complete Betting History:' : 'Recent Bets (Last 50):'}
 ${context.recentBets.map(bet =>
-            `- ${bet.date}: ${bet.type} @ $${bet.odds} (Stake: $${bet.stake}, P&L: $${bet.result})`
+            `- ${bet.date}: ${bet.horse} (${bet.venue} ${bet.race}) - ${bet.type} @ $${bet.odds} (Stake: $${bet.stake}, P&L: $${bet.result}, Pos: ${bet.position})${bet.strategies ? ` [Strategies: ${bet.strategies}]` : ''}${bet.notes ? ` [Notes: ${bet.notes}]` : ''}${bet.exotic_numbers ? ` [Exotic: ${bet.exotic_numbers}]` : ''}${bet.selections ? ` [Selections: ${bet.selections}]` : ''}`
         ).join('\n')}
 
 User's question: "${question}"
