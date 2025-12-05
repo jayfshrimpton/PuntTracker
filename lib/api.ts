@@ -35,6 +35,8 @@ export interface Bet {
   venue?: string | null;
   race_number?: number | null;
   race_class?: string | null;
+  // Best starting price for comparison
+  best_starting_price?: number | null;
 }
 
 export interface BetInput {
@@ -68,6 +70,8 @@ export interface BetInput {
   venue?: string | null;
   race_number?: number | null;
   race_class?: string | null;
+  // Best starting price for comparison
+  best_starting_price?: number | null;
 }
 
 export type DateRange = 'all' | 'this-month' | 'last-month' | 'custom';
@@ -345,6 +349,7 @@ export interface Profile {
   goals_enabled: boolean;
   unit_size: number; // Default 10
   display_units: boolean; // Default false
+  custom_venues: string[] | null; // User's custom venue names
   created_at: string;
   updated_at: string;
 }
@@ -364,6 +369,7 @@ export interface ProfileUpdate {
   goals_enabled?: boolean;
   unit_size?: number;
   display_units?: boolean;
+  custom_venues?: string[] | null;
 }
 
 export async function fetchProfile(): Promise<{

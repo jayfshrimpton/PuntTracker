@@ -27,7 +27,7 @@ import BetTypesGuide from '@/components/BetTypesGuide';
 import BetCalendar from '@/components/BetCalendar';
 import BetTemplates from '@/components/BetTemplates';
 import { exportBetsToCSV, downloadCSV, parseCSVToBets } from '@/lib/csv-utils';
-import { AUSTRALIAN_RACE_TRACKS, getTracksByState, getTrackLabel } from '@/lib/australian-tracks';
+import { getTrackLabel } from '@/lib/racing-tracks';
 import VenueCombobox from '@/components/VenueCombobox';
 import type { BetTemplate } from '@/lib/api';
 import { useCurrency } from '@/components/CurrencyContext';
@@ -59,6 +59,7 @@ export default function BetsPage() {
     venue: null,
     race_number: null,
     race_class: null,
+    best_starting_price: null,
   });
 
   const [showLayInfo, setShowLayInfo] = useState(false);
@@ -278,6 +279,7 @@ export default function BetsPage() {
         venue: null,
         race_number: null,
         race_class: null,
+        best_starting_price: null,
       });
       setManualProfitEdit(false);
 
@@ -365,6 +367,7 @@ export default function BetsPage() {
         venue: editForm.venue ?? null,
         race_number: editForm.race_number ?? null,
         race_class: editForm.race_class ?? null,
+        best_starting_price: editForm.best_starting_price ?? null,
       });
 
       if (updateError) {
@@ -812,6 +815,29 @@ export default function BetsPage() {
                 onChange={handleFormChange}
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Best Starting Price (optional)
+              </label>
+              <input
+                type="number"
+                name="best_starting_price"
+                step="0.01"
+                min="1"
+                value={formData.best_starting_price || ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    best_starting_price: e.target.value === '' ? null : parseFloat(e.target.value),
+                  })
+                }
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                placeholder="Best odds available"
+              />
+              <p className="mt-1 text-xs text-gray-700 dark:text-gray-300">
+                Compare your odds with the best available at race start
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -1496,6 +1522,17 @@ export default function BetsPage() {
                         />
                       </div>
                       <div>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">BSP</label>
+                        <input
+                          type="number"
+                          name="best_starting_price"
+                          step="0.01"
+                          value={editForm.best_starting_price || ''}
+                          onChange={(e) => setEditForm({ ...editForm, best_starting_price: e.target.value ? parseFloat(e.target.value) : null })}
+                          className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 dark:text-white"
+                        />
+                      </div>
+                      <div>
                         <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Position</label>
                         <input
                           type="number"
@@ -1574,6 +1611,28 @@ export default function BetsPage() {
                       </div>
                     </div>
 
+                    {/* BSP Comparison - Show if BSP exists */}
+                    {bet.best_starting_price && (
+                      <div className="py-2 border-b border-gray-100 dark:border-gray-700">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Best Starting Price</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-gray-900 dark:text-white">{Number(bet.best_starting_price).toFixed(2)}</p>
+                            {Number(bet.price) > Number(bet.best_starting_price) && (
+                              <span className="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full font-medium">
+                                Better odds
+                              </span>
+                            )}
+                            {Number(bet.price) < Number(bet.best_starting_price) && (
+                              <span className="text-xs px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full font-medium">
+                                Missed value
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex justify-between items-center pt-1">
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {bet.finishing_position && <span>Finished: {bet.finishing_position}</span>}
@@ -1608,10 +1667,10 @@ export default function BetsPage() {
                   Date
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                  Venue
+                  Race
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                  Race
+                  Venue
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Horse
@@ -1619,16 +1678,19 @@ export default function BetsPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Odds
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  BSP
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Stake
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Position
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   P&L
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider sticky right-0 bg-gray-800 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
@@ -1662,13 +1724,6 @@ export default function BetsPage() {
                             value={editForm.bet_date || ''}
                             onChange={handleEditChange}
                             className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-                          />
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <VenueCombobox
-                            value={editForm.venue || null}
-                            onChange={(value) => setEditForm({ ...editForm, venue: value })}
-                            className="text-sm"
                           />
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
@@ -1712,6 +1767,13 @@ export default function BetsPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
+                          <VenueCombobox
+                            value={editForm.venue || null}
+                            onChange={(value) => setEditForm({ ...editForm, venue: value })}
+                            className="text-sm"
+                          />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <input
                             type="text"
                             name="horse_name"
@@ -1739,7 +1801,7 @@ export default function BetsPage() {
                             <option value="other">Other</option>
                           </select>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-3 whitespace-nowrap">
                           <input
                             type="number"
                             name="price"
@@ -1749,7 +1811,18 @@ export default function BetsPage() {
                             className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
                           />
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <input
+                            type="number"
+                            name="best_starting_price"
+                            step="0.01"
+                            value={editForm.best_starting_price || ''}
+                            onChange={(e) => setEditForm({ ...editForm, best_starting_price: e.target.value ? parseFloat(e.target.value) : null })}
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                            placeholder="BSP"
+                          />
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
                           <input
                             type="number"
                             name="stake"
@@ -1759,7 +1832,7 @@ export default function BetsPage() {
                             className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
                           />
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
+                        <td className="px-3 py-3 whitespace-nowrap">
                           <input
                             type="number"
                             name="finishing_position"
@@ -1768,7 +1841,7 @@ export default function BetsPage() {
                             className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800"
                           />
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-3 whitespace-nowrap">
                           <input
                             type="number"
                             name="profit_loss"
@@ -1850,9 +1923,6 @@ export default function BetsPage() {
                         {format(new Date(bet.bet_date), 'MMM dd, yyyy')}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {bet.venue ? getTrackLabel(bet.venue) : '-'}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         <div>
                           {bet.race_number && <span className="font-semibold">R{bet.race_number} </span>}
                           {bet.race_name || '-'}
@@ -1862,6 +1932,9 @@ export default function BetsPage() {
                             </span>
                           )}
                         </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {bet.venue ? getTrackLabel(bet.venue) : '-'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                         <div>
@@ -1923,17 +1996,36 @@ export default function BetsPage() {
                           <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">{bet.num_legs}-leg</span>
                         ) : null}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                      <td className="px-3 py-3 whitespace-nowrap text-sm text-foreground">
                         {Number(bet.price).toFixed(2)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                      <td className="px-3 py-3 whitespace-nowrap text-sm text-foreground">
+                        {bet.best_starting_price ? (
+                          <div className="flex items-center gap-2">
+                            <span>{Number(bet.best_starting_price).toFixed(2)}</span>
+                            {Number(bet.price) > Number(bet.best_starting_price) && (
+                              <span className="text-xs px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded font-medium">
+                                ↑
+                              </span>
+                            )}
+                            {Number(bet.price) < Number(bet.best_starting_price) && (
+                              <span className="text-xs px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded font-medium">
+                                ↓
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-sm text-foreground">
                         {formatValue(bet.stake)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {bet.finishing_position || '-'}
                       </td>
                       <td
-                        className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${bet.profit_loss !== null && Number(bet.profit_loss) >= 0
+                        className={`px-3 py-3 whitespace-nowrap text-sm font-medium ${bet.profit_loss !== null && Number(bet.profit_loss) >= 0
                           ? 'text-green-600'
                           : bet.profit_loss !== null
                             ? 'text-red-600'

@@ -54,3 +54,6 @@ ALTER TABLE bets ADD COLUMN IF NOT EXISTS strategy_tags TEXT[];
 ALTER TABLE bets ADD COLUMN IF NOT EXISTS venue TEXT;
 ALTER TABLE bets ADD COLUMN IF NOT EXISTS race_number INTEGER;
 ALTER TABLE bets ADD COLUMN IF NOT EXISTS race_class TEXT;
+
+-- Best starting price for comparison with odds taken
+ALTER TABLE bets ADD COLUMN IF NOT EXISTS best_starting_price DECIMAL(10,2);

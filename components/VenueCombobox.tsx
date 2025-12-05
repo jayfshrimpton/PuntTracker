@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { AUSTRALIAN_RACE_TRACKS, getTracksByState, getTrackLabel, getRacingTypeIcon, getRacingTypeLabel, type RacingType } from '@/lib/australian-tracks';
+import { RACE_TRACKS, getTracksByState, getTrackLabel, getRacingTypeIcon, getRacingTypeLabel, getCountryLabel, getCountryFlag, type RacingType, type Country, type RaceTrack } from '@/lib/racing-tracks';
 import { ChevronDown, X, Plus } from 'lucide-react';
+import { fetchProfile, updateProfile } from '@/lib/api';
 
 interface VenueComboboxProps {
   value: string | null;
@@ -14,38 +15,67 @@ export default function VenueCombobox({ value, onChange, className = '' }: Venue
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [customVenues, setCustomVenues] = useState<string[]>([]);
 
-  // Check if current value is a custom venue (not in predefined list)
-  const isCustomVenue = value && !AUSTRALIAN_RACE_TRACKS.find((t) => t.value === value);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Load custom venues from user profile
+  useEffect(() => {
+    const loadCustomVenues = async () => {
+      try {
+        const { data: profile } = await fetchProfile();
+        if (profile?.custom_venues) {
+          setCustomVenues(profile.custom_venues);
+        }
+      } catch (error) {
+        console.error('Failed to load custom venues:', error);
+      }
+    };
+    loadCustomVenues();
+  }, []);
+
+  // Save custom venue to profile
+  const saveCustomVenue = async (venueName: string) => {
+    try {
+      const updatedVenues = [...customVenues, venueName];
+      await updateProfile({ custom_venues: updatedVenues });
+      setCustomVenues(updatedVenues);
+    } catch (error) {
+      console.error('Failed to save custom venue:', error);
+    }
+  };
+
+  // Check if current value is a custom venue
+  const isCustomVenue = value ? !RACE_TRACKS.find((t: RaceTrack) => t.value === value) : false;
 
   // Filter tracks based on search term
   const filteredTracks = searchTerm
-    ? AUSTRALIAN_RACE_TRACKS.filter(
-      (track) =>
-        track.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        track.value.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        track.state.toLowerCase().includes(searchTerm.toLowerCase())
+    ? RACE_TRACKS.filter((track: RaceTrack) =>
+      track.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      track.value.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (track.state && track.state.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      track.country.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    : AUSTRALIAN_RACE_TRACKS;
+    : RACE_TRACKS;
 
-  // Group filtered tracks by racing type, then by state
-  const groupedByTypeAndState: Record<RacingType, Record<string, typeof AUSTRALIAN_RACE_TRACKS[number][]>> = {
+  // Group filtered tracks by racing type, then by state/country
+  const groupedByTypeAndState: Record<RacingType, Record<string, RaceTrack[]>> = {
     thoroughbred: {},
     greyhound: {},
     harness: {},
   };
 
-  filteredTracks.forEach((track) => {
-    if (!groupedByTypeAndState[track.type][track.state]) {
-      groupedByTypeAndState[track.type][track.state] = [];
+  filteredTracks.forEach((track: RaceTrack) => {
+    const groupKey = track.state || track.country;
+    if (!groupedByTypeAndState[track.type][groupKey]) {
+      groupedByTypeAndState[track.type][groupKey] = [];
     }
-    groupedByTypeAndState[track.type][track.state].push(track);
+    groupedByTypeAndState[track.type][groupKey].push(track);
   });
 
-  const selectedTrack = value ? AUSTRALIAN_RACE_TRACKS.find((t) => t.value === value) : null;
+  const selectedTrack = value ? RACE_TRACKS.find((t: RaceTrack) => t.value === value) : null;
   const displayValue = isCustomVenue ? value : (selectedTrack?.label || '');
 
   // Show custom venue option if search term doesn't match any tracks
@@ -85,10 +115,13 @@ export default function VenueCombobox({ value, onChange, className = '' }: Venue
     inputRef.current?.blur();
   };
 
-  const handleCustomVenue = () => {
+  const handleCustomVenue = async () => {
     if (searchTerm.trim()) {
+      const customVenueName = searchTerm.trim();
+      // Save the custom venue to the profile
+      await saveCustomVenue(customVenueName);
       // Use the search term as the custom venue name
-      onChange(searchTerm.trim());
+      onChange(customVenueName);
       setIsOpen(false);
       setSearchTerm('');
       inputRef.current?.blur();
@@ -147,7 +180,7 @@ export default function VenueCombobox({ value, onChange, className = '' }: Venue
         <input
           ref={inputRef}
           type="text"
-          value={isOpen ? searchTerm : displayValue}
+          value={isOpen ? searchTerm : (displayValue || '')}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setIsOpen(true);
@@ -204,8 +237,8 @@ export default function VenueCombobox({ value, onChange, className = '' }: Venue
               onClick={handleCustomVenue}
               onMouseEnter={() => setHighlightedIndex(0)}
               className={`w-full text-left px-4 py-2 text-sm transition-colors border-b border-gray-200 dark:border-gray-700 ${highlightedIndex === 0
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-900 dark:text-green-100'
-                  : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-900 dark:text-green-100'
+                : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
             >
               <div className="flex items-center gap-2">
@@ -241,8 +274,8 @@ export default function VenueCombobox({ value, onChange, className = '' }: Venue
                       <div className="px-4 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50 sticky top-8 z-[9]">
                         {state}
                       </div>
-                      {tracks.map((track) => {
-                        const globalIndex = filteredTracks.findIndex((t) => t.value === track.value);
+                      {tracks.map((track: RaceTrack) => {
+                        const globalIndex = filteredTracks.findIndex((t: RaceTrack) => t.value === track.value);
                         const adjustedIndex = showCustomOption ? globalIndex + 1 : globalIndex;
 
                         return (
@@ -252,8 +285,8 @@ export default function VenueCombobox({ value, onChange, className = '' }: Venue
                             onClick={() => handleSelect(track.value)}
                             onMouseEnter={() => setHighlightedIndex(adjustedIndex)}
                             className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${adjustedIndex === highlightedIndex
-                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100'
-                                : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100'
+                              : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
                               } ${value === track.value
                                 ? 'font-semibold bg-blue-50 dark:bg-blue-900/20'
                                 : ''
