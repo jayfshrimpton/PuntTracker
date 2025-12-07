@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Menu, X, Activity, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles, CreditCard } from 'lucide-react';
+import { Menu, X, Activity, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles, CreditCard, MessageSquare } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -32,6 +32,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
     { href: '/dashboard/insights', label: 'AI Insights', icon: Sparkles },
     { href: '/dashboard/subscription', label: 'Subscription', icon: CreditCard },
     { href: '/dashboard/guide', label: 'Guide', icon: BookOpen },
+    { href: '/dashboard/feedback', label: 'Feedback', icon: MessageSquare },
     { href: '/dashboard/settings', label: 'Settings', icon: UserCog },
   ];
 

@@ -22,19 +22,26 @@ export function calculatePlacePL(
 }
 
 // placeTerms example: "1/4 odds, 3 places". If not parsable, default to quarter odds and 3 places.
+// If placeOdds is provided (valid number > 1), it overrides the calculated place odds from terms.
 export function calculateEachWayPL(
   stake: number,
   winOdds: number,
   placeTerms: string,
-  position: number | null | undefined
+  position: number | null | undefined,
+  placeOdds?: number | null
 ): number | null {
   if (!isValidMoney(stake) || !isValidOdds(winOdds) || !isValidPosition(position)) return null;
   const { fraction, places } = parsePlaceTerms(placeTerms);
   const winStake = stake / 2;
   const placeStake = stake / 2;
-  const placeOdds = 1 + (winOdds - 1) * fraction; // fractional place odds applied to the win overround
+
+  // Use explicit place odds if provided, otherwise calculate from win odds
+  const finalPlaceOdds = (isValidOdds(placeOdds))
+    ? placeOdds
+    : 1 + (winOdds - 1) * fraction;
+
   const winPL = position === 1 ? winStake * (winOdds - 1) : -winStake;
-  const placePL = position! >= 1 && position! <= places ? placeStake * (placeOdds - 1) : -placeStake;
+  const placePL = position! >= 1 && position! <= places ? placeStake * (finalPlaceOdds - 1) : -placeStake;
   return round2(winPL + placePL);
 }
 

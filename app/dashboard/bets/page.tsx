@@ -20,7 +20,7 @@ import {
   calculateExoticPL,
   calculateOtherPL,
 } from '@/lib/calculations';
-import { Edit2, Trash2, X, Check, PlusCircle, DollarSign, Target, CalendarDays, Activity, Award, Calendar, List, Download, Upload, Filter, XCircle, Search } from 'lucide-react';
+import { Edit2, Trash2, X, Check, PlusCircle, DollarSign, Target, CalendarDays, Activity, Award, Calendar, List, Download, Upload, Filter, XCircle, Search, Trash, Plus, Trophy, ListChecks, Flag } from 'lucide-react';
 import { format } from 'date-fns';
 import { showToast } from '@/lib/toast';
 import BetTypesGuide from '@/components/BetTypesGuide';
@@ -64,12 +64,26 @@ export default function BetsPage() {
 
   const [showLayInfo, setShowLayInfo] = useState(false);
   const [manualProfitEdit, setManualProfitEdit] = useState(false);
+  const [profitLossInput, setProfitLossInput] = useState('');
   const [celebrateWin, setCelebrateWin] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [isImporting, setIsImporting] = useState(false);
   const [hasCSVAccess, setHasCSVAccess] = useState(false);
   const [checkingCSVAccess, setCheckingCSVAccess] = useState(true);
+
+
+  type MultiLeg = {
+    id: string;
+    horseName: string;
+    betType: 'win' | 'place' | 'each-way';
+    price: number;
+  };
+  const [multiLegs, setMultiLegs] = useState<MultiLeg[]>([
+    { id: '1', horseName: '', betType: 'win', price: 0 },
+    { id: '2', horseName: '', betType: 'win', price: 0 },
+  ]);
+  const [multiResult, setMultiResult] = useState<'Won' | 'Lost' | ''>('');
 
   // Enhanced search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,6 +109,45 @@ export default function BetsPage() {
     loadBets();
     checkCSVFeatureAccess();
   }, []);
+
+  // Reset multi-legs when bet type changes away from multi
+  useEffect(() => {
+    if (formData.bet_type !== 'multi') {
+      setMultiLegs([
+        { id: '1', horseName: '', betType: 'win', price: 0 },
+        { id: '2', horseName: '', betType: 'win', price: 0 },
+      ]);
+      setMultiResult('');
+    }
+  }, [formData.bet_type]);
+
+  // Auto-recalculate multi-bet P&L when stake or result changes
+  useEffect(() => {
+    if (formData.bet_type === 'multi' && multiResult && formData.stake > 0) {
+      const combinedOdds = multiLegs.reduce((acc, leg) => acc * (leg.price || 1), 1);
+      const allWon = multiResult === 'Won';
+      const pl = calculateProfitLoss('multi', combinedOdds, formData.stake, null, {
+        multiAllWon: allWon,
+        combinedOdds: combinedOdds,
+      });
+
+      const horseName = multiLegs.map(leg => leg.horseName).filter(n => n).join(', ') || `${multiLegs.length}-leg Multi`;
+      const selections = multiLegs.map(leg => ({
+        horse: leg.horseName,
+        betType: leg.betType,
+        price: leg.price,
+      }));
+
+      setFormData(prev => ({
+        ...prev,
+        horse_name: horseName,
+        profit_loss: pl,
+        price: combinedOdds,
+        num_legs: multiLegs.length,
+        selections: selections as any,
+      }));
+    }
+  }, [formData.stake, multiResult, multiLegs, formData.bet_type]);
 
   const checkCSVFeatureAccess = async () => {
     try {
@@ -162,6 +215,7 @@ export default function BetsPage() {
     position: number | null,
     extras?: {
       placeTerms?: string;
+      placeOdds?: number | null;
       multiAllWon?: boolean;
       combinedOdds?: number;
       dividend?: number | string | null;
@@ -182,7 +236,8 @@ export default function BetsPage() {
           stake,
           price,
           extras?.placeTerms || '1/4 odds, 3 places',
-          position
+          position,
+          extras?.placeOdds
         );
       case 'multi':
         return calculateMultiPL(
@@ -225,17 +280,27 @@ export default function BetsPage() {
       const position =
         name === 'finishing_position'
           ? value === '' ? null : parseInt(value, 10)
-          : updatedForm.finishing_position;
+          : updatedForm.finishing_position || null;
       const price = name === 'price' ? parseFloat(value) || 0 : updatedForm.price;
       const stake = name === 'stake' ? parseFloat(value) || 0 : updatedForm.stake;
       const betType = name === 'bet_type' ? value : updatedForm.bet_type;
 
-      updatedForm.profit_loss = calculateProfitLoss(
-        betType,
-        price,
-        stake,
-        position ?? null
-      );
+      // Get place terms and place odds from selections if available
+      const placeTerms = (updatedForm.selections as any)?.place_terms;
+      const placeOdds = (updatedForm.selections as any)?.place_odds;
+
+      if (position === null) {
+        // Default to loss (-stake) if no position entered
+        updatedForm.profit_loss = -stake;
+      } else {
+        updatedForm.profit_loss = calculateProfitLoss(
+          betType,
+          price,
+          stake,
+          position,
+          { placeTerms, placeOdds }
+        );
+      }
     }
 
     setFormData(updatedForm);
@@ -246,7 +311,26 @@ export default function BetsPage() {
     setError(null);
 
     try {
-      const { error: createError } = await createBet(formData);
+      // For multi-bets, ensure horse_name is set from legs if not already set
+      let submitData = { ...formData };
+      if (formData.bet_type === 'multi' && !formData.horse_name) {
+        const horseName = multiLegs.map(leg => leg.horseName).filter(n => n).join(', ') || `${multiLegs.length}-leg Multi`;
+        submitData.horse_name = horseName;
+      }
+
+      // For exotic bets, ensure horse_name and price are set (defaults)
+      if (['quinella', 'exacta', 'trifecta', 'first-four'].includes(formData.bet_type)) {
+        if (!submitData.horse_name) {
+          submitData.horse_name = submitData.exotic_numbers
+            ? `Boxed: ${submitData.exotic_numbers}`
+            : `${formData.bet_type.charAt(0).toUpperCase() + formData.bet_type.slice(1)} Bet`;
+        }
+        if (!submitData.price) {
+          submitData.price = 0; // Exotics don't have a single "price" (odds), just a dividend
+        }
+      }
+
+      const { error: createError } = await createBet(submitData);
 
       if (createError) {
         setError(createError.message);
@@ -282,6 +366,12 @@ export default function BetsPage() {
         best_starting_price: null,
       });
       setManualProfitEdit(false);
+      // Reset multi-legs and result
+      setMultiLegs([
+        { id: '1', horseName: '', betType: 'win', price: 0 },
+        { id: '2', horseName: '', betType: 'win', price: 0 },
+      ]);
+      setMultiResult('');
 
       showToast('Bet added successfully!', 'success');
       await loadBets();
@@ -697,436 +787,607 @@ export default function BetsPage() {
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
           <BetTemplates onApplyTemplate={handleApplyTemplate} currentFormData={formData} />
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Venue
-              </label>
-              <VenueCombobox
-                value={formData.venue ?? null}
-                onChange={(value) => setFormData({ ...formData, venue: value })}
-              />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Group 1: Core Bet Details */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-6">
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-blue-500" />
+                Core Details
+              </h3>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Race Number
-              </label>
-              <input
-                type="number"
-                name="race_number"
-                min="1"
-                max="12"
-                value={formData.race_number || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    race_number: e.target.value === '' ? null : parseInt(e.target.value, 10),
-                  })
-                }
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-                placeholder="e.g., 1, 2, 3..."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Race Name (optional)
-              </label>
-              <input
-                type="text"
-                name="race_name"
-                value={formData.race_name || ''}
-                onChange={handleFormChange}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-                placeholder="e.g., Melbourne Cup, Cox Plate, etc."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Class (optional)
-              </label>
-              <input
-                type="text"
-                name="race_class"
-                value={formData.race_class || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    race_class: e.target.value || null,
-                  })
-                }
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-                placeholder="e.g., Class 1, Maiden, Open, etc."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Horse/Dog Name
-              </label>
-              <input
-                type="text"
-                name="horse_name"
-                required
-                value={formData.horse_name}
-                onChange={handleFormChange}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Bet Type
-              </label>
-              <select
-                name="bet_type"
-                value={formData.bet_type}
-                onChange={handleFormChange}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-              >
-                <option value="win">Win</option>
-                <option value="place">Place</option>
-                <option value="each-way">Each-Way</option>
-                <option value="lay">Lay</option>
-                <option value="multi">Multi</option>
-                <option value="quinella">Quinella</option>
-                <option value="exacta">Exacta</option>
-                <option value="trifecta">Trifecta</option>
-                <option value="first-four">First Four</option>
-                <option value="other">Other</option>
-              </select>
-              {formData.bet_type === 'lay' && (
-                <p className="mt-1 text-xs text-gray-700 dark:text-gray-300">
-                  Lay: You&apos;re betting against the horse. If it wins, you lose the
-                  liability (stake × (odds - 1)). If it loses, you win the
-                  stake.
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Price/Odds
-              </label>
-              <input
-                type="number"
-                name="price"
-                step="0.01"
-                min="1"
-                required
-                value={formData.price || ''}
-                onChange={handleFormChange}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Best Starting Price (optional)
-              </label>
-              <input
-                type="number"
-                name="best_starting_price"
-                step="0.01"
-                min="1"
-                value={formData.best_starting_price || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    best_starting_price: e.target.value === '' ? null : parseFloat(e.target.value),
-                  })
-                }
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-                placeholder="Best odds available"
-              />
-              <p className="mt-1 text-xs text-gray-700 dark:text-gray-300">
-                Compare your odds with the best available at race start
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Stake ($)
-              </label>
-              <input
-                type="number"
-                name="stake"
-                step="0.01"
-                min="0"
-                required
-                value={formData.stake || ''}
-                onChange={handleFormChange}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Finishing Position (optional)
-              </label>
-              <input
-                type="number"
-                name="finishing_position"
-                min="1"
-                value={formData.finishing_position || ''}
-                onChange={handleFormChange}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-              />
-            </div>
-            {/* Each-Way Extras */}
-            {formData.bet_type === 'each-way' && (
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Place Terms (e.g., &quot;1/4 odds, 3 places&quot;)
-                  </label>
-                  <input
-                    type="text"
-                    name="place_terms"
-                    placeholder="1/4 odds, 3 places"
-                    onChange={(e) => {
-                      const placeTerms = e.target.value;
-                      const pl = calculateProfitLoss(
-                        'each-way',
-                        formData.price,
-                        formData.stake,
-                        formData.finishing_position ?? null,
-                        { placeTerms }
-                      );
-                      setFormData({ ...formData, profit_loss: pl as any });
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-                  />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-700 dark:text-gray-300 mt-7">Stake is split 50/50 across Win and Place</p>
-                </div>
-              </div>
-            )}
 
-            {/* Multi Extras */}
-            {formData.bet_type === 'multi' && (
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of Legs</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Venue */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Venue <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <VenueCombobox
+                  value={formData.venue ?? null}
+                  onChange={(value) => setFormData({ ...formData, venue: value })}
+                />
+              </div>
+
+              {/* Race Number */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Race Number <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="number"
+                  name="race_number"
+                  min="1"
+                  max="12"
+                  value={formData.race_number || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      race_number: e.target.value === '' ? null : parseInt(e.target.value, 10),
+                    })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                  placeholder="e.g. 1"
+                />
+              </div>
+
+              {/* Bet Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Bet Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="bet_type"
+                  value={formData.bet_type}
+                  onChange={handleFormChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                >
+                  <option value="win">Win</option>
+                  <option value="place">Place</option>
+                  <option value="each-way">Each-Way</option>
+                  <option value="lay">Lay</option>
+                  <option value="multi">Multi</option>
+                  <option value="quinella">Quinella</option>
+                  <option value="exacta">Exacta</option>
+                  <option value="trifecta">Trifecta</option>
+                  <option value="first-four">First Four</option>
+                  <option value="other">Other</option>
+                </select>
+                {formData.bet_type === 'lay' && (
+                  <p className="mt-1 text-xs text-gray-700 dark:text-gray-300">
+                    Lay: You&apos;re betting against the horse. If it wins, you lose the
+                    liability (stake × (odds - 1)). If it loses, you win the
+                    stake.
+                  </p>
+                )}
+              </div>
+
+              {/* Stake */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Stake ($) <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                   <input
                     type="number"
-                    name="num_legs"
-                    min="1"
-                    value={formData.num_legs || ''}
-                    onChange={(e) => {
-                      const num = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                      setFormData({ ...formData, num_legs: isNaN(Number(num)) ? null : (num as any) });
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                    name="stake"
+                    step="0.01"
+                    min="0"
+                    required
+                    value={formData.stake || ''}
+                    onChange={handleFormChange}
+                    placeholder="10.00"
+                    className="w-full pl-8 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
                   />
                 </div>
+              </div>
+            </div>
+          </div>
+          {/* Group 2: Selection Information */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-6">
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <ListChecks className="h-5 w-5 text-purple-500" />
+                Selection Details
+              </h3>
+            </div>
+
+            <div className="space-y-6">
+              {/* Standard Fields (Non-Multi and Non-Exotic) */}
+              {formData.bet_type !== 'multi' && !['quinella', 'exacta', 'trifecta', 'first-four'].includes(formData.bet_type) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Horse/Dog Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="horse_name"
+                      required
+                      value={formData.horse_name}
+                      onChange={handleFormChange}
+                      placeholder="Enter horse or dog name"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Price/Odds <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="price"
+                      step="0.01"
+                      min="1"
+                      required
+                      value={formData.price || ''}
+                      onChange={handleFormChange}
+                      placeholder="3.50"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Date Field */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Multi Result</label>
-                  <select
-                    name="multi_result"
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4" />
+                    Date <span className="text-red-500">*</span>
+                    {viewMode === 'calendar' && (
+                      <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                        (Select from calendar above)
+                      </span>
+                    )}
+                  </label>
+                  <input
+                    type="date"
+                    name="bet_date"
+                    required
+                    value={formData.bet_date}
                     onChange={(e) => {
-                      const allWon = e.target.value === 'Won';
-                      const pl = calculateProfitLoss('multi', formData.price, formData.stake, null, {
-                        multiAllWon: allWon,
-                        combinedOdds: formData.price,
-                      });
-                      setFormData({ ...formData, profit_loss: pl as any });
+                      handleFormChange(e);
+                      const newDate = new Date(e.target.value);
+                      if (!isNaN(newDate.getTime())) {
+                        setSelectedDate(newDate);
+                      }
                     }}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-                  >
-                    <option>Won</option>
-                    <option>Lost</option>
-                  </select>
-                </div>
-                <div className="md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Selections (JSON, optional)</label>
-                  <textarea
-                    name="selections"
-                    rows={3}
-                    placeholder='[{"race":"R3","horse":"#4","result":"Won"}]'
-                    onChange={(e) => {
-                      let json: any = null;
-                      try { json = JSON.parse(e.target.value); } catch { }
-                      setFormData({ ...formData, selections: json });
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
                   />
                 </div>
               </div>
-            )}
 
-            {/* Exotics */}
-            {(formData.bet_type === 'quinella' || formData.bet_type === 'exacta' || formData.bet_type === 'trifecta' || formData.bet_type === 'first-four') && (
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Numbers Selected</label>
-                  <input
-                    type="text"
-                    name="exotic_numbers"
-                    placeholder="3, 7, 12"
-                    onChange={(e) => setFormData({ ...formData, exotic_numbers: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Flexi %</label>
-                  <input
-                    type="number"
-                    name="flexi_percent"
-                    step="1"
-                    min="1"
-                    max="100"
-                    defaultValue={100}
-                    onChange={(e) => {
-                      const flexi = parseFloat(e.target.value) || 100;
-                      const pl = calculateProfitLoss(formData.bet_type, 0, formData.stake, null, {
-                        dividend: undefined,
-                        flexiPercent: flexi,
-                      });
-                      setFormData({ ...formData, profit_loss: pl as any });
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dividend Paid ($)</label>
-                  <input
-                    type="text"
-                    name="dividend"
-                    placeholder="$5.60"
-                    onChange={(e) => {
-                      const pl = calculateProfitLoss(formData.bet_type, 0, formData.stake, null, {
-                        dividend: e.target.value,
-                        flexiPercent: 100,
-                      });
-                      setFormData({ ...formData, profit_loss: pl as any });
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-                  />
-                </div>
-                <div className="md:col-span-4">
-                  <p className="text-xs text-gray-700 dark:text-gray-300">If not won, P&L will be -stake. Dividend in AU is per $1 unit.</p>
-                </div>
-              </div>
-            )}
+              {/* Each-Way Extras */}
+              {formData.bet_type === 'each-way' && (
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Each-Way Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Place Price / Odds <span className="text-gray-400 font-normal">(optional)</span>
+                      </label>
+                      <div className="flex gap-4">
+                        <div className="w-full">
+                          <input
+                            type="number"
+                            name="place_odds"
+                            step="0.01"
+                            min="1"
+                            placeholder="Place Price / Odds"
+                            value={(formData.selections as any)?.place_odds || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const placeOdds = val ? parseFloat(val) : null;
+                              const placeTerms = (formData.selections as any)?.place_terms; // Keep reading if it exists in legacy data, or just undefined
+                              const newSelections = { ...(formData.selections || {}), place_odds: placeOdds };
 
-            {/* Other */}
-            {formData.bet_type === 'other' && (
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <input
-                    type="text"
-                    name="description"
-                    placeholder="Custom bet description"
-                    value={formData.description || ''}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
-                  />
+                              // Recalculate P&L with new place odds if position is set
+                              let newPL = formData.profit_loss;
+                              if (!manualProfitEdit && formData.finishing_position !== null && formData.finishing_position !== undefined) {
+                                newPL = calculateProfitLoss(
+                                  'each-way',
+                                  formData.price,
+                                  formData.stake,
+                                  formData.finishing_position ?? null,
+                                  { placeTerms, placeOdds }
+                                );
+                              }
+
+                              setFormData({
+                                ...formData,
+                                selections: newSelections,
+                                profit_loss: newPL as any
+                              });
+                            }}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                          />
+                          <p className="text-xs text-gray-700 dark:text-gray-300 mt-1">Leave empty to use default calculation (1/4 of Win Odds)</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Result</label>
-                  <select
-                    name="other_result"
-                    onChange={(e) => {
-                      const won = e.target.value === 'Won';
-                      const pl = calculateProfitLoss('other', formData.price, formData.stake, null, {
-                        payout: won ? formData.price * formData.stake : 0,
-                        won,
-                      });
-                      setFormData({ ...formData, profit_loss: pl as any });
+              )}
+
+              {/* Multi Extras */}
+              {formData.bet_type === 'multi' && (
+                <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Multi Bet Legs</h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">Add each leg of your multi bet below. The combined odds will be calculated automatically.</p>
+
+                  <div className="space-y-3">
+                    {multiLegs.map((leg, index) => (
+                      <div key={leg.id} className="grid grid-cols-12 gap-2 items-end p-3 bg-white dark:bg-gray-800 rounded-lg border border-purple-200 dark:border-purple-700">
+                        <div className="col-span-12 sm:col-span-5">
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Horse/Dog Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={leg.horseName}
+                            onChange={(e) => {
+                              const newLegs = [...multiLegs];
+                              newLegs[index].horseName = e.target.value;
+                              setMultiLegs(newLegs);
+                            }}
+                            placeholder="e.g., Via Sistina"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500"
+                          />
+                        </div>
+                        <div className="col-span-6 sm:col-span-3">
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Bet Type <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            value={leg.betType}
+                            onChange={(e) => {
+                              const newLegs = [...multiLegs];
+                              newLegs[index].betType = e.target.value as 'win' | 'place' | 'each-way';
+                              setMultiLegs(newLegs);
+                            }}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                          >
+                            <option value="win">Win</option>
+                            <option value="place">Place</option>
+                            <option value="each-way">Each-Way</option>
+                          </select>
+                        </div>
+                        <div className="col-span-5 sm:col-span-3">
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Price <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="1"
+                            value={leg.price || ''}
+                            onChange={(e) => {
+                              const newLegs = [...multiLegs];
+                              newLegs[index].price = parseFloat(e.target.value) || 0;
+                              setMultiLegs(newLegs);
+                              // Auto-calculate combined odds
+                              const combinedOdds = newLegs.reduce((acc, l) => acc * (l.price || 1), 1);
+                              setFormData({ ...formData, price: combinedOdds, num_legs: newLegs.length });
+                            }}
+                            placeholder="2.50"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500"
+                          />
+                        </div>
+                        <div className="col-span-1">
+                          {multiLegs.length > 2 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newLegs = multiLegs.filter((_, i) => i !== index);
+                                setMultiLegs(newLegs);
+                                // Recalculate combined odds
+                                const combinedOdds = newLegs.reduce((acc, l) => acc * (l.price || 1), 1);
+                                setFormData({ ...formData, price: combinedOdds, num_legs: newLegs.length });
+                              }}
+                              className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                              title="Remove leg"
+                            >
+                              <Trash className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newLeg: MultiLeg = {
+                        id: Date.now().toString(),
+                        horseName: '',
+                        betType: 'win',
+                        price: 0,
+                      };
+                      setMultiLegs([...multiLegs, newLeg]);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
                   >
-                    <option>Won</option>
-                    <option>Lost</option>
-                  </select>
+                    <Plus className="h-4 w-4" />
+                    Add Another Leg
+                  </button>
+
+                  <div className="mt-4 p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-gray-900 dark:text-white">Combined Odds:</span>
+                      <span className="text-lg font-bold text-purple-700 dark:text-purple-300">
+                        {multiLegs.reduce((acc, leg) => acc * (leg.price || 1), 1).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm mt-2">
+                      <span className="font-medium text-gray-900 dark:text-white">Number of Legs:</span>
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">{multiLegs.length}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Multi Result</label>
+                    <select
+                      name="multi_result"
+                      value={multiResult}
+                      onChange={(e) => {
+                        setMultiResult(e.target.value as 'Won' | 'Lost' | '');
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                    >
+                      <option value="">Select result...</option>
+                      <option value="Won">Won</option>
+                      <option value="Lost">Lost</option>
+                    </select>
+                    {multiResult && formData.stake > 0 && (
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        P&L will be calculated automatically
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
-                <CalendarDays className="h-4 w-4" />
-                Date
-                {viewMode === 'calendar' && (
-                  <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
-                    (Select from calendar above)
-                  </span>
-                )}
-              </label>
-              <input
-                type="date"
-                name="bet_date"
-                required
-                value={formData.bet_date}
-                onChange={(e) => {
-                  handleFormChange(e);
-                  const newDate = new Date(e.target.value);
-                  if (!isNaN(newDate.getTime())) {
-                    setSelectedDate(newDate);
-                  }
-                }}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
-              />
+              )}
+
+              {/* Exotics */}
+              {(formData.bet_type === 'quinella' || formData.bet_type === 'exacta' || formData.bet_type === 'trifecta' || formData.bet_type === 'first-four') && (
+                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Exotic Bet Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Numbers Selected <span className="text-gray-400 font-normal">(optional)</span></label>
+                      <input
+                        type="text"
+                        name="exotic_numbers"
+                        placeholder="3, 7, 12"
+                        onChange={(e) => setFormData({ ...formData, exotic_numbers: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Flexi % <span className="text-gray-400 font-normal">(optional)</span></label>
+                      <input
+                        type="number"
+                        name="flexi_percent"
+                        step="1"
+                        min="1"
+                        max="100"
+                        defaultValue={100}
+                        onChange={(e) => {
+                          const flexi = parseFloat(e.target.value) || 100;
+                          const pl = calculateProfitLoss(formData.bet_type, 0, formData.stake, null, {
+                            dividend: undefined,
+                            flexiPercent: flexi,
+                          });
+                          setFormData({ ...formData, profit_loss: pl as any });
+                        }}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dividend Paid ($) <span className="text-gray-400 font-normal">(optional)</span></label>
+                      <input
+                        type="text"
+                        name="dividend"
+                        placeholder="$5.60"
+                        onChange={(e) => {
+                          const pl = calculateProfitLoss(formData.bet_type, 0, formData.stake, null, {
+                            dividend: e.target.value,
+                            flexiPercent: 100,
+                          });
+                          setFormData({ ...formData, profit_loss: pl as any });
+                        }}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                      />
+                    </div>
+                    <div className="md:col-span-4">
+                      <p className="text-xs text-gray-700 dark:text-gray-300">If not won, P&L will be -stake. Dividend in AU is per $1 unit.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Other */}
+              {formData.bet_type === 'other' && (
+                <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Custom Bet Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description <span className="text-gray-400 font-normal">(optional)</span></label>
+                      <input
+                        type="text"
+                        name="description"
+                        placeholder="Custom bet description"
+                        value={formData.description || ''}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Result</label>
+                      <select
+                        name="other_result"
+                        onChange={(e) => {
+                          const won = e.target.value === 'Won';
+                          const pl = calculateProfitLoss('other', formData.price, formData.stake, null, {
+                            payout: won ? formData.price * formData.stake : 0,
+                            won,
+                          });
+                          setFormData({ ...formData, profit_loss: pl as any });
+                        }}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+                      >
+                        <option>Won</option>
+                        <option>Lost</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Strategy/Tags (comma-separated)
-              </label>
-              <input
-                type="text"
-                name="strategy_tags"
-                placeholder="e.g., value bet, favorite, longshot, form-based"
-                value={formData.strategy_tags?.join(', ') || ''}
-                onChange={(e) => {
-                  const tags = e.target.value
-                    .split(',')
-                    .map((tag) => tag.trim())
-                    .filter((tag) => tag.length > 0);
-                  setFormData({
-                    ...formData,
-                    strategy_tags: tags.length > 0 ? tags : null,
-                  });
-                }}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-              />
-              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                Separate multiple tags with commas
-              </p>
+          </div>
+          {/* Group 3: Race Context */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-6">
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <Flag className="h-5 w-5 text-green-500" />
+                Race Context
+              </h3>
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Notes
-              </label>
-              <textarea
-                name="notes"
-                rows={3}
-                placeholder="Add any additional notes about this bet..."
-                value={formData.notes || ''}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value || null })}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
-              />
-            </div>
-            {formData.profit_loss !== null && (
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Race Name */}
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Race Name <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  name="race_name"
+                  value={formData.race_name || ''}
+                  onChange={handleFormChange}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                  placeholder="e.g. Melbourne Cup"
+                />
+              </div>
+
+              {/* Class */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Class <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  name="race_class"
+                  value={formData.race_class || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      race_class: e.target.value || null,
+                    })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                  placeholder="e.g. Maiden"
+                />
+              </div>
+
+              {/* Best Starting Price */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Best Starting Price <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="number"
+                  name="best_starting_price"
+                  step="0.01"
+                  min="1"
+                  value={formData.best_starting_price || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      best_starting_price: e.target.value === '' ? null : parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                  placeholder="Best odds available"
+                />
+              </div>
+            </div>
+          </div>
+          {/* Group 4: Outcome & Analysis */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-6">
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <Target className="h-5 w-5 text-red-500" />
+                Outcome & Analysis
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Finishing Position */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Finishing Position <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="number"
+                  name="finishing_position"
+                  min="1"
+                  value={formData.finishing_position || ''}
+                  onChange={handleFormChange}
+                  placeholder="e.g. 1"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                />
+              </div>
+
+              {/* Profit/Loss */}
+              {/* Profit/Loss */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
                   <label className="block text-sm font-medium text-gray-900 dark:text-white">
-                    Profit/Loss
+                    Profit/Loss <span className="text-xs font-normal text-gray-500">(auto)</span>
                   </label>
-                  <label className="flex items-center gap-1 text-xs text-gray-700 dark:text-gray-300">
+                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={manualProfitEdit}
-                      onChange={(e) => setManualProfitEdit(e.target.checked)}
-                      className="w-4 h-4"
+                      onChange={(e) => {
+                        setManualProfitEdit(e.target.checked);
+                        if (e.target.checked) {
+                          setProfitLossInput(formData.profit_loss?.toString() ?? '');
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span>Edit manually</span>
+                    <span>Edit Manually</span>
                   </label>
                 </div>
                 <input
                   type="number"
                   step="0.01"
                   name="profit_loss"
-                  value={formData.profit_loss !== null ? formData.profit_loss : ''}
+                  value={manualProfitEdit ? profitLossInput : (formData.profit_loss ?? '')}
                   readOnly={!manualProfitEdit}
                   onChange={(e) => {
-                    const value = e.target.value === '' ? null : parseFloat(e.target.value) || 0;
-                    setFormData({ ...formData, profit_loss: value });
+                    const val = e.target.value;
+                    setProfitLossInput(val);
+                    // Allow clearing (null) or partial inputs like "-"
+                    if (val === '') {
+                      setFormData({ ...formData, profit_loss: null });
+                    } else {
+                      const parsed = parseFloat(val);
+                      // Update formData only if it's a valid number. 
+                      // If it's "-", parsed is NaN, so we set null to avoid '0' coercion issues
+                      setFormData({ ...formData, profit_loss: isNaN(parsed) ? null : parsed });
+                    }
+                  }}
+                  onBlur={() => {
+                    // On blur, if valid number, normalize the input string
+                    if (formData.profit_loss !== null && formData.profit_loss !== undefined) {
+                      setProfitLossInput(formData.profit_loss.toString());
+                    }
                   }}
                   className={`w-full px-4 py-3 border rounded-lg ${manualProfitEdit ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'
                     } ${formData.profit_loss !== null && formData.profit_loss !== undefined && Number(formData.profit_loss) >= 0
@@ -1135,16 +1396,60 @@ export default function BetsPage() {
                         ? 'border-red-300 text-red-700 dark:text-red-400'
                         : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
                     }`}
+                  placeholder={manualProfitEdit ? "Enter P&L..." : "Calculated automatically"}
                 />
               </div>
-            )}
+
+              {/* Strategy/Tags */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Strategy/Tags <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  name="strategy_tags"
+                  placeholder="e.g. value bet, favorite, longshot"
+                  value={formData.strategy_tags?.join(', ') || ''}
+                  onChange={(e) => {
+                    const tags = e.target.value
+                      .split(',')
+                      .map((tag) => tag.trim())
+                      .filter((tag) => tag.length > 0);
+                    setFormData({
+                      ...formData,
+                      strategy_tags: tags.length > 0 ? tags : null,
+                    });
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                />
+                <p className="mt-1 text-xs text-gray-500">Separate multiple tags with commas</p>
+              </div>
+
+              {/* Notes */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Notes <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <textarea
+                  name="notes"
+                  rows={3}
+                  placeholder="Add any additional notes about this bet..."
+                  value={formData.notes || ''}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value || null })}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+                />
+              </div>
+            </div>
           </div>
-          <button
-            type="submit"
-            className="w-full md:w-auto inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg hover:shadow-xl transition-all hover:scale-105"
-          >
-            <PlusCircle className="h-5 w-5" /> Add Bet
-          </button>
+
+          <div className="pt-4">
+            <button
+              type="submit"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg hover:shadow-xl transition-all hover:scale-105 font-medium text-lg"
+            >
+              <PlusCircle className="h-6 w-6" /> Add Bet
+            </button>
+          </div>
         </form>
       </div>
 
