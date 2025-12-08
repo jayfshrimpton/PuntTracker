@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Lock } from 'lucide-react';
+import Link from 'next/link';
+import { Check, Lock, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -110,7 +111,15 @@ export default function PricingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background py-20 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-background py-10 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto mb-10">
+                <Button variant="ghost" className="pl-0 hover:pl-2 transition-all" asChild>
+                    <Link href="/dashboard">
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Dashboard
+                    </Link>
+                </Button>
+            </div>
             <div className="max-w-7xl mx-auto text-center">
                 <h2 className="text-3xl font-extrabold text-foreground sm:text-4xl">
                     Simple, transparent pricing

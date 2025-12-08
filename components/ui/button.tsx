@@ -12,7 +12,7 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className = "", variant = "primary", size = "default", asChild = false, isLoading = false, children, disabled, ...props }, ref) => {
-        const Comp = asChild ? Slot : "button"
+
 
         const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95"
 
@@ -35,8 +35,20 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         const variantStyles = variants[variant]
         const sizeStyles = sizes[size]
 
+        if (asChild) {
+            return (
+                <Slot
+                    className={`${baseStyles} ${variantStyles} ${sizeStyles} ${className}`}
+                    ref={ref}
+                    {...props}
+                >
+                    {children}
+                </Slot>
+            )
+        }
+
         return (
-            <Comp
+            <button
                 className={`${baseStyles} ${variantStyles} ${sizeStyles} ${className}`}
                 ref={ref}
                 disabled={disabled || isLoading}
@@ -44,7 +56,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {children}
-            </Comp>
+            </button>
         )
     }
 )

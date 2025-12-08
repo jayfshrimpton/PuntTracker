@@ -460,7 +460,7 @@ export default function LandingPage() {
                   </button>
                 </li>
                 <li>
-                  <Link href="/dashboard/feedback" className="hover:text-primary transition-colors">
+                  <Link href="/feedback" className="hover:text-primary transition-colors">
                     Feedback
                   </Link>
                 </li>

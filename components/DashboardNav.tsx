@@ -28,12 +28,12 @@ export default function DashboardNav({ user }: DashboardNavProps) {
 
   const navItems = [
     { href: '/dashboard', label: 'Home', icon: Home },
-    { href: '/dashboard/bets', label: 'Bets', icon: PlusCircle },
-    { href: '/dashboard/insights', label: 'AI Insights', icon: Sparkles },
-    { href: '/dashboard/subscription', label: 'Subscription', icon: CreditCard },
-    { href: '/dashboard/guide', label: 'Guide', icon: BookOpen },
-    { href: '/dashboard/feedback', label: 'Feedback', icon: MessageSquare },
-    { href: '/dashboard/settings', label: 'Settings', icon: UserCog },
+    { href: '/bets', label: 'Bets', icon: PlusCircle },
+    { href: '/insights', label: 'AI Insights', icon: Sparkles },
+    { href: '/subscription', label: 'Subscription', icon: CreditCard },
+    { href: '/guide', label: 'Guide', icon: BookOpen },
+    { href: '/feedback', label: 'Feedback', icon: MessageSquare },
+    { href: '/settings', label: 'Settings', icon: UserCog },
   ];
 
   return (
@@ -41,14 +41,14 @@ export default function DashboardNav({ user }: DashboardNavProps) {
       {/* Mobile Top Bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
             <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-1.5 rounded-lg">
               <Activity className="h-5 w-5 text-white" />
             </div>
             <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
               PuntTracker
             </span>
-          </div>
+          </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Button
@@ -90,14 +90,14 @@ export default function DashboardNav({ user }: DashboardNavProps) {
       <div className="hidden lg:block sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 mr-8">
+            <Link href="/dashboard" className="flex items-center gap-2 mr-8">
               <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-1.5 rounded-lg">
                 <Activity className="h-5 w-5 text-white" />
               </div>
               <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
                 PuntTracker
               </span>
-            </div>
+            </Link>
 
             <nav className="flex items-center gap-1">
               {navItems.map((item) => {

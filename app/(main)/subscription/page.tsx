@@ -39,7 +39,7 @@ export default async function SubscriptionPage() {
         if (profile?.stripe_customer_id) {
             const session = await stripe.billingPortal.sessions.create({
                 customer: profile.stripe_customer_id,
-                return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription`,
+                return_url: `${process.env.NEXT_PUBLIC_APP_URL}/subscription`,
             });
             redirect(session.url);
         }
@@ -74,16 +74,16 @@ export default async function SubscriptionPage() {
                                 Stay tuned for updates!
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                <Link href="/pricing">
-                                    <Button variant="outline">
+                                <Button variant="outline" asChild>
+                                    <Link href="/pricing">
                                         View Pricing Plans
-                                    </Button>
-                                </Link>
-                                <Link href="/dashboard">
-                                    <Button>
+                                    </Link>
+                                </Button>
+                                <Button asChild>
+                                    <Link href="/dashboard">
                                         Back to Dashboard
-                                    </Button>
-                                </Link>
+                                    </Link>
+                                </Button>
                             </div>
                         </div>
 
@@ -155,11 +155,11 @@ export default async function SubscriptionPage() {
                                 </Button>
                             </form>
                         ) : (
-                            <Link href="/pricing">
-                                <Button className="w-full">
+                            <Button className="w-full" asChild>
+                                <Link href="/pricing">
                                     Upgrade Plan
-                                </Button>
-                            </Link>
+                                </Link>
+                            </Button>
                         )}
                     </div>
                 </CardContent>

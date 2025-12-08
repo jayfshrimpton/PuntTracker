@@ -25,11 +25,11 @@ import { format } from 'date-fns';
 import { showToast } from '@/lib/toast';
 import BetTypesGuide from '@/components/BetTypesGuide';
 import BetCalendar from '@/components/BetCalendar';
-import BetTemplates from '@/components/BetTemplates';
-import { exportBetsToCSV, downloadCSV, parseCSVToBets } from '@/lib/csv-utils';
+
+import { exportBetsToCSV, downloadCSV } from '@/lib/csv-utils';
 import { getTrackLabel } from '@/lib/racing-tracks';
 import VenueCombobox from '@/components/VenueCombobox';
-import type { BetTemplate } from '@/lib/api';
+
 import { useCurrency } from '@/components/CurrencyContext';
 
 export default function BetsPage() {
@@ -68,7 +68,7 @@ export default function BetsPage() {
   const [celebrateWin, setCelebrateWin] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
-  const [isImporting, setIsImporting] = useState(false);
+
   const [hasCSVAccess, setHasCSVAccess] = useState(false);
   const [checkingCSVAccess, setCheckingCSVAccess] = useState(true);
 
@@ -520,73 +520,7 @@ export default function BetsPage() {
     }
   };
 
-  const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
 
-    if (!hasCSVAccess) {
-      showToast('CSV Import is available for Elite members only. Upgrade to Elite to access this feature.', 'error');
-      event.target.value = '';
-      return;
-    }
-
-    setIsImporting(true);
-    setError(null);
-
-    try {
-      const fileContent = await file.text();
-      const { bets: importedBets, errors } = parseCSVToBets(fileContent);
-
-      if (errors.length > 0) {
-        const errorMessage = `Import completed with ${errors.length} error(s). First error: ${errors[0]}`;
-        setError(errorMessage);
-        showToast(errorMessage, 'error');
-      }
-
-      if (importedBets.length === 0) {
-        showToast('No valid bets found in CSV file', 'error');
-        setIsImporting(false);
-        // Reset file input
-        event.target.value = '';
-        return;
-      }
-
-      // Import each bet
-      let successCount = 0;
-      let failCount = 0;
-
-      for (const bet of importedBets) {
-        const { error: createError } = await createBet(bet);
-        if (createError) {
-          failCount++;
-        } else {
-          successCount++;
-        }
-      }
-
-      // Reload bets
-      await loadBets();
-
-      if (failCount > 0) {
-        showToast(
-          `Imported ${successCount} bet(s), ${failCount} failed`,
-          failCount === importedBets.length ? 'error' : 'success'
-        );
-      } else {
-        showToast(`Successfully imported ${successCount} bet(s)!`, 'success');
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to import bets';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-    } finally {
-      setIsImporting(false);
-      // Reset file input
-      event.target.value = '';
-    }
-  };
 
   // Apply filters and search to bets
   const filteredBets = bets.filter((bet) => {
@@ -669,18 +603,7 @@ export default function BetsPage() {
     setSearchQuery('');
   };
 
-  const handleApplyTemplate = (template: BetTemplate) => {
-    setFormData({
-      ...formData,
-      bet_type: template.bet_type as BetInput['bet_type'],
-      price: template.price || 0,
-      stake: template.stake || 0,
-      venue: template.venue || null,
-      race_class: template.race_class || null,
-      strategy_tags: template.strategy_tags || null,
-      notes: template.notes || null,
-    });
-  };
+
 
   if (loading || currencyLoading) {
     return (
@@ -740,37 +663,7 @@ export default function BetsPage() {
         />
       )}
 
-      {/* Monthly Totals */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-shadow">
-        <h2 className="text-lg font-semibold mb-4 text-foreground">Monthly Totals</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><DollarSign className="h-4 w-4" /> Total Stake</p>
-            <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {formatValue(monthlyStats.totalStake)}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><Award className="h-4 w-4" /> Total P&L</p>
-            <p
-              className={`text-2xl font-semibold ${monthlyStats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}
-            >
-              {formatValue(monthlyStats.totalProfit)}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><Activity className="h-4 w-4" /> Total Bets</p>
-            <p className="text-2xl font-semibold text-gray-900 dark:text-white">{monthlyStats.totalBets}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><Target className="h-4 w-4" /> Strike Rate</p>
-            <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {monthlyStats.strikeRate.toFixed(1)}%
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       {/* Bet Entry Form */}
       <div ref={formRef} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-shadow">
@@ -783,10 +676,7 @@ export default function BetsPage() {
             {error}
           </div>
         )}
-        {/* Bet Templates */}
-        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-          <BetTemplates onApplyTemplate={handleApplyTemplate} currentFormData={formData} />
-        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Group 1: Core Bet Details */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-6">
@@ -1453,6 +1343,48 @@ export default function BetsPage() {
         </form>
       </div>
 
+      {/* Filtered Stats */}
+      {hasActiveFilters && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-shadow">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-foreground">Filtered Stats</h2>
+            <button
+              onClick={clearFilters}
+              className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+            >
+              Clear Filters
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><DollarSign className="h-4 w-4" /> Total Stake</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {formatValue(monthlyStats.totalStake)}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><Award className="h-4 w-4" /> Total P&L</p>
+              <p
+                className={`text-2xl font-semibold ${monthlyStats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}
+              >
+                {formatValue(monthlyStats.totalProfit)}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><Activity className="h-4 w-4" /> Total Bets</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">{monthlyStats.totalBets}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"><Target className="h-4 w-4" /> Strike Rate</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {monthlyStats.strikeRate.toFixed(1)}%
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bets Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-700 to-gray-800">
@@ -1484,30 +1416,7 @@ export default function BetsPage() {
                   </span>
                 )}
               </button>
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleImportCSV}
-                disabled={isImporting}
-                className="hidden"
-                id="csv-import-input"
-              />
-              <label
-                htmlFor="csv-import-input"
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isImporting || !hasCSVAccess || checkingCSVAccess
-                  ? 'bg-gray-500 text-white cursor-not-allowed'
-                  : 'bg-green-600 hover:bg-green-700 text-white cursor-pointer'
-                  }`}
-                title={!hasCSVAccess ? 'Elite feature - Upgrade to access CSV Import' : ''}
-              >
-                <Upload className="h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {isImporting ? 'Importing...' : checkingCSVAccess ? 'Loading...' : !hasCSVAccess ? 'Import CSV (Elite)' : 'Import CSV'}
-                </span>
-                <span className="sm:hidden">
-                  {isImporting ? '...' : checkingCSVAccess ? '...' : !hasCSVAccess ? 'Import (Elite)' : 'Import'}
-                </span>
-              </label>
+
               <button
                 onClick={() => {
                   if (!hasCSVAccess) {

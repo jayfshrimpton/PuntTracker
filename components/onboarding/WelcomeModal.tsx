@@ -54,7 +54,7 @@ export function WelcomeModal({ isOpen, onClose, onAddFirstBet }: WelcomeModalPro
 
                         <div className="pt-2 border-t border-border mt-4">
                             <a
-                                href="/dashboard/guide"
+                                href="/guide"
                                 className="flex items-center justify-center gap-2 text-sm text-primary hover:underline py-2"
                                 onClick={onClose}
                             >
