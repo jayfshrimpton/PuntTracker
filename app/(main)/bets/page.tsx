@@ -67,7 +67,7 @@ export default function BetsPage() {
   const [profitLossInput, setProfitLossInput] = useState('');
   const [celebrateWin, setCelebrateWin] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
 
   const [hasCSVAccess, setHasCSVAccess] = useState(false);
   const [checkingCSVAccess, setCheckingCSVAccess] = useState(true);
@@ -108,6 +108,20 @@ export default function BetsPage() {
   useEffect(() => {
     loadBets();
     checkCSVFeatureAccess();
+  }, []);
+
+  // Focus horse name input when navigated via keyboard shortcut
+  useEffect(() => {
+    const shouldFocus = sessionStorage.getItem('focusBetForm');
+    if (shouldFocus === 'true') {
+      sessionStorage.removeItem('focusBetForm');
+      // Small delay to ensure form is rendered
+      setTimeout(() => {
+        horseNameInputRef.current?.focus();
+        // Scroll to form if needed
+        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
   }, []);
 
   // Reset multi-legs when bet type changes away from multi
@@ -163,6 +177,7 @@ export default function BetsPage() {
   };
 
   const formRef = useRef<HTMLDivElement>(null);
+  const horseNameInputRef = useRef<HTMLInputElement>(null);
 
   // Update form date when selected date changes
   useEffect(() => {
@@ -793,6 +808,7 @@ export default function BetsPage() {
                       Horse/Dog Name <span className="text-red-500">*</span>
                     </label>
                     <input
+                      ref={horseNameInputRef}
                       type="text"
                       name="horse_name"
                       required

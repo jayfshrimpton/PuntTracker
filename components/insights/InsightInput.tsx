@@ -22,6 +22,18 @@ export function InsightInput({ onSend, isLoading }: InsightInputProps) {
     const [input, setInput] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // Focus input when navigated via keyboard shortcut
+    useEffect(() => {
+        const shouldFocus = sessionStorage.getItem('focusChatInput');
+        if (shouldFocus === 'true') {
+            sessionStorage.removeItem('focusChatInput');
+            // Small delay to ensure component is rendered
+            setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+        }
+    }, []);
+
     const handleSubmit = (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!input.trim() || isLoading) return;

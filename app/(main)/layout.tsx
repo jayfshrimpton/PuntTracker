@@ -10,6 +10,11 @@ const FeedbackButton = dynamic(() => import('@/components/FeedbackButton'), {
   ssr: false,
 });
 
+// Lazy load KeyboardShortcuts
+const KeyboardShortcuts = dynamic(() => import('@/components/KeyboardShortcuts').then(mod => ({ default: mod.KeyboardShortcuts })), {
+  ssr: false,
+});
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -47,6 +52,7 @@ export default async function DashboardLayout({
       </div>
 
       <FeedbackButton />
+      <KeyboardShortcuts />
     </div>
   );
 }

@@ -20,17 +20,21 @@ export function Celebration({ show, onClose }: CelebrationProps) {
             const end = Date.now() + duration;
 
             const frame = () => {
+                const isMobile = window.innerWidth < 768;
+                const particleCount = isMobile ? 1 : 2;
+                const spread = isMobile ? 40 : 55;
+
                 confetti({
-                    particleCount: 2,
+                    particleCount,
                     angle: 60,
-                    spread: 55,
+                    spread,
                     origin: { x: 0 },
                     colors: ['#10B981', '#3B82F6', '#F59E0B']
                 });
                 confetti({
-                    particleCount: 2,
+                    particleCount,
                     angle: 120,
-                    spread: 55,
+                    spread,
                     origin: { x: 1 },
                     colors: ['#10B981', '#3B82F6', '#F59E0B']
                 });

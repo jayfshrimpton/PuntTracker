@@ -111,7 +111,7 @@ export default function DashboardPage() {
       }
 
       // Check for first bet celebration
-      if (userBets.length > 0 && !localStorage.getItem('has_celebrated_first_bet')) {
+      if (userBets.length === 1 && !localStorage.getItem('has_celebrated_first_bet')) {
         setShowCelebration(true);
         localStorage.setItem('has_celebrated_first_bet', 'true');
       }
