@@ -228,7 +228,7 @@ export async function sendVerificationReminderEmail(data: VerificationReminderEm
     const { error } = await resend.emails.send({
       from: process.env.FROM_EMAIL,
       to: data.userEmail,
-      subject: 'Quick verification needed for Punter's Journal',
+      subject: "Quick verification needed for Punter's Journal",
       html,
       text,
     });
