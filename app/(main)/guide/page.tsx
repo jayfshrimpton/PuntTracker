@@ -8,7 +8,7 @@ export default function UserGuidePage() {
             <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">User Guide</h1>
                 <p className="text-muted-foreground">
-                    Welcome to the Punter's Journal Beta! This guide will help you get started and make the most of your tracking.
+                    Welcome to the Punter&apos;s Journal Beta! This guide will help you get started and make the most of your tracking.
                 </p>
             </div>
 

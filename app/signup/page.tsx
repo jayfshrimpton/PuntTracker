@@ -78,7 +78,7 @@ export default function SignupPage() {
             Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-700 dark:text-gray-300">
-            Start tracking your horse racing bets with Punter's Journal
+            Start tracking your horse racing bets with Punter&apos;s Journal
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSignup}>
