@@ -42,7 +42,7 @@ export async function sendMonthlySummaryEmail(data: MonthlySummaryEmailData): Pr
     const { error } = await resend.emails.send({
       from: process.env.FROM_EMAIL,
       to: data.userEmail,
-      subject: `Your ${data.month} ${data.year} Betting Summary - PuntTracker`,
+      subject: `Your ${data.month} ${data.year} Betting Summary - Punter's Journal`,
       html,
       text,
     });
@@ -78,7 +78,7 @@ function generateMonthlySummaryHTML(data: MonthlySummaryEmailData): string {
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
   <div style="background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
     <div style="text-align: center; margin-bottom: 30px;">
-      <h1 style="color: #2563eb; margin: 0; font-size: 28px;">PuntTracker</h1>
+      <h1 style="color: #2563eb; margin: 0; font-size: 28px;">Punter's Journal</h1>
       <p style="color: #666; margin: 5px 0 0 0; font-size: 16px;">Monthly Betting Summary</p>
     </div>
     
@@ -159,7 +159,7 @@ function generateMonthlySummaryHTML(data: MonthlySummaryEmailData): string {
 
     <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
       <p style="color: #999; font-size: 12px; margin: 0;">
-        This is an automated monthly summary from PuntTracker.<br>
+        This is an automated monthly summary from Punter's Journal.<br>
         You can manage your email preferences in your dashboard settings.
       </p>
     </div>
@@ -174,7 +174,7 @@ function generateMonthlySummaryText(data: MonthlySummaryEmailData): string {
   const profitSign = stats.totalProfit >= 0 ? '+' : '';
 
   return `
-PuntTracker - Monthly Betting Summary
+Punter's Journal - Monthly Betting Summary
 ${month} ${year}
 ${userName ? `Hello, ${userName}!\n` : ''}
 
@@ -200,7 +200,7 @@ Average Odds: ${stats.averageOdds.toFixed(2)}
 
 View your full dashboard: ${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/dashboard
 
-This is an automated monthly summary from PuntTracker.
+This is an automated monthly summary from Punter's Journal.
   `.trim();
 }
 
@@ -228,7 +228,7 @@ export async function sendVerificationReminderEmail(data: VerificationReminderEm
     const { error } = await resend.emails.send({
       from: process.env.FROM_EMAIL,
       to: data.userEmail,
-      subject: 'Quick verification needed for PuntTracker',
+      subject: 'Quick verification needed for Punter's Journal',
       html,
       text,
     });
@@ -257,19 +257,19 @@ function generateVerificationReminderHTML(data: VerificationReminderEmailData): 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify your PuntTracker account</title>
+  <title>Verify your Punter's Journal account</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
   <div style="background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
     <div style="text-align: center; margin-bottom: 30px;">
-      <h1 style="color: #2563eb; margin: 0; font-size: 28px;">PuntTracker</h1>
+      <h1 style="color: #2563eb; margin: 0; font-size: 28px;">Punter's Journal</h1>
     </div>
     
     <div style="text-align: center; margin-bottom: 30px;">
       <h2 style="color: #333; margin: 0 0 15px 0; font-size: 24px;">Verify your email address</h2>
       ${userName ? `<p style="color: #666; margin: 0 0 15px 0; font-size: 16px;">Hi ${userName},</p>` : ''}
       <p style="color: #666; margin: 0; font-size: 16px;">
-        Thanks for signing up for PuntTracker! Please verify your email address to secure your account and access all features.
+        Thanks for signing up for Punter's Journal! Please verify your email address to secure your account and access all features.
       </p>
     </div>
 
@@ -291,7 +291,7 @@ function generateVerificationReminderHTML(data: VerificationReminderEmailData): 
 
     <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
       <p style="color: #999; font-size: 12px; margin: 0;">
-        If you didn't create an account with PuntTracker, you can safely ignore this email.
+        If you didn't create an account with Punter's Journal, you can safely ignore this email.
       </p>
     </div>
   </div>
@@ -304,13 +304,13 @@ function generateVerificationReminderText(data: VerificationReminderEmailData): 
   const { userName, verificationLink } = data;
 
   return `
-PuntTracker - Verify your email address
+Punter's Journal - Verify your email address
 
 ${userName ? `Hi ${userName},\n` : ''}
-Thanks for signing up for PuntTracker! Please verify your email address to secure your account and access all features.
+Thanks for signing up for Punter's Journal! Please verify your email address to secure your account and access all features.
 
 Verify Email Address: ${verificationLink}
 
-If you didn't create an account with PuntTracker, you can safely ignore this email.
+If you didn't create an account with Punter's Journal, you can safely ignore this email.
   `.trim();
 }

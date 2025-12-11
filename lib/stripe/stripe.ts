@@ -15,7 +15,7 @@ function getStripe(): Stripe {
         stripeInstance = new Stripe(apiKey, {
             apiVersion: '2025-11-17.clover',
             appInfo: {
-                name: 'PuntTracker',
+                name: "Punter's Journal",
                 version: '0.1.0',
             },
         });

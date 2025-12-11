@@ -71,7 +71,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Sign in to PuntTracker
+            Sign in to Punter's Journal
           </h2>
           <p className="mt-2 text-center text-sm text-gray-700 dark:text-gray-300">
             Track your horse racing bets with comprehensive statistics

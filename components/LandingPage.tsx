@@ -356,7 +356,7 @@ export default function LandingPage() {
           className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
           <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12">
-            Why Aussie Punters Love PuntTracker
+            Why Aussie Punters Love Punter's Journal
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -401,7 +401,7 @@ export default function LandingPage() {
             Ready to Track Like a Pro?
           </h2>
           <p className="text-xl text-foreground/90 mb-10">
-            Join Australian punters already using PuntTracker
+            Join Australian punters already using Punter's Journal
           </p>
 
           <Link
@@ -439,7 +439,7 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <TrendingUp className="w-6 h-6 text-primary" />
-                <span className="text-xl font-bold">PuntTracker</span>
+                <span className="text-xl font-bold">Punter's Journal</span>
               </div>
               <p className="text-muted-foreground text-sm">
                 The bet tracker built for Australian horse racing punters.
@@ -501,7 +501,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2025 PuntTracker. Built for Aussie punters.</p>
+            <p>© 2025 Punter's Journal. Built for Aussie punters.</p>
           </div>
         </div>
       </footer>

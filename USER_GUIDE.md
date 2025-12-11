@@ -1,6 +1,6 @@
-# PuntTracker Beta User Guide
+# Punter's Journal Beta User Guide
 
-Welcome to the PuntTracker Beta! Thank you for helping us test the app. This guide will help you get started and let you know what to look out for.
+Welcome to the Punter's Journal Beta! Thank you for helping us test the app. This guide will help you get started and let you know what to look out for.
 
 ## Getting Started
 

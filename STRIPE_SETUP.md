@@ -1,6 +1,6 @@
 # Stripe Payment Setup Guide
 
-This guide explains how to set up Stripe payments for PuntTracker and how to disable payments when not ready for production.
+This guide explains how to set up Stripe payments for Punter's Journal and how to disable payments when not ready for production.
 
 ## Required Stripe API Keys
 
@@ -70,7 +70,7 @@ NEXT_PUBLIC_APP_URL=https://your-app-url.com
 
 **Where to set it:**
 - For local development: `http://localhost:3000`
-- For production: Your actual domain (e.g., `https://puntracker.com`)
+- For production: Your actual domain (e.g., `https://puntersjournal.com.au`)
 
 This is used for redirect URLs after checkout and subscription management.
 

@@ -8,7 +8,7 @@ This guide shows you how to set up all required environment variables in Vercel 
 
 1. Go to [vercel.com](https://vercel.com) and log in
 2. Navigate to your project dashboard
-3. Click on your **PuntTracker** project
+3. Click on your **Punter's Journal** project
 4. Click on **Settings** in the top navigation
 5. Click on **Environment Variables** in the left sidebar
 
@@ -61,7 +61,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 ```
 NEXT_PUBLIC_APP_URL
 ```
-- **Value**: Your Vercel deployment URL (e.g., `https://puntracker.vercel.app`)
+- **Value**: Your Vercel deployment URL (e.g., `https://puntersjournal.com.au`)
 - **Note**: Update this after your first deployment if you have a custom domain
 
 #### **Payment Feature Flags (CRITICAL - Set to false to disable payments)**

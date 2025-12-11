@@ -1,4 +1,4 @@
-# PuntTracker
+# Punter's Journal
 
 A web application for tracking horse racing bets with user authentication, comprehensive statistics, and data visualizations. Built with Next.js, Supabase, and modern React components.
 

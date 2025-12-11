@@ -1,6 +1,6 @@
 # Email Notifications Setup Guide
 
-This guide explains how to set up email notifications for monthly summaries in PuntTracker.
+This guide explains how to set up email notifications for monthly summaries in Punter's Journal.
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ Add the following environment variables to your `.env.local` file (or your deplo
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 
 # Email sender address (must be verified in Resend)
-FROM_EMAIL=noreply@yourdomain.com
+FROM_EMAIL=noreply@puntersjournal.com.au
 
 # Your app URL (for email links)
 NEXT_PUBLIC_APP_URL=https://your-app-url.com

@@ -46,7 +46,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               <Activity className="h-5 w-5 text-white" />
             </div>
             <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-              PuntTracker
+              Punter's Journal
             </span>
           </Link>
           <div className="flex items-center gap-2">
@@ -95,7 +95,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                 <Activity className="h-5 w-5 text-white" />
               </div>
               <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                PuntTracker
+                Punter's Journal
               </span>
             </Link>
 
