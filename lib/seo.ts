@@ -126,3 +126,4 @@ export function generateStructuredData(type: 'WebSite' | 'WebApplication' | 'Org
 
   return baseData;
 }
+

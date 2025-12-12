@@ -36,7 +36,9 @@ export function WelcomeModal({ isOpen, onClose, onAddFirstBet }: WelcomeModalPro
                 <div className="text-center space-y-4 pt-4">
                     <div className="text-4xl animate-bounce">🐴</div>
                     <h2 className="text-2xl font-bold text-foreground">Welcome to Punters Journal!</h2>
-                    Let&apos;s log your first bet to get started tracking your performance like a pro.
+                    <p className="text-muted-foreground">
+                        Let&apos;s log your first bet to get started tracking your performance like a pro.
+                    </p>
 
                     <div className="pt-4 space-y-3">
                         <button

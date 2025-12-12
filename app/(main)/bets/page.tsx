@@ -1936,7 +1936,7 @@ export default function BetsPage() {
                       <Activity className="h-10 w-10 text-blue-600" />
                       <p className="text-gray-900 dark:text-gray-100 font-medium">No bets yet</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Track your first bet to see stats and insights.</p>
-                      <a href="/dashboard/bets" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow hover:from-blue-700 hover:to-purple-700 transition-all hover:shadow-xl">
+                      <a href="/bets" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow hover:from-blue-700 hover:to-purple-700 transition-all hover:shadow-xl">
                         <PlusCircle className="h-4 w-4" /> Add your first bet
                       </a>
                     </div>

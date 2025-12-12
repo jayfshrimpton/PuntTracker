@@ -29,3 +29,4 @@ Sitemap: ${siteUrl}/sitemap.xml
     },
   });
 }
+

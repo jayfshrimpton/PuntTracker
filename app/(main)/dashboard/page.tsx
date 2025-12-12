@@ -130,7 +130,7 @@ export default function DashboardPage() {
   };
 
   const handleAddFirstBet = () => {
-    router.push('/dashboard/bets');
+    router.push('/bets');
   };
 
   const stats = calculateMonthlyStats(filteredBets);

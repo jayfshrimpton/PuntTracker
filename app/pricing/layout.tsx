@@ -14,3 +14,4 @@ export default function PricingLayout({
 }) {
   return <>{children}</>;
 }
+

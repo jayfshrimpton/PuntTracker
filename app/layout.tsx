@@ -6,13 +6,34 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/lib/theme";
 import { generateMetadata as generateSEOMetadata, generateStructuredData } from "@/lib/seo";
+import PWARegister from "@/components/PWARegister";
 
-export const metadata: Metadata = generateSEOMetadata({
-  title: "Horse Racing Bet Tracker for Australian Punters",
-  description: "Track your horse racing bets with ease. Automatic stats, beautiful charts, and insights. Built for Aussie punters. Free to start.",
-  keywords: ["horse racing", "bet tracker", "betting stats", "punt tracker", "racing bets", "Australian horse racing", "betting analytics"],
-  path: "/",
-});
+export const metadata: Metadata = {
+  ...generateSEOMetadata({
+    title: "Horse Racing Bet Tracker for Australian Punters",
+    description: "Track your horse racing bets with ease. Automatic stats, beautiful charts, and insights. Built for Aussie punters. Free to start.",
+    keywords: ["horse racing", "bet tracker", "betting stats", "punt tracker", "racing bets", "Australian horse racing", "betting analytics"],
+    path: "/",
+  }),
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Punter's Journal",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
+};
 
 export const viewport: Viewport = {
   themeColor: [
@@ -65,6 +86,7 @@ export default function RootLayout({
           <ThemeProvider>
             {children}
             <ToastProvider />
+            <PWARegister />
             <Analytics />
             <SpeedInsights />
           </ThemeProvider>
