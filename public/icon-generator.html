@@ -77,59 +77,66 @@
             // Clear canvas
             ctx.clearRect(0, 0, size, size);
             
-            // Background circle
-            ctx.fillStyle = '#0f172a';
+            // Black background
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Create blue-to-purple gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, size);
+            gradient.addColorStop(0, '#3b82f6'); // Blue
+            gradient.addColorStop(1, '#8b5cf6'); // Purple
+            
+            // Line graph with 4 data points (upward trend)
+            const lineStartX = size * 0.15;
+            const lineStartY = size * 0.6;
+            const pointSpacing = size * 0.2;
+            
+            ctx.strokeStyle = gradient;
+            ctx.fillStyle = gradient;
+            ctx.lineWidth = size / 25;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // Draw line connecting points
             ctx.beginPath();
-            ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+            ctx.moveTo(lineStartX, lineStartY);
+            ctx.lineTo(lineStartX + pointSpacing, lineStartY - size * 0.04);
+            ctx.lineTo(lineStartX + pointSpacing * 2, lineStartY - size * 0.06);
+            ctx.lineTo(lineStartX + pointSpacing * 3, lineStartY - size * 0.3);
+            ctx.stroke();
+            
+            // Draw data points (circles)
+            const pointRadius = size / 28;
+            ctx.beginPath();
+            ctx.arc(lineStartX, lineStartY, pointRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(lineStartX + pointSpacing, lineStartY - size * 0.04, pointRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(lineStartX + pointSpacing * 2, lineStartY - size * 0.06, pointRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(lineStartX + pointSpacing * 3, lineStartY - size * 0.3, pointRadius, 0, Math.PI * 2);
             ctx.fill();
             
-            // Horse silhouette (simplified)
-            ctx.fillStyle = '#fbbf24';
-            ctx.strokeStyle = '#f59e0b';
-            ctx.lineWidth = size / 128;
+            // Bar chart with 4 bars (increasing heights)
+            const barStartX = size * 0.23;
+            const barStartY = size * 0.75;
+            const barWidth = size * 0.12;
+            const barSpacing = size * 0.2;
             
-            // Draw a simple horse shape
-            ctx.beginPath();
-            ctx.moveTo(size * 0.3, size * 0.2);
-            ctx.lineTo(size * 0.4, size * 0.3);
-            ctx.lineTo(size * 0.5, size * 0.4);
-            ctx.lineTo(size * 0.6, size * 0.5);
-            ctx.lineTo(size * 0.7, size * 0.6);
-            ctx.lineTo(size * 0.75, size * 0.7);
-            ctx.lineTo(size * 0.8, size * 0.75);
-            ctx.lineTo(size * 0.78, size * 0.8);
-            ctx.lineTo(size * 0.7, size * 0.75);
-            ctx.lineTo(size * 0.6, size * 0.7);
-            ctx.lineTo(size * 0.5, size * 0.65);
-            ctx.lineTo(size * 0.4, size * 0.6);
-            ctx.lineTo(size * 0.3, size * 0.55);
-            ctx.lineTo(size * 0.25, size * 0.5);
-            ctx.lineTo(size * 0.2, size * 0.45);
-            ctx.lineTo(size * 0.25, size * 0.4);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
+            // Bar 1 (shortest)
+            ctx.fillRect(barStartX, barStartY, barWidth, size * 0.08);
             
-            // Racing track lines at bottom
-            ctx.strokeStyle = '#64748b';
-            ctx.lineWidth = size / 64;
-            ctx.beginPath();
-            ctx.moveTo(size * 0.2, size * 0.8);
-            ctx.lineTo(size * 0.8, size * 0.8);
-            ctx.stroke();
+            // Bar 2
+            ctx.fillRect(barStartX + barSpacing, barStartY - size * 0.04, barWidth, size * 0.12);
             
-            ctx.lineWidth = size / 128;
-            ctx.beginPath();
-            ctx.moveTo(size * 0.23, size * 0.82);
-            ctx.lineTo(size * 0.77, size * 0.82);
-            ctx.stroke();
+            // Bar 3
+            ctx.fillRect(barStartX + barSpacing * 2, barStartY - size * 0.08, barWidth, size * 0.16);
             
-            // Text "PJ"
-            ctx.fillStyle = '#ffffff';
-            ctx.font = `bold ${size / 10}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'bottom';
-            ctx.fillText('PJ', size / 2, size * 0.95);
+            // Bar 4 (tallest)
+            ctx.fillRect(barStartX + barSpacing * 3, barStartY - size * 0.24, barWidth, size * 0.24);
         }
 
         function downloadIcon(size) {
@@ -148,6 +155,7 @@
     </script>
 </body>
 </html>
+
 
 
 
