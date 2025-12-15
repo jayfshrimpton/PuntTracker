@@ -49,11 +49,11 @@ export default function ResetPasswordPage() {
         }, 1500);
       } else {
         // Check if we already have a valid session (user might have already processed the hash)
-        // But also check if we're missing the hash - this might mean the link was wrong
+        // This handles cases where the callback already processed the hash
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          // If we have a session but no hash, check if it's a recovery session
-          // Recovery sessions are temporary and allow password updates
+          // Check if this is a recovery session by looking at the user metadata
+          // Recovery sessions allow password updates
           setIsValidToken(true);
         } else {
           // No hash and no session means invalid/expired link

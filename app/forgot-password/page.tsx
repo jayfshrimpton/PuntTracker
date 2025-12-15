@@ -20,8 +20,11 @@ export default function ForgotPasswordPage() {
 
     try {
       const supabase = createClient();
+      // Use environment variable if available, otherwise use current origin
+      // This ensures localhost works for development
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${baseUrl}/reset-password`,
       });
 
       if (error) {

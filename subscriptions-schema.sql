@@ -1,7 +1,7 @@
 -- Create subscriptions table
 create table subscriptions (
   id text primary key, -- Stripe Subscription ID
-  user_id uuid references auth.users not null,
+  user_id uuid references auth.users on delete cascade not null,
   status text check (status in ('trialing', 'active', 'canceled', 'incomplete', 'incomplete_expired', 'past_due', 'unpaid', 'paused')) not null,
   metadata jsonb,
   price_id text,

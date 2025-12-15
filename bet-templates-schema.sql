@@ -4,7 +4,7 @@
 -- Create bet_templates table
 CREATE TABLE bet_templates (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users NOT NULL,
+  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
   -- Template data (stores bet configuration)

@@ -50,11 +50,13 @@ export default function LoginPage() {
     setResendStatus('sending');
     try {
       const supabase = createClient();
+      // Use environment variable if available, otherwise use current origin
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${baseUrl}/auth/callback`,
         },
       });
 

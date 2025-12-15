@@ -1,7 +1,7 @@
 -- Create feedback table
 CREATE TABLE feedback (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users NOT NULL,
+  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
   feedback_type TEXT NOT NULL, -- 'Bug Report', 'Feature Request', 'General Feedback'
   title TEXT NOT NULL,
   description TEXT NOT NULL,

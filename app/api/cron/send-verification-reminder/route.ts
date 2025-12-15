@@ -46,9 +46,22 @@ export async function GET(request: Request) {
             );
         });
 
-        const results = await Promise.allSettled(
-            unverifiedUsers.map(async (user) => {
-                if (!user.email) return { success: false, error: 'No email' };
+        // Process users sequentially with rate limiting to avoid 429 errors
+        // Supabase has a 5-second rate limit between magic link requests
+        const results = [];
+        for (let i = 0; i < unverifiedUsers.length; i++) {
+            const user = unverifiedUsers[i];
+            
+            // Add delay between requests (except for the first one)
+            if (i > 0) {
+                await new Promise(resolve => setTimeout(resolve, 6000)); // 6 seconds to be safe
+            }
+
+            try {
+                if (!user.email) {
+                    results.push({ status: 'rejected', reason: { success: false, error: 'No email' } });
+                    continue;
+                }
 
                 // Generate a verification link
                 // Note: We use 'magiclink' because 'signup' requires a password (which we don't have/want to reset)
@@ -63,20 +76,39 @@ export async function GET(request: Request) {
                     },
                 });
 
-                if (linkError || !linkData.properties?.action_link) {
-                    return { success: false, error: linkError?.message || 'Failed to generate link' };
+                if (linkError) {
+                    // Handle rate limiting specifically
+                    if (linkError.message?.includes('429') || linkError.message?.includes('5 seconds')) {
+                        console.warn(`Rate limit hit for ${user.email}, skipping...`);
+                        results.push({ status: 'rejected', reason: { success: false, error: 'Rate limited' } });
+                        continue;
+                    }
+                    results.push({ status: 'rejected', reason: { success: false, error: linkError.message } });
+                    continue;
                 }
 
-                return sendVerificationReminderEmail({
+                if (!linkData.properties?.action_link) {
+                    results.push({ status: 'rejected', reason: { success: false, error: 'Failed to generate link' } });
+                    continue;
+                }
+
+                const emailResult = await sendVerificationReminderEmail({
                     userEmail: user.email,
                     userName: user.user_metadata?.full_name || user.user_metadata?.name,
                     verificationLink: linkData.properties.action_link,
                 });
-            })
-        );
 
-        const successCount = results.filter((r) => r.status === 'fulfilled' && r.value.success).length;
-        const failureCount = results.filter((r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success)).length;
+                results.push({ status: 'fulfilled', value: emailResult });
+            } catch (error) {
+                results.push({ 
+                    status: 'rejected', 
+                    reason: { success: false, error: error instanceof Error ? error.message : 'Unknown error' } 
+                });
+            }
+        }
+
+        const successCount = results.filter((r) => r.status === 'fulfilled' && r.value?.success).length;
+        const failureCount = results.filter((r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value?.success)).length;
 
         return NextResponse.json({
             success: true,

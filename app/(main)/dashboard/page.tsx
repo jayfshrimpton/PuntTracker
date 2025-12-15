@@ -93,9 +93,25 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      
+      // Wait for user session to be available (retry up to 5 times)
+      // This handles cases where magic link auth hasn't fully synced yet
+      let user = null;
+      for (let i = 0; i < 5; i++) {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+        
+        if (currentUser) {
+          user = currentUser;
+          break;
+        }
+        
+        // Wait 200ms before retrying
+        if (i < 4) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
 
       if (!user) {
         return;

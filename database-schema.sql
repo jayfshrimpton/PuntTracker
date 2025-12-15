@@ -4,7 +4,7 @@
 -- Create bets table
 CREATE TABLE bets (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users NOT NULL,
+  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
   race_name TEXT NOT NULL,
   horse_name TEXT NOT NULL,
   bet_type TEXT NOT NULL, -- 'win','place','lay','each-way','multi','quinella','exacta','trifecta','first-four','other'

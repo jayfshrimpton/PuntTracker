@@ -224,3 +224,5 @@ Potential improvements:
 - `scripts/generate-icons.js` - Icon generation script
 - `public/icon-generator.html` - Browser-based icon generator
 
+
+

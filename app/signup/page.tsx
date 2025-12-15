@@ -33,9 +33,15 @@ export default function SignupPage() {
 
     try {
       const supabase = createClient();
+      // Use environment variable if available, otherwise use current origin
+      // This ensures localhost works for development
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${baseUrl}/auth/callback?next=/dashboard`,
+        },
       });
 
       if (error) {
