@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Inter } from "next/font/google";
 import { CurrencyProvider } from '@/components/CurrencyContext';
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
@@ -9,10 +8,27 @@ import { generateMetadata as generateSEOMetadata, generateStructuredData } from 
 import PWARegister from "@/components/PWARegister";
 // Temporarily import directly to debug webpack issue
 import PWAInstallButton from "@/components/PWAInstallButton";
+import dynamic from "next/dynamic";
+
+// Optimize fonts with next/font
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+// Lazy load analytics to improve initial page load
+const Analytics = dynamic(() => import("@vercel/analytics/next").then(mod => ({ default: mod.Analytics })), {
+  ssr: false,
+});
+
+const SpeedInsights = dynamic(() => import("@vercel/speed-insights/next").then(mod => ({ default: mod.SpeedInsights })), {
+  ssr: false,
+});
 
 export const metadata: Metadata = {
   ...generateSEOMetadata({
-    title: "Horse Racing Bet Tracker for Australian Punters",
+    title: "Australian Horse Racing Bet Tracker",
     description: "Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.",
     keywords: ["horse racing", "bet tracker", "betting stats", "punt tracker", "racing bets", "Australian horse racing", "betting analytics"],
     path: "/",
@@ -53,7 +69,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <head>
         <script
           type="application/ld+json"

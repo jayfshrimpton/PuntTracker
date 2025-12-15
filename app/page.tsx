@@ -6,7 +6,7 @@ import PasswordRecoveryRedirect from "@/components/PasswordRecoveryRedirect";
 import { generateMetadata } from "@/lib/seo";
 
 export const metadata = generateMetadata({
-  title: "Horse Racing Bet Tracker for Australian Punters",
+  title: "Australian Horse Racing Bet Tracker",
   description: "Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.",
   keywords: ["horse racing", "bet tracker", "betting stats", "punt tracker", "racing bets", "Australian horse racing"],
   path: "/",

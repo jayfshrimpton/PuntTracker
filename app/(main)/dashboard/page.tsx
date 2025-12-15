@@ -23,8 +23,18 @@ import { EmptyState } from '@/components/onboarding/EmptyState';
 import { Celebration } from '@/components/onboarding/Celebration';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
-import { PerformanceCharts } from '@/components/dashboard/PerformanceCharts';
-import { InsightsSection } from '@/components/dashboard/InsightsSection';
+// Dynamically import heavy chart components to improve initial page load
+import dynamic from 'next/dynamic';
+
+const PerformanceCharts = dynamic(() => import('@/components/dashboard/PerformanceCharts').then(mod => ({ default: mod.PerformanceCharts })), {
+  ssr: false,
+  loading: () => <div className="rounded-2xl border border-border p-8 text-center text-muted-foreground">Loading charts...</div>,
+});
+
+const InsightsSection = dynamic(() => import('@/components/dashboard/InsightsSection').then(mod => ({ default: mod.InsightsSection })), {
+  ssr: false,
+  loading: () => <div className="rounded-2xl border border-border p-8 text-center text-muted-foreground">Loading insights...</div>,
+});
 
 export default function DashboardPage() {
   const [bets, setBets] = useState<Bet[]>([]);

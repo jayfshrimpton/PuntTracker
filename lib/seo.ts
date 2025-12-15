@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://puntersjournal.com';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://puntersjournal.com.au';
 const siteName = "Punter's Journal";
 const brandPositioning = "Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.";
 const defaultDescription = brandPositioning;
@@ -31,8 +31,11 @@ export function generateMetadata({
   modifiedTime,
 }: SEOConfig): Metadata {
   const fullTitle = title ? `${title} | ${siteName}` : siteName;
+  // Ensure title is within SEO best practices (50-60 chars)
+  const truncatedTitle = fullTitle.length > 60 ? fullTitle.substring(0, 57) + '...' : fullTitle;
   const url = `${siteUrl}${path}`;
-  const ogImage = image || `${siteUrl}/og-image.png`;
+  // OG image fallback - create og-image.png (1200x630) for better social sharing
+  const ogImage = image || `${siteUrl}/icon-512x512.png`;
   const defaultKeywords = [
     'horse racing',
     'bet tracker',
@@ -48,7 +51,7 @@ export function generateMetadata({
   const allKeywords = [...defaultKeywords, ...keywords].join(', ');
 
   return {
-    title: fullTitle,
+    title: truncatedTitle,
     description,
     keywords: allKeywords,
     authors: [{ name: siteName }],
@@ -68,7 +71,7 @@ export function generateMetadata({
     openGraph: {
       type,
       siteName,
-      title: fullTitle,
+      title: truncatedTitle,
       description,
       url,
       images: [
@@ -76,7 +79,7 @@ export function generateMetadata({
           url: ogImage,
           width: 1200,
           height: 630,
-          alt: fullTitle,
+          alt: truncatedTitle,
         },
       ],
       ...(publishedTime && { publishedTime }),
@@ -84,7 +87,7 @@ export function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: fullTitle,
+      title: truncatedTitle,
       description,
       images: [ogImage],
       creator: '@puntersjournal',

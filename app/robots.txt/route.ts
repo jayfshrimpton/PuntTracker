@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://puntersjournal.com';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://puntersjournal.com.au';
 
 export async function GET() {
   const robotsTxt = `User-agent: *
@@ -29,6 +29,7 @@ Sitemap: ${siteUrl}/sitemap.xml
     },
   });
 }
+
 
 
 

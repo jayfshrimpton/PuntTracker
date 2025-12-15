@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Calculator, Target, TrendingUp, DollarSign, AlertTriangle } from "lucide-react";
 
 export const metadata = generateMetadata({
-  title: "Bankroll Management Workbook for Australian Punters",
+  title: "Bankroll Management Workbook",
   description: "Punters Journal's Bankroll Management Workbook: A systematic framework for managing betting bankrolls, setting staking plans, and protecting capital for serious Australian horse racing punters.",
   keywords: ["bankroll management", "betting bankroll", "staking plan", "Australian punters", "betting capital"],
   path: "/bankroll-management-workbook-australian-punters",

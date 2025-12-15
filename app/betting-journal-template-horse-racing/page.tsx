@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BookOpen, FileText, CheckSquare, Target } from "lucide-react";
 
 export const metadata = generateMetadata({
-  title: "Betting Journal Template for Horse Racing",
+  title: "Horse Racing Betting Journal Template",
   description: "Punters Journal's Betting Journal Template: A structured framework for tracking horse racing bets, analyzing performance, and building systematic betting approaches for Australian punters.",
   keywords: ["betting journal", "betting template", "horse racing journal", "bet tracking template", "Australian punters"],
   path: "/betting-journal-template-horse-racing",
