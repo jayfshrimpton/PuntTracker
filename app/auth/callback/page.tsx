@@ -45,37 +45,78 @@ function AuthCallbackContent() {
 
       // Now handle hash fragments for other auth types (magic link, signup, etc.)
       if (hash) {
-        // Supabase processes hash fragments automatically
-        // Wait for Supabase to process the hash and establish session
-        // Use onAuthStateChange to detect when session is ready
-        let sessionEstablished = false;
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-          if (event === 'SIGNED_IN' && session) {
-            sessionEstablished = true;
-          }
+        // Supabase processes hash fragments automatically when getSession() is called
+        // First, trigger processing by calling getSession
+        await supabase.auth.getSession();
+        
+        // Wait a moment for Supabase to process the hash
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Now wait for the session to be established using a promise-based approach
+        const waitForSession = new Promise<boolean>((resolve) => {
+          let resolved = false;
+          
+          // Set up auth state change listener
+          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session && !resolved) {
+              resolved = true;
+              subscription.unsubscribe();
+              resolve(true);
+            }
+          });
+
+          // Also poll for session as a fallback (in case event doesn't fire)
+          let attempts = 0;
+          const maxAttempts = 30; // 3 seconds total
+          const checkSession = async () => {
+            if (resolved) return;
+            
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              resolved = true;
+              subscription.unsubscribe();
+              resolve(true);
+              return;
+            }
+            
+            attempts++;
+            if (attempts < maxAttempts) {
+              setTimeout(checkSession, 100);
+            } else {
+              resolved = true;
+              subscription.unsubscribe();
+              resolve(false);
+            }
+          };
+          
+          // Start checking immediately
+          checkSession();
+          
+          // Timeout after 5 seconds
+          setTimeout(() => {
+            if (!resolved) {
+              resolved = true;
+              subscription.unsubscribe();
+              resolve(false);
+            }
+          }, 5000);
         });
 
-        // Wait up to 2 seconds for session to be established
-        for (let i = 0; i < 20; i++) {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            sessionEstablished = true;
-            break;
-          }
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-        // Clean up subscription
-        subscription.unsubscribe();
+        const sessionEstablished = await waitForSession;
 
         if (sessionEstablished) {
-          // Verify we have a valid session before redirecting
+          // Double-check we have a valid session
           const { data: { session: finalSession } } = await supabase.auth.getSession();
           if (finalSession) {
-            // Refresh router to ensure session is synced
+            // Clear the hash from URL to prevent reprocessing
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            
+            // Refresh router to ensure session is synced with server
             router.refresh();
-            // Small delay to ensure refresh completes
-            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            // Wait a bit longer to ensure server-side session is ready
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
             router.replace(next);
           } else {
             router.replace('/login?error=session_failed');
@@ -127,8 +168,10 @@ function AuthCallbackContent() {
       }
 
       // If no hash or query params, check if we have a session
-      // BUT: Check if this might be a recovery session that was already processed
-      // Recovery sessions should still go to reset-password
+      // Wait a moment in case Supabase is still processing (hash might have been cleared)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Check for session - Supabase might have processed the hash already
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         // Check if this is a recovery session by listening to auth state changes
@@ -142,10 +185,14 @@ function AuthCallbackContent() {
         if (fromRecovery) {
           router.replace('/reset-password');
         } else {
+          // Refresh router to ensure session is synced
+          router.refresh();
+          await new Promise(resolve => setTimeout(resolve, 300));
           router.replace('/dashboard');
         }
       } else {
-        router.replace('/');
+        // No session found - redirect to login with error message
+        router.replace('/login?error=no_session');
       }
     };
 
