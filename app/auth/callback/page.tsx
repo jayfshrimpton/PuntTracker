@@ -50,32 +50,38 @@ function AuthCallbackContent() {
         await supabase.auth.getSession();
         
         // Wait a moment for Supabase to process the hash
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 300));
         
         // Now wait for the session to be established using a promise-based approach
-        const waitForSession = new Promise<boolean>((resolve) => {
+        const waitForSession = new Promise<{ session: any; user: any } | null>((resolve) => {
           let resolved = false;
           
           // Set up auth state change listener
-          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session && !resolved) {
-              resolved = true;
-              subscription.unsubscribe();
-              resolve(true);
+              // Also verify we have a user
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                resolved = true;
+                subscription.unsubscribe();
+                resolve({ session, user });
+              }
             }
           });
 
           // Also poll for session as a fallback (in case event doesn't fire)
           let attempts = 0;
-          const maxAttempts = 30; // 3 seconds total
+          const maxAttempts = 40; // 4 seconds total
           const checkSession = async () => {
             if (resolved) return;
             
             const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (session && user) {
               resolved = true;
               subscription.unsubscribe();
-              resolve(true);
+              resolve({ session, user });
               return;
             }
             
@@ -85,42 +91,36 @@ function AuthCallbackContent() {
             } else {
               resolved = true;
               subscription.unsubscribe();
-              resolve(false);
+              resolve(null);
             }
           };
           
           // Start checking immediately
           checkSession();
           
-          // Timeout after 5 seconds
+          // Timeout after 6 seconds
           setTimeout(() => {
             if (!resolved) {
               resolved = true;
               subscription.unsubscribe();
-              resolve(false);
+              resolve(null);
             }
-          }, 5000);
+          }, 6000);
         });
 
-        const sessionEstablished = await waitForSession;
+        const authResult = await waitForSession;
 
-        if (sessionEstablished) {
-          // Double-check we have a valid session
-          const { data: { session: finalSession } } = await supabase.auth.getSession();
-          if (finalSession) {
-            // Clear the hash from URL to prevent reprocessing
-            window.history.replaceState(null, '', window.location.pathname + window.location.search);
-            
-            // Refresh router to ensure session is synced with server
-            router.refresh();
-            
-            // Wait a bit longer to ensure server-side session is ready
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            router.replace(next);
-          } else {
-            router.replace('/login?error=session_failed');
-          }
+        if (authResult && authResult.session && authResult.user) {
+          // Clear the hash from URL to prevent reprocessing
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          
+          // Wait a moment for cookies to be set
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Use window.location.href for a full page reload to ensure cookies are synced
+          // This is important because router.replace does client-side navigation
+          // and cookies might not be synced properly
+          window.location.href = next;
         } else {
           router.replace('/login?error=authentication_timeout');
         }
@@ -135,7 +135,15 @@ function AuthCallbackContent() {
         });
 
         if (!error) {
-          router.replace(next);
+          // Wait for session to be established
+          await new Promise(resolve => setTimeout(resolve, 500));
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            // Use full page reload to ensure cookies are synced
+            window.location.href = next;
+          } else {
+            router.replace('/login?error=session_failed');
+          }
         } else {
           router.replace('/login?error=verification_failed');
         }
@@ -151,13 +159,12 @@ function AuthCallbackContent() {
 
         if (!error) {
           // Wait for session to be established
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise(resolve => setTimeout(resolve, 500));
           const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            // Refresh router to ensure session is synced
-            router.refresh();
-            await new Promise(resolve => setTimeout(resolve, 200));
-            router.replace(next);
+          const { data: { user } } = await supabase.auth.getUser();
+          if (session && user) {
+            // Use full page reload to ensure cookies are synced
+            window.location.href = next;
           } else {
             router.replace('/login?error=session_failed');
           }
@@ -183,12 +190,10 @@ function AuthCallbackContent() {
                            sessionStorage.getItem('password_recovery') === 'true';
         
         if (fromRecovery) {
-          router.replace('/reset-password');
+          window.location.href = '/reset-password';
         } else {
-          // Refresh router to ensure session is synced
-          router.refresh();
-          await new Promise(resolve => setTimeout(resolve, 300));
-          router.replace('/dashboard');
+          // Use full page reload to ensure cookies are synced
+          window.location.href = '/dashboard';
         }
       } else {
         // No session found - redirect to login with error message
