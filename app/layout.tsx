@@ -7,6 +7,12 @@ import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/lib/theme";
 import { generateMetadata as generateSEOMetadata, generateStructuredData } from "@/lib/seo";
 import PWARegister from "@/components/PWARegister";
+import dynamic from "next/dynamic";
+
+// Lazy load PWA install button (client component)
+const PWAInstallButton = dynamic(() => import("@/components/PWAInstallButton"), {
+  ssr: false,
+});
 
 export const metadata: Metadata = {
   ...generateSEOMetadata({
@@ -88,6 +94,7 @@ export default function RootLayout({
             {children}
             <ToastProvider />
             <PWARegister />
+            <PWAInstallButton />
             <Analytics />
             <SpeedInsights />
           </ThemeProvider>

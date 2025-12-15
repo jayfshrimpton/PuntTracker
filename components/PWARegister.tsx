@@ -57,16 +57,19 @@ export default function PWARegister() {
         window.location.reload();
       });
 
-      // Handle beforeinstallprompt - allow default browser prompt
+      // Handle beforeinstallprompt - prevent default to show custom install button
       // Note: iOS Safari doesn't support this event, users need to manually add to home screen
       let deferredPrompt: any;
       window.addEventListener('beforeinstallprompt', (e) => {
-        // Don't prevent default - allow browser's native install prompt
-        // This enables automatic install prompts on Android Chrome/Edge
+        // Prevent the default browser prompt so we can show our custom button
+        e.preventDefault();
         deferredPrompt = e;
         console.log('[PWA] Install prompt available');
-        // Store in window for potential use by other components (custom install button)
+        // Store in window for use by PWAInstallButton component
         (window as any).deferredPrompt = deferredPrompt;
+        
+        // Dispatch custom event for PWAInstallButton to listen to
+        window.dispatchEvent(new CustomEvent('pwa-install-available'));
         
         // For iOS, we can't programmatically trigger install, but we can log instructions
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);

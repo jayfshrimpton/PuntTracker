@@ -65,13 +65,14 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               )}
             </Button>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="h-9 w-9 p-0 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              className="h-9 px-3 rounded-md border-2 border-destructive/30 hover:border-destructive bg-background hover:bg-destructive/10 text-destructive transition-colors font-medium"
               title="Sign out"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4 mr-1" />
+              <span className="text-xs font-semibold">Out</span>
             </Button>
           </div>
         </div>
