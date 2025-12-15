@@ -57,16 +57,22 @@ export default function PWARegister() {
         window.location.reload();
       });
 
-      // Handle beforeinstallprompt for custom install prompt
+      // Handle beforeinstallprompt - allow default browser prompt
+      // Note: iOS Safari doesn't support this event, users need to manually add to home screen
       let deferredPrompt: any;
       window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent the mini-infobar from appearing
-        e.preventDefault();
-        // Stash the event so it can be triggered later
+        // Don't prevent default - allow browser's native install prompt
+        // This enables automatic install prompts on Android Chrome/Edge
         deferredPrompt = e;
         console.log('[PWA] Install prompt available');
-        // Store in window for potential use by other components
+        // Store in window for potential use by other components (custom install button)
         (window as any).deferredPrompt = deferredPrompt;
+        
+        // For iOS, we can't programmatically trigger install, but we can log instructions
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (isIOS) {
+          console.log('[PWA] iOS detected - users can add to home screen via Share button');
+        }
       });
 
       // Track when app is installed
@@ -80,6 +86,7 @@ export default function PWARegister() {
 
   return null;
 }
+
 
 
 

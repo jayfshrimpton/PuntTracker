@@ -41,7 +41,7 @@ export default async function DashboardLayout({
 
       <div className="flex flex-1 overflow-hidden relative">
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto focus:outline-none scroll-smooth">
+        <main className="flex-1 overflow-y-auto focus:outline-none scroll-smooth pt-16 lg:pt-0 pb-20 lg:pb-0">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8">
             {children}
           </div>

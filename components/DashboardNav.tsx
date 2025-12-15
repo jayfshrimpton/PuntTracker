@@ -52,12 +52,26 @@ export default function DashboardNav({ user }: DashboardNavProps) {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={toggleMode}
-              className="h-8 w-8 p-0 rounded-full"
+              className="h-9 px-2.5 rounded-md border-2 bg-background hover:bg-muted transition-colors"
+              title={mode === 'currency' ? 'Switch to Units' : 'Switch to Currency'}
             >
-              {mode === 'currency' ? <DollarSign className="h-4 w-4" /> : <Coins className="h-4 w-4" />}
+              {mode === 'currency' ? (
+                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+              ) : (
+                <Coins className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="h-9 w-9 p-0 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
