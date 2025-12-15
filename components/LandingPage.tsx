@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Zap,
@@ -23,8 +23,10 @@ import CountdownTimer from './CountdownTimer';
 
 export default function LandingPage() {
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const observerOptions = {
       threshold: 0.1,
       rootMargin: '0px 0px -100px 0px',
@@ -80,8 +82,11 @@ export default function LandingPage() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-tight">
               Track Your Punts With Ease
             </h1>
-            <p className="text-xl md:text-2xl text-foreground/90 mb-12 max-w-3xl mx-auto font-medium">
-              Purpose-built for Australian horse racing punters. Keep the numbers clean, the workflow smooth, and the insights sharp.
+            <p className="text-xl md:text-2xl text-foreground/90 mb-6 max-w-3xl mx-auto font-medium">
+              Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.
+            </p>
+            <p className="text-lg md:text-xl text-foreground/80 mb-12 max-w-3xl mx-auto">
+              Keep the numbers clean, the workflow smooth, and the insights sharp.
               <br />
               <span className="text-primary font-bold mt-2 block">Currently free for all users during beta.</span>
             </p>
@@ -442,7 +447,7 @@ export default function LandingPage() {
                 <span className="text-xl font-bold">Punter&apos;s Journal</span>
               </div>
               <p className="text-muted-foreground text-sm">
-                The bet tracker built for Australian horse racing punters.
+                Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.
               </p>
             </div>
 
@@ -460,6 +465,16 @@ export default function LandingPage() {
                   </button>
                 </li>
                 <li>
+                  <Link href="/what-is-punters-journal" className="hover:text-primary transition-colors">
+                    What is Punters Journal?
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/getting-started" className="hover:text-primary transition-colors">
+                    Getting Started
+                  </Link>
+                </li>
+                <li>
                   <Link href="/feedback" className="hover:text-primary transition-colors">
                     Feedback
                   </Link>
@@ -468,16 +483,21 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 className="font-bold mb-4">Company</h4>
+              <h4 className="font-bold mb-4">Resources</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/about" className="hover:text-primary transition-colors">
-                    About
+                  <Link href="/race-day-betting-checklist" className="hover:text-primary transition-colors">
+                    Race Day Checklist
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="hover:text-primary transition-colors">
-                    Contact
+                  <Link href="/bankroll-management-workbook-australian-punters" className="hover:text-primary transition-colors">
+                    Bankroll Workbook
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/betting-journal-template-horse-racing" className="hover:text-primary transition-colors">
+                    Journal Template
                   </Link>
                 </li>
               </ul>

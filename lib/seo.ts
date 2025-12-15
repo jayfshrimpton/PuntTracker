@@ -2,7 +2,8 @@ import { Metadata } from 'next';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://puntersjournal.com';
 const siteName = "Punter's Journal";
-const defaultDescription = "Track your horse racing bets with ease. Automatic stats, beautiful charts, and insights. Built for Aussie punters.";
+const brandPositioning = "Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.";
+const defaultDescription = brandPositioning;
 
 export interface SEOConfig {
   title?: string;
@@ -101,13 +102,13 @@ export function generateMetadata({
   };
 }
 
-export function generateStructuredData(type: 'WebSite' | 'WebApplication' | 'Organization', data?: Record<string, any>) {
+export function generateStructuredData(type: 'WebSite' | 'WebApplication' | 'Organization' | 'Product', data?: Record<string, any>) {
   const baseData = {
     '@context': 'https://schema.org',
     '@type': type,
     name: siteName,
     url: siteUrl,
-    description: defaultDescription,
+    description: brandPositioning,
     ...data,
   };
 
@@ -124,8 +125,39 @@ export function generateStructuredData(type: 'WebSite' | 'WebApplication' | 'Org
     };
   }
 
+  if (type === 'Organization') {
+    return {
+      ...baseData,
+      '@type': 'Organization',
+      name: siteName,
+      url: siteUrl,
+      description: brandPositioning,
+      logo: `${siteUrl}/icon-512x512.png`,
+      sameAs: [],
+    };
+  }
+
+  if (type === 'Product') {
+    return {
+      ...baseData,
+      '@type': 'Product',
+      name: siteName,
+      description: brandPositioning,
+      category: 'Software',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'AUD',
+        availability: 'https://schema.org/InStock',
+      },
+    };
+  }
+
   return baseData;
 }
+
+export const BRAND_POSITIONING = brandPositioning;
+
 
 
 

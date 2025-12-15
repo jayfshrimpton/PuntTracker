@@ -7,7 +7,7 @@ import { generateMetadata } from "@/lib/seo";
 
 export const metadata = generateMetadata({
   title: "Horse Racing Bet Tracker for Australian Punters",
-  description: "Track your horse racing bets with ease. Automatic stats, beautiful charts, and AI-powered insights. Built for Aussie punters. Free to start.",
+  description: "Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.",
   keywords: ["horse racing", "bet tracker", "betting stats", "punt tracker", "racing bets", "Australian horse racing"],
   path: "/",
 });

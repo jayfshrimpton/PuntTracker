@@ -7,17 +7,13 @@ import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/lib/theme";
 import { generateMetadata as generateSEOMetadata, generateStructuredData } from "@/lib/seo";
 import PWARegister from "@/components/PWARegister";
-import dynamic from "next/dynamic";
-
-// Lazy load PWA install button (client component)
-const PWAInstallButton = dynamic(() => import("@/components/PWAInstallButton"), {
-  ssr: false,
-});
+// Temporarily import directly to debug webpack issue
+import PWAInstallButton from "@/components/PWAInstallButton";
 
 export const metadata: Metadata = {
   ...generateSEOMetadata({
     title: "Horse Racing Bet Tracker for Australian Punters",
-    description: "Track your horse racing bets with ease. Automatic stats, beautiful charts, and insights. Built for Aussie punters. Free to start.",
+    description: "Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.",
     keywords: ["horse racing", "bet tracker", "betting stats", "punt tracker", "racing bets", "Australian horse racing", "betting analytics"],
     path: "/",
   }),

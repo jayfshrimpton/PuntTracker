@@ -1,6 +1,7 @@
 'use client';
 
-import { BookOpen, Trophy, Target, AlertTriangle } from 'lucide-react';
+import { BookOpen, Trophy, Target, AlertTriangle, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 
 export default function UserGuidePage() {
     return (
@@ -8,8 +9,60 @@ export default function UserGuidePage() {
             <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">User Guide</h1>
                 <p className="text-muted-foreground">
-                    Welcome to the Punter&apos;s Journal Beta! This guide will help you get started and make the most of your tracking.
+                    Welcome to Punters Journal! This guide will help you get started and make the most of your tracking.
                 </p>
+            </div>
+
+            {/* Resources Section */}
+            <div className="bg-card rounded-xl border border-border shadow-sm">
+                <div className="p-6 pb-4">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                        Resources & Guides
+                    </h2>
+                </div>
+                <div className="p-6 pt-0 space-y-4">
+                    <p className="text-muted-foreground mb-4">
+                        Explore these resources to get the most out of Punters Journal:
+                    </p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <Link href="/what-is-punters-journal" className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                            <h3 className="font-semibold mb-2 flex items-center gap-2">
+                                What is Punters Journal?
+                                <ExternalLink className="h-4 w-4" />
+                            </h3>
+                            <p className="text-sm text-muted-foreground">Complete overview of Punters Journal and how it differs from other betting resources.</p>
+                        </Link>
+                        <Link href="/getting-started" className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                            <h3 className="font-semibold mb-2 flex items-center gap-2">
+                                Getting Started
+                                <ExternalLink className="h-4 w-4" />
+                            </h3>
+                            <p className="text-sm text-muted-foreground">30-Day Challenge, Race Day Checklist, and example journal entries.</p>
+                        </Link>
+                        <Link href="/race-day-betting-checklist" className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                            <h3 className="font-semibold mb-2 flex items-center gap-2">
+                                Race Day Checklist
+                                <ExternalLink className="h-4 w-4" />
+                            </h3>
+                            <p className="text-sm text-muted-foreground">Punters Journal&apos;s systematic framework for race day preparation.</p>
+                        </Link>
+                        <Link href="/bankroll-management-workbook-australian-punters" className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                            <h3 className="font-semibold mb-2 flex items-center gap-2">
+                                Bankroll Workbook
+                                <ExternalLink className="h-4 w-4" />
+                            </h3>
+                            <p className="text-sm text-muted-foreground">Systematic bankroll management framework for Australian punters.</p>
+                        </Link>
+                        <Link href="/betting-journal-template-horse-racing" className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                            <h3 className="font-semibold mb-2 flex items-center gap-2">
+                                Journal Template
+                                <ExternalLink className="h-4 w-4" />
+                            </h3>
+                            <p className="text-sm text-muted-foreground">Structured template for tracking horse racing bets systematically.</p>
+                        </Link>
+                    </div>
+                </div>
             </div>
 
             <div className="grid gap-6">

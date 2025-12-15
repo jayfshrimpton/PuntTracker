@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear PWA Cache</title>
+</head>
+<body>
+    <h1>Clearing Service Worker Cache...</h1>
+    <p id="status">Please wait...</p>
+    <script>
+        async function clearCache() {
+            const statusEl = document.getElementById('status');
+            
+            try {
+                // Unregister all service workers
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                    statusEl.textContent += `\nUnregistered: ${registration.scope}`;
+                }
+                
+                // Clear all caches
+                const cacheNames = await caches.keys();
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                    statusEl.textContent += `\nDeleted cache: ${cacheName}`;
+                }
+                
+                statusEl.textContent += '\n\n✅ Cache cleared! You can now close this tab and refresh your app.';
+                statusEl.style.color = 'green';
+            } catch (error) {
+                statusEl.textContent = 'Error: ' + error.message;
+                statusEl.style.color = 'red';
+            }
+        }
+        
+        if ('serviceWorker' in navigator) {
+            clearCache();
+        } else {
+            document.getElementById('status').textContent = 'Service Workers not supported in this browser.';
+        }
+    </script>
+</body>
+</html>
+

@@ -1,9 +1,9 @@
 // Service Worker for Punter's Journal PWA
 // Version: 1.0.0
 
-const CACHE_NAME = 'punters-journal-v1';
-const RUNTIME_CACHE = 'punters-journal-runtime-v1';
-const DATA_CACHE = 'punters-journal-data-v1';
+const CACHE_NAME = 'punters-journal-v2';
+const RUNTIME_CACHE = 'punters-journal-runtime-v2';
+const DATA_CACHE = 'punters-journal-data-v2';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
@@ -206,6 +206,7 @@ self.addEventListener('notificationclick', (event) => {
     clients.openWindow('/')
   );
 });
+
 
 
 
