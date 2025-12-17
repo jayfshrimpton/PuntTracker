@@ -77,6 +77,59 @@ export default function RootLayout({
                   const resolvedTheme = theme === 'system' ? systemTheme : theme;
                   document.documentElement.classList.add(resolvedTheme);
                 } catch (e) {}
+                
+                // Immediately check for password recovery hash fragments and redirect
+                // This runs before React hydrates to catch Supabase redirects
+                (function() {
+                  // Check immediately
+                  function checkAndRedirect() {
+                    const hash = window.location.hash;
+                    const search = window.location.search;
+                    const pathname = window.location.pathname;
+                    
+                    // Debug logging (remove in production if needed)
+                    if (hash || search.includes('token_hash') || search.includes('type=recovery')) {
+                      console.log('[Password Reset] Detected:', { hash, search, pathname });
+                    }
+                    
+                    // Check for password recovery hash fragments
+                    if (hash && hash.includes('access_token') && hash.includes('type=recovery')) {
+                      console.log('[Password Reset] Redirecting to /reset-password with hash');
+                      window.location.replace('/reset-password' + hash + search);
+                      return true;
+                    }
+                    
+                    // Also check for query parameters (alternative format)
+                    if (search) {
+                      const params = new URLSearchParams(search);
+                      const token_hash = params.get('token_hash');
+                      const type = params.get('type');
+                      
+                      if (token_hash && type === 'recovery') {
+                        console.log('[Password Reset] Redirecting to /reset-password with query params');
+                        window.location.replace('/reset-password?token_hash=' + encodeURIComponent(token_hash) + '&type=' + encodeURIComponent(type));
+                        return true;
+                      }
+                    }
+                    
+                    return false;
+                  }
+                  
+                  // Check immediately
+                  if (checkAndRedirect()) {
+                    return;
+                  }
+                  
+                  // Also check after a short delay (in case hash appears after page load)
+                  setTimeout(function() {
+                    checkAndRedirect();
+                  }, 50);
+                  
+                  // Listen for hash changes (in case Supabase adds it dynamically)
+                  window.addEventListener('hashchange', function() {
+                    checkAndRedirect();
+                  }, { once: true });
+                })();
               })();
             `,
           }}

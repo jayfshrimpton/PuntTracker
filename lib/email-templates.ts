@@ -411,6 +411,19 @@ export const changeEmailAddressTemplate = `
 
 /**
  * Reset Password - Allow users to reset their password if they forget it
+ * 
+ * IMPORTANT: This template uses {{ .ConfirmationURL }} which Supabase will replace
+ * with the actual password reset link. The ConfirmationURL includes the redirectTo
+ * parameter set in resetPasswordForEmail() call, which should point to /reset-password.
+ * 
+ * For this to work correctly:
+ * 1. The redirectTo URL must be in Supabase's allowed Redirect URLs list
+ * 2. Go to Supabase Dashboard → Authentication → URL Configuration → Redirect URLs
+ * 3. Add: https://yourdomain.com/reset-password
+ * 4. Also add: http://localhost:3000/reset-password (for development)
+ * 
+ * If the redirect URL is not in the allowed list, Supabase will ignore redirectTo
+ * and redirect to the Site URL instead, which won't allow password updates.
  */
 export const resetPasswordTemplate = `
 <!DOCTYPE html>
@@ -1040,6 +1053,14 @@ export function generateChangeEmailAddressHTML(params: {
 
 /**
  * Generate Reset Password email HTML for Resend
+ * 
+ * IMPORTANT: The confirmationUrl parameter should be the full password reset link
+ * that includes the redirectTo parameter pointing to /reset-password.
+ * 
+ * Example: https://yourdomain.com/reset-password#access_token=xxx&type=recovery
+ * 
+ * This ensures users are taken directly to the reset-password page where they can
+ * update their password.
  */
 export function generateResetPasswordHTML(params: {
   confirmationUrl: string;

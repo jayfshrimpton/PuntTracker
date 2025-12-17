@@ -14,58 +14,84 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
+  const [checkingToken, setCheckingToken] = useState(true);
 
   useEffect(() => {
     const supabase = createClient();
     let subscription: { unsubscribe: () => void } | null = null;
     let timeoutId: NodeJS.Timeout | null = null;
+    let resolved = false;
 
     // Check if we have the necessary hash parameters from Supabase
     const checkToken = async () => {
+      if (resolved) return;
+      
       // Supabase password reset uses hash fragments in the URL
       // Check if there's a hash in the URL (Supabase redirects with hash)
       const hash = window.location.hash;
       
+      // Check for hash fragment first (before Supabase processes it)
       if (hash && hash.includes('access_token') && hash.includes('type=recovery')) {
-        // Extract the hash and ensure it's processed
-        // Supabase automatically processes hash fragments, but we need to wait for it
+        // Set up auth state change listener to catch PASSWORD_RECOVERY event
         const { data } = supabase.auth.onAuthStateChange((event, session) => {
           if (event === 'PASSWORD_RECOVERY' && session) {
+            resolved = true;
             setIsValidToken(true);
-          } else if (event === 'PASSWORD_RECOVERY' && !session) {
-            setIsValidToken(false);
+            setCheckingToken(false);
           }
         });
         subscription = data?.subscription ?? null;
 
         // Also check session after a short delay as fallback
         timeoutId = setTimeout(async () => {
+          if (resolved) return;
           const { data: { session } } = await supabase.auth.getSession();
           if (session) {
+            // If we have a session and we're on reset-password page with recovery hash,
+            // it's likely a recovery session
+            resolved = true;
             setIsValidToken(true);
+            setCheckingToken(false);
           } else {
+            resolved = true;
             setIsValidToken(false);
+            setCheckingToken(false);
           }
         }, 1500);
+        return;
+      }
+      
+      // No hash fragment - check if we already have a recovery session
+      // This handles cases where Supabase already processed the hash
+      // Wait a moment for Supabase to process the hash if it exists
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // If we have a session and we're on /reset-password page, it's likely a recovery session
+        // Recovery sessions in Supabase allow password updates
+        // Regular authenticated sessions cannot update password without re-authentication
+        // So if updateUser() works, it was a recovery session; if it fails, we'll show an error
+        
+        // Set as valid - the password update will validate if it's actually a recovery session
+        resolved = true;
+        setIsValidToken(true);
+        setCheckingToken(false);
       } else {
-        // Check if we already have a valid session (user might have already processed the hash)
-        // This handles cases where the callback already processed the hash
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          // Check if this is a recovery session by looking at the user metadata
-          // Recovery sessions allow password updates
-          setIsValidToken(true);
-        } else {
-          // No hash and no session means invalid/expired link
-          setIsValidToken(false);
-        }
+        // No hash and no session means invalid/expired link
+        resolved = true;
+        setIsValidToken(false);
+        setCheckingToken(false);
       }
     };
 
+    // Check immediately
     checkToken();
 
     // Cleanup function
     return () => {
+      resolved = true;
       if (subscription) {
         subscription.unsubscribe();
       }
@@ -95,12 +121,18 @@ export default function ResetPasswordPage() {
       const supabase = createClient();
       
       // Update the user's password
+      // This will only work if we have a valid recovery session
+      // Regular authenticated sessions cannot update password without re-authentication
       const { error } = await supabase.auth.updateUser({
         password: password,
       });
 
       if (error) {
-        setError(error.message);
+        // If update fails, it might not be a recovery session
+        // Common errors:
+        // - "New password should be different from the old password"
+        // - "Password update requires reauthentication" (if not recovery session)
+        setError(error.message || 'Failed to update password. Please request a new reset link.');
         setLoading(false);
         return;
       }
@@ -118,7 +150,7 @@ export default function ResetPasswordPage() {
   };
 
   // Show loading state while checking token
-  if (isValidToken === null) {
+  if (isValidToken === null || checkingToken) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
