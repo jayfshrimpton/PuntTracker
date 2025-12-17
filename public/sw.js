@@ -1,9 +1,9 @@
 // Service Worker for Punter's Journal PWA
-// Version: 1.0.0
+// Version: 1.1.0
 
-const CACHE_NAME = 'punters-journal-v2';
-const RUNTIME_CACHE = 'punters-journal-runtime-v2';
-const DATA_CACHE = 'punters-journal-data-v2';
+const CACHE_NAME = 'punters-journal-v3';
+const RUNTIME_CACHE = 'punters-journal-runtime-v3';
+const DATA_CACHE = 'punters-journal-data-v3';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
@@ -36,11 +36,13 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames
           .filter((cacheName) => {
-            // Delete old caches that don't match current version
+            // Delete ALL old caches that don't match current version
+            // This ensures we clear any cached /lander routes
             return (
               cacheName !== CACHE_NAME &&
               cacheName !== RUNTIME_CACHE &&
-              cacheName !== DATA_CACHE
+              cacheName !== DATA_CACHE &&
+              cacheName.startsWith('punters-journal')
             );
           })
           .map((cacheName) => {
@@ -48,10 +50,11 @@ self.addEventListener('activate', (event) => {
             return caches.delete(cacheName);
           })
       );
+    }).then(() => {
+      // Take control of all pages immediately
+      return self.clients.claim();
     })
   );
-  // Take control of all pages immediately
-  return self.clients.claim();
 });
 
 // Fetch event - serve from cache, fallback to network
@@ -120,11 +123,14 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Clone the response
-          const responseToCache = response.clone();
-          caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.put(request, responseToCache);
-          });
+          // Only cache successful responses (200-299)
+          // Don't cache 404s, redirects, or other error responses
+          if (response.status >= 200 && response.status < 300) {
+            const responseToCache = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+          }
           return response;
         })
         .catch(() => {
@@ -133,8 +139,14 @@ self.addEventListener('fetch', (event) => {
             if (cachedResponse) {
               return cachedResponse;
             }
-            // Fallback to index.html for SPA routing
-            return caches.match('/');
+            // Fallback to root for SPA routing
+            return caches.match('/').then((rootResponse) => {
+              if (rootResponse) {
+                return rootResponse;
+              }
+              // Last resort: fetch root from network
+              return fetch('/');
+            });
           });
         })
     );

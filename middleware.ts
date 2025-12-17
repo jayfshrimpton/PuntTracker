@@ -53,6 +53,13 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
+  // Redirect /lander to root (legacy route cleanup)
+  if (pathname === '/lander') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
+    return NextResponse.redirect(url);
+  }
+
   // Protect dashboard routes
   if (pathname.startsWith('/dashboard')) {
     if (!user) {
