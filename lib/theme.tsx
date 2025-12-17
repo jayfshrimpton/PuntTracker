@@ -25,8 +25,8 @@ function getResolvedTheme(theme: Theme): 'light' | 'dark' {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setThemeState] = useState<Theme>('dark');
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
   const [mounted, setMounted] = useState(false);
 
   // Apply theme to document
@@ -64,7 +64,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const hasLight = html.classList.contains('light');
     
     // Load theme from localStorage
-    let initialTheme: Theme = 'system';
+    let initialTheme: Theme = 'dark'; // Default to dark mode for dashboard
     try {
       const saved = localStorage.getItem('theme') as Theme | null;
       if (saved && ['light', 'dark', 'system'].includes(saved)) {

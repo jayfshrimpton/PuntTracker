@@ -78,19 +78,39 @@ NEXT_PUBLIC_ENABLE_PAYMENTS
 - **Value**: `false` ⚠️ **MUST BE SET TO `false`**
 - **Purpose**: Client-side payment control
 
-#### **Optional: Email Configuration (if using email features)**
+#### **Email Configuration (Required for cron jobs)**
 
 ```
 RESEND_API_KEY
 ```
-- **Value**: Your Resend API key (if using email features)
+- **Value**: Your Resend API key
 - **Where to find**: [Resend Dashboard](https://resend.com/api-keys)
+- **Important**: Required for email cron jobs to work
 
 ```
 FROM_EMAIL
 ```
-- **Value**: Your sender email address (e.g., `noreply@yourdomain.com`)
-- **Note**: Must be verified in Resend
+- **Value**: Your sender email address (e.g., `noreply@yourdomain.com.au`)
+- **Note**: Must be verified in Resend and match your verified domain
+- **Important**: Required for email cron jobs to work
+
+```
+SUPABASE_SERVICE_ROLE_KEY
+```
+- **Value**: Your Supabase service role key
+- **Where to find**: Supabase Dashboard → Settings → API → service_role key
+- **Important**: Required for cron jobs to access all users (bypasses RLS)
+- **Security**: Never expose this in client-side code
+
+#### **Cron Jobs Configuration (Required for automated emails)**
+
+```
+CRON_SECRET
+```
+- **Value**: A random secret string for securing cron endpoints (32+ characters recommended)
+- **Generate**: Use a password generator or create a long random string
+- **Important**: Required for cron job authentication
+- **Security**: Keep this secret and rotate periodically
 
 #### **Optional: AI Insights (if using Gemini AI)**
 
@@ -99,14 +119,6 @@ GEMINI_API_KEY
 ```
 - **Value**: Your Google Gemini API key
 - **Where to find**: [Google AI Studio](https://makersuite.google.com/app/apikey)
-
-#### **Optional: Cron Jobs**
-
-```
-CRON_SECRET
-```
-- **Value**: A random secret string for securing cron endpoints
-- **Generate**: Use any random string generator or create a long random password
 
 ### 3. How to Add Each Variable in Vercel
 
@@ -170,12 +182,15 @@ Use this checklist to ensure you have everything:
 - [ ] `ENABLE_PAYMENTS=false` ⚠️ **CRITICAL**
 - [ ] `NEXT_PUBLIC_ENABLE_PAYMENTS=false` ⚠️ **CRITICAL**
 
+### Required for Email Cron Jobs
+- [ ] `RESEND_API_KEY` (from Resend dashboard)
+- [ ] `FROM_EMAIL` (must match verified domain in Resend)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` (from Supabase dashboard)
+- [ ] `CRON_SECRET` (secure random string, 32+ characters)
+
 ### Optional but Recommended
 - [ ] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (test mode: `pk_test_...`)
-- [ ] `RESEND_API_KEY` (if using email)
-- [ ] `FROM_EMAIL` (if using email)
 - [ ] `GEMINI_API_KEY` (if using AI insights)
-- [ ] `CRON_SECRET` (if using cron jobs)
 
 ## Security Best Practices
 

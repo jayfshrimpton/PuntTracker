@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function LandingNav() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -76,6 +77,7 @@ export default function LandingNav() {
 
           {/* Auth Buttons - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
             <Link href="/login">
               <Button variant="ghost" className="text-muted-foreground hover:text-primary">
                 Log In
@@ -125,6 +127,9 @@ export default function LandingNav() {
                 Pricing
               </button>
               <div className="pt-4 border-t border-border space-y-3">
+                <div className="flex justify-center px-4 pb-2">
+                  <ThemeToggle />
+                </div>
                 <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start">
                     Log In

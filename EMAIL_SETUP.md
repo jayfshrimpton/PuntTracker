@@ -72,28 +72,25 @@ curl -X POST https://your-app-url.com/api/email/monthly-summary \
 
 Or test it from your dashboard by making a request from the browser console (while logged in).
 
-### 6. Set Up Cron Job
+### 6. Set Up Cron Jobs
 
-To automatically send monthly summaries, set up a cron job that calls the endpoint on the 1st of each month.
+The `vercel.json` file has been created with cron job configurations. You need to configure the authorization in Vercel.
 
 #### Option A: Using Vercel Cron (Recommended if deployed on Vercel)
 
-Create `vercel.json` in your project root:
+The `vercel.json` file is already configured with two cron jobs:
+- **Monthly Summaries**: Runs on the 1st of each month at 9 AM UTC
+- **Verification Reminders**: Runs daily at 10 AM UTC
 
-```json
-{
-  "crons": [
-    {
-      "path": "/api/cron/send-monthly-summaries",
-      "schedule": "0 9 1 * *"
-    }
-  ]
-}
-```
+**Important**: Vercel Cron requires you to add the `CRON_SECRET` as an environment variable. The cron endpoints will automatically use this secret for authentication.
 
-This runs at 9 AM UTC on the 1st of each month.
+1. Go to your Vercel project settings
+2. Navigate to **Environment Variables**
+3. Add `CRON_SECRET` with a secure random string
+4. Make sure `RESEND_API_KEY` and `FROM_EMAIL` are also set
+5. Redeploy your application
 
-Then add the authorization header in your Vercel environment variables or use Vercel's cron job configuration.
+Vercel will automatically call these endpoints at the scheduled times. No additional configuration needed!
 
 #### Option B: Using External Cron Service (cron-job.org, EasyCron, etc.)
 
@@ -116,6 +113,27 @@ curl -X GET https://your-app-url.com/api/cron/send-monthly-summaries \
 ```
 
 ## API Endpoints
+
+### POST `/api/email/welcome`
+
+Sends a welcome email to a newly verified user. This endpoint is called automatically after email verification.
+
+**Authentication**: Required (user must be logged in and verified)
+
+**Trigger**: Automatically called from auth callback after successful verification
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Welcome email sent successfully"
+}
+```
+
+**Note**: The welcome email is only sent if:
+- User's email was verified within the last 10 minutes
+- User account was created within the last hour
+- This prevents duplicate welcome emails
 
 ### POST `/api/email/monthly-summary`
 

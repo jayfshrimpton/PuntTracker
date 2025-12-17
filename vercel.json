@@ -1,0 +1,17 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/monthly-summary",
+      "schedule": "0 23 1 * *"
+    },
+    {
+      "path": "/api/cron/send-monthly-summaries",
+      "schedule": "0 9 1 * *"
+    },
+    {
+      "path": "/api/cron/send-verification-reminder",
+      "schedule": "0 10 * * *"
+    }
+  ]
+}
+

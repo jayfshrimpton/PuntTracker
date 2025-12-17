@@ -10,11 +10,6 @@ const FeedbackButton = dynamic(() => import('@/components/FeedbackButton'), {
   ssr: false,
 });
 
-// Lazy load KeyboardShortcuts
-const KeyboardShortcuts = dynamic(() => import('@/components/KeyboardShortcuts').then(mod => ({ default: mod.KeyboardShortcuts })), {
-  ssr: false,
-});
-
 export default async function DashboardLayout({
   children,
 }: {
@@ -41,7 +36,7 @@ export default async function DashboardLayout({
 
       <div className="flex flex-1 overflow-hidden relative">
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto focus:outline-none scroll-smooth pt-16 lg:pt-0 pb-20 lg:pb-0">
+        <main className="flex-1 overflow-y-auto focus:outline-none scroll-smooth">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8">
             {children}
           </div>
@@ -52,7 +47,6 @@ export default async function DashboardLayout({
       </div>
 
       <FeedbackButton />
-      <KeyboardShortcuts />
     </div>
   );
 }

@@ -314,3 +314,188 @@ Verify Email Address: ${verificationLink}
 If you didn't create an account with Punter's Journal, you can safely ignore this email.
   `.trim();
 }
+
+export interface WelcomeEmailData {
+  userEmail: string;
+  userName?: string;
+}
+
+export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<{ success: boolean; error?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    return { success: false, error: 'RESEND_API_KEY is not configured' };
+  }
+
+  if (!process.env.FROM_EMAIL) {
+    return { success: false, error: 'FROM_EMAIL is not configured' };
+  }
+
+  try {
+    const html = generateWelcomeEmailHTML(data);
+    const text = generateWelcomeEmailText(data);
+
+    const resend = getResendClient();
+    const { error } = await resend.emails.send({
+      from: process.env.FROM_EMAIL,
+      to: data.userEmail,
+      subject: "Welcome to Punter's Journal! 🐴",
+      html,
+      text,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Email sending error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+function generateWelcomeEmailHTML(data: WelcomeEmailData): string {
+  const { userName } = data;
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/dashboard`;
+  const gettingStartedUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/getting-started`;
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Punter's Journal</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+  <div style="background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div style="text-align: center; margin-bottom: 30px;">
+      <h1 style="color: #2563eb; margin: 0; font-size: 28px;">🐴 Punter's Journal</h1>
+      <p style="color: #666; margin: 5px 0 0 0; font-size: 16px;">Welcome to the Community!</p>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 30px; margin-bottom: 30px; text-align: center;">
+      <h2 style="color: white; margin: 0 0 10px 0; font-size: 28px;">Welcome Aboard! 🎉</h2>
+      ${userName ? `<p style="color: rgba(255,255,255,0.95); margin: 10px 0 0 0; font-size: 18px;">Hi ${userName}!</p>` : ''}
+      <p style="color: rgba(255,255,255,0.9); margin: 15px 0 0 0; font-size: 16px;">
+        Your email has been verified and your account is now active!
+      </p>
+    </div>
+
+    <div style="margin-bottom: 30px;">
+      <p style="color: #333; font-size: 16px; margin: 0 0 15px 0;">
+        ${userName ? `Hi ${userName},` : 'Hi there,'}
+      </p>
+      <p style="color: #666; font-size: 16px; margin: 0 0 15px 0; line-height: 1.7;">
+        Welcome to <strong>Punter's Journal</strong> - your personal betting tracker designed specifically for Aussie punters! We're thrilled to have you join our community.
+      </p>
+      <p style="color: #666; font-size: 16px; margin: 0 0 15px 0; line-height: 1.7;">
+        You're all set to start tracking your bets, analyzing your performance, and taking your punting to the next level.
+      </p>
+    </div>
+
+    <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
+      <h3 style="color: #166534; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">
+        ✨ What You Can Do Now:
+      </h3>
+      <ul style="margin: 0; padding-left: 20px; color: #15803d; font-size: 15px; line-height: 1.8;">
+        <li style="margin-bottom: 10px;">Track all your bets in one place</li>
+        <li style="margin-bottom: 10px;">Analyze your performance with detailed insights</li>
+        <li style="margin-bottom: 10px;">Monitor your ROI, strike rate, and POT</li>
+        <li style="margin-bottom: 10px;">Set bankroll goals and track your progress</li>
+        <li style="margin-bottom: 10px;">Get monthly summaries delivered to your inbox</li>
+      </ul>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 30px;">
+      <a href="${dashboardUrl}" 
+         style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); margin-right: 10px;">
+        Go to Dashboard
+      </a>
+      <a href="${gettingStartedUrl}" 
+         style="display: inline-block; background-color: white; color: #667eea; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px; border: 2px solid #667eea; margin-left: 10px;">
+        Getting Started Guide
+      </a>
+    </div>
+
+    <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+      <h3 style="color: #333; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">
+        💡 Quick Tips:
+      </h3>
+      <ul style="margin: 0; padding-left: 20px; color: #666; font-size: 14px; line-height: 1.8;">
+        <li style="margin-bottom: 8px;">Start by adding your first bet - it only takes a few seconds!</li>
+        <li style="margin-bottom: 8px;">Use bet templates to save time on common bet types</li>
+        <li style="margin-bottom: 8px;">Check out the insights page to see your performance trends</li>
+        <li style="margin-bottom: 8px;">Set up your bankroll goals to stay on track</li>
+      </ul>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+      <p style="color: #999; font-size: 12px; margin: 0;">
+        Questions? Reply to this email or visit our help center.<br>
+        We're here to help you succeed!
+      </p>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+      <p style="color: #999; font-size: 12px; margin: 0;">
+        Happy punting! 🐴<br>
+        The Punter's Journal Team
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
+function generateWelcomeEmailText(data: WelcomeEmailData): string {
+  const { userName } = data;
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/dashboard`;
+  const gettingStartedUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/getting-started`;
+
+  return `
+Welcome to Punter's Journal! 🐴
+
+${userName ? `Hi ${userName},` : 'Hi there,'}
+
+Your email has been verified and your account is now active!
+
+Welcome to Punter's Journal - your personal betting tracker designed specifically for Aussie punters! We're thrilled to have you join our community.
+
+You're all set to start tracking your bets, analyzing your performance, and taking your punting to the next level.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ What You Can Do Now:
+
+• Track all your bets in one place
+• Analyze your performance with detailed insights
+• Monitor your ROI, strike rate, and POT
+• Set bankroll goals and track your progress
+• Get monthly summaries delivered to your inbox
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Get Started:
+Dashboard: ${dashboardUrl}
+Getting Started Guide: ${gettingStartedUrl}
+
+💡 Quick Tips:
+• Start by adding your first bet - it only takes a few seconds!
+• Use bet templates to save time on common bet types
+• Check out the insights page to see your performance trends
+• Set up your bankroll goals to stay on track
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Questions? Reply to this email or visit our help center.
+We're here to help you succeed!
+
+Happy punting! 🐴
+The Punter's Journal Team
+  `.trim();
+}

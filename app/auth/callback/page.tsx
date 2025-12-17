@@ -114,6 +114,25 @@ function AuthCallbackContent() {
           // Clear the hash from URL to prevent reprocessing
           window.history.replaceState(null, '', window.location.pathname + window.location.search);
           
+          // Check if this is a signup verification (user was just created)
+          // We can detect this by checking if email_confirmed_at was just set
+          const userCreatedAt = new Date(authResult.user.created_at);
+          const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+          const isNewUser = userCreatedAt > oneHourAgo && authResult.user.email_confirmed_at;
+
+          // Send welcome email for newly verified users (non-blocking)
+          if (isNewUser) {
+            fetch('/api/email/welcome', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }).catch((err) => {
+              // Silently fail - welcome email is nice to have but shouldn't block login
+              console.error('Failed to send welcome email:', err);
+            });
+          }
+          
           // Wait a moment for cookies to be set
           await new Promise(resolve => setTimeout(resolve, 500));
           
@@ -139,6 +158,18 @@ function AuthCallbackContent() {
           await new Promise(resolve => setTimeout(resolve, 500));
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
+            // Send welcome email (non-blocking, don't wait for response)
+            // Only send for signup verification, not magic link logins
+            fetch('/api/email/welcome', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }).catch((err) => {
+              // Silently fail - welcome email is nice to have but shouldn't block login
+              console.error('Failed to send welcome email:', err);
+            });
+
             // Use full page reload to ensure cookies are synced
             window.location.href = next;
           } else {

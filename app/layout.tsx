@@ -1,35 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CurrencyProvider } from '@/components/CurrencyContext';
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/lib/theme";
 import { generateMetadata as generateSEOMetadata, generateStructuredData } from "@/lib/seo";
 import PWARegister from "@/components/PWARegister";
-// Temporarily import directly to debug webpack issue
-import PWAInstallButton from "@/components/PWAInstallButton";
-import dynamic from "next/dynamic";
-
-// Optimize fonts with next/font
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
-
-// Lazy load analytics to improve initial page load
-const Analytics = dynamic(() => import("@vercel/analytics/next").then(mod => ({ default: mod.Analytics })), {
-  ssr: false,
-});
-
-const SpeedInsights = dynamic(() => import("@vercel/speed-insights/next").then(mod => ({ default: mod.SpeedInsights })), {
-  ssr: false,
-});
 
 export const metadata: Metadata = {
   ...generateSEOMetadata({
-    title: "Australian Horse Racing Bet Tracker",
-    description: "Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.",
+    title: "Horse Racing Bet Tracker for Australian Punters",
+    description: "Track your horse racing bets with ease. Automatic stats, beautiful charts, and insights. Built for Aussie punters. Free to start.",
     keywords: ["horse racing", "bet tracker", "betting stats", "punt tracker", "racing bets", "Australian horse racing", "betting analytics"],
     path: "/",
   }),
@@ -69,7 +51,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={inter.variable}>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -90,7 +72,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  const theme = localStorage.getItem('theme') || 'system';
+                  const theme = localStorage.getItem('theme') || 'dark';
                   const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                   const resolvedTheme = theme === 'system' ? systemTheme : theme;
                   document.documentElement.classList.add(resolvedTheme);
@@ -106,7 +88,6 @@ export default function RootLayout({
             {children}
             <ToastProvider />
             <PWARegister />
-            <PWAInstallButton />
             <Analytics />
             <SpeedInsights />
           </ThemeProvider>
