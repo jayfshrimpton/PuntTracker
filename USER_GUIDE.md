@@ -4,8 +4,7 @@ Welcome to the Punter's Journal Beta! Thank you for helping us test the app. Thi
 
 ## Getting Started
 
-1.  **Sign Up**: Create an account using your email.
-2.  **Dashboard**: This is your main hub. It shows your performance overview.
+1.  **Dashboard**: This is your main hub. It shows your performance overview.
 
 ## Core Features
 

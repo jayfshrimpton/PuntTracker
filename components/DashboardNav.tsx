@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Menu, X, Activity, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles, CreditCard, MessageSquare } from 'lucide-react';
+import { Menu, X, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles, CreditCard, MessageSquare } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useCurrency } from '@/components/CurrencyContext';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import Logo from '@/components/Logo';
 
 interface DashboardNavProps {
   user: User;
@@ -42,9 +43,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="px-4 py-3 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-1.5 rounded-lg">
-              <Activity className="h-5 w-5 text-white" />
-            </div>
+            <Logo size={32} variant="dashboard" className="rounded-lg" />
             <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
               Punter&apos;s Journal
             </span>
@@ -106,9 +105,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
         <div className="px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="flex items-center gap-2 mr-8">
-              <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-1.5 rounded-lg">
-                <Activity className="h-5 w-5 text-white" />
-              </div>
+              <Logo size={32} variant="dashboard" className="rounded-lg" />
               <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
                 Punter&apos;s Journal
               </span>

@@ -20,9 +20,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     const [mode, setMode] = useState<CurrencyMode>('currency');
     const [unitSize, setUnitSizeState] = useState<number>(10); // Default to $10
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [mounted, setMounted] = useState(false);
 
     // Load preference from profile on mount
     useEffect(() => {
+        setMounted(true);
         const fetchSettings = async () => {
             try {
                 const supabase = createClient();

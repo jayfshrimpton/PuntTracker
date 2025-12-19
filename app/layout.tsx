@@ -27,12 +27,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
-      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "/puntersjournallogoblack-removebg-preview.png", sizes: "any", type: "image/png" },
+      { url: "/puntersjournallogoblack-removebg-preview.png", sizes: "192x192", type: "image/png" },
+      { url: "/puntersjournallogoblack-removebg-preview.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/puntersjournallogoblack-removebg-preview.png", sizes: "192x192", type: "image/png" },
     ],
   },
 };
@@ -52,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -72,20 +72,6 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                try {
-                  // Check if we're on landing page - always use dark mode
-                  const isLandingPage = window.location.pathname === '/';
-                  if (isLandingPage) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    // For dashboard, default to dark if no preference saved
-                    const theme = localStorage.getItem('theme') || 'dark';
-                    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                    const resolvedTheme = theme === 'system' ? systemTheme : theme;
-                    document.documentElement.classList.add(resolvedTheme);
-                  }
-                } catch (e) {}
-                
                 // Immediately check for password recovery hash fragments and redirect
                 // This runs before React hydrates to catch Supabase redirects
                 (function() {
@@ -156,7 +142,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body className="min-h-screen bg-background text-foreground antialiased" suppressHydrationWarning>
         <CurrencyProvider>
           <ThemeProvider>
             <PasswordRecoveryRedirect />

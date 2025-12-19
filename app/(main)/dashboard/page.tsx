@@ -26,12 +26,12 @@ import { StatsOverview } from '@/components/dashboard/StatsOverview';
 // Dynamically import heavy chart components to improve initial page load
 import dynamic from 'next/dynamic';
 
-const PerformanceCharts = dynamic(() => import('@/components/dashboard/PerformanceCharts').then(mod => ({ default: mod.PerformanceCharts })), {
+const PerformanceCharts = dynamic(() => import('@/components/dashboard/PerformanceCharts'), {
   ssr: false,
   loading: () => <div className="rounded-2xl border border-border p-8 text-center text-muted-foreground">Loading charts...</div>,
 });
 
-const InsightsSection = dynamic(() => import('@/components/dashboard/InsightsSection').then(mod => ({ default: mod.InsightsSection })), {
+const InsightsSection = dynamic(() => import('@/components/dashboard/InsightsSection'), {
   ssr: false,
   loading: () => <div className="rounded-2xl border border-border p-8 text-center text-muted-foreground">Loading insights...</div>,
 });

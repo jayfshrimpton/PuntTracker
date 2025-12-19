@@ -17,9 +17,9 @@ import {
   Tablet,
   PlusCircle,
   Check,
-  TrendingUp,
 } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
+import Logo from './Logo';
 
 export default function LandingPage() {
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -443,7 +443,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <TrendingUp className="w-6 h-6 text-primary" />
+                <Logo size={24} variant="landing" />
                 <span className="text-xl font-bold">Punter&apos;s Journal</span>
               </div>
               <p className="text-muted-foreground text-sm">
@@ -472,11 +472,6 @@ export default function LandingPage() {
                 <li>
                   <Link href="/getting-started" className="hover:text-primary transition-colors">
                     Getting Started
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/feedback" className="hover:text-primary transition-colors">
-                    Feedback
                   </Link>
                 </li>
               </ul>

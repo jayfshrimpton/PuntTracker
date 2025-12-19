@@ -35,7 +35,7 @@ export function generateMetadata({
   const truncatedTitle = fullTitle.length > 60 ? fullTitle.substring(0, 57) + '...' : fullTitle;
   const url = `${siteUrl}${path}`;
   // OG image fallback - create og-image.png (1200x630) for better social sharing
-  const ogImage = image || `${siteUrl}/icon-512x512.png`;
+  const ogImage = image || `${siteUrl}/puntersjournallogoblack-removebg-preview.png`;
   const defaultKeywords = [
     'horse racing',
     'bet tracker',
@@ -135,7 +135,7 @@ export function generateStructuredData(type: 'WebSite' | 'WebApplication' | 'Org
       name: siteName,
       url: siteUrl,
       description: brandPositioning,
-      logo: `${siteUrl}/icon-512x512.png`,
+      logo: `${siteUrl}/puntersjournallogoblack-removebg-preview.png`,
       sameAs: [],
     };
   }

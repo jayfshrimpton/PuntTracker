@@ -63,24 +63,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isLandingPage]);
 
-  // Initialize on mount
+  // Initialize on mount - only after component has mounted to avoid hydration issues
   useEffect(() => {
     setMounted(true);
     
-    // Check if HTML already has a theme class (from initial script)
-    const html = document.documentElement;
-    const hasDark = html.classList.contains('dark');
-    const hasLight = html.classList.contains('light');
-    
-    // Load theme from localStorage
-    let initialTheme: Theme = 'dark'; // Default to dark mode for dashboard on first visit
+    // Load theme from localStorage (only after mount)
+    let initialTheme: Theme = 'dark'; // Default to dark mode
     try {
       const saved = localStorage.getItem('theme') as Theme | null;
       if (saved && ['light', 'dark', 'system'].includes(saved)) {
         initialTheme = saved;
-      } else if (hasDark || hasLight) {
-        // If no saved theme but HTML has a class, infer from the class
-        initialTheme = hasDark ? 'dark' : 'light';
       }
     } catch (e) {
       // Ignore localStorage errors

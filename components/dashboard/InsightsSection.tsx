@@ -258,3 +258,5 @@ export function InsightsSection({
         </div>
     );
 }
+
+export default InsightsSection;

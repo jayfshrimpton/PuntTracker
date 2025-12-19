@@ -10,13 +10,13 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icon-192x192.png",
+      "src": "/puntersjournallogoblack-removebg-preview.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "/puntersjournallogoblack-removebg-preview.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -30,14 +30,14 @@
       "short_name": "Dashboard",
       "description": "View your betting statistics",
       "url": "/dashboard",
-      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/puntersjournallogoblack-removebg-preview.png", "sizes": "192x192" }]
     },
     {
       "name": "Add Bet",
       "short_name": "Add Bet",
       "description": "Add a new bet",
       "url": "/bets",
-      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/puntersjournallogoblack-removebg-preview.png", "sizes": "192x192" }]
     }
   ]
 }

@@ -301,3 +301,5 @@ export function PerformanceCharts({
         </div>
     );
 }
+
+export default PerformanceCharts;

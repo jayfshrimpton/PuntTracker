@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, Trophy, Target, AlertTriangle, ExternalLink } from 'lucide-react';
+import { BookOpen, Target, AlertTriangle, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 export default function UserGuidePage() {
@@ -75,13 +75,9 @@ export default function UserGuidePage() {
                         </h2>
                     </div>
                     <div className="p-6 pt-0 space-y-4">
-                        <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-4">
                             <div className="p-4 bg-muted/50 rounded-lg">
-                                <h3 className="font-semibold mb-2">1. Sign Up</h3>
-                                <p className="text-sm text-muted-foreground">Create an account using your email to start tracking your bets securely.</p>
-                            </div>
-                            <div className="p-4 bg-muted/50 rounded-lg">
-                                <h3 className="font-semibold mb-2">2. Dashboard</h3>
+                                <h3 className="font-semibold mb-2">1. Dashboard</h3>
                                 <p className="text-sm text-muted-foreground">Your main hub showing performance overview, recent activity, and key metrics.</p>
                             </div>
                         </div>
@@ -130,33 +126,6 @@ export default function UserGuidePage() {
                                 </ul>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Beta Testing */}
-                <div className="bg-primary/5 rounded-xl border border-primary/20 shadow-sm">
-                    <div className="p-6 pb-4">
-                        <h2 className="text-xl font-semibold flex items-center gap-2">
-                            <Trophy className="h-5 w-5 text-primary" />
-                            Beta Testing Tasks
-                        </h2>
-                    </div>
-                    <div className="p-6 pt-0">
-                        <p className="mb-4 text-muted-foreground">We need your help to ensure everything works perfectly. Please try:</p>
-                        <ul className="space-y-2">
-                            {[
-                                "Add at least 5 different types of bets (Win, Place, Multi)",
-                                "Edit a bet's outcome (e.g., change from Pending to Win)",
-                                "Delete a test bet",
-                                "Check if the dashboard numbers look correct",
-                                "Try using the app on your phone"
-                            ].map((task, i) => (
-                                <li key={i} className="flex items-center gap-2">
-                                    <input type="checkbox" className="h-4 w-4 rounded border-primary text-primary focus:ring-primary" readOnly />
-                                    <span className="text-sm">{task}</span>
-                                </li>
-                            ))}
-                        </ul>
                     </div>
                 </div>
 

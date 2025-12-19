@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, TrendingUp } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Logo from '@/components/Logo';
 
 export default function LandingNav() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -40,8 +41,8 @@ export default function LandingNav() {
             href="/"
             className="flex items-center space-x-2 group"
           >
-            <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2 rounded-xl shadow-lg shadow-blue-500/20 transition-transform group-hover:scale-110">
-              <TrendingUp className="w-6 h-6 text-white" />
+            <div className="rounded-xl shadow-lg shadow-blue-500/20 transition-transform group-hover:scale-110">
+              <Logo size={40} variant="landing" />
             </div>
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
               Punter&apos;s Journal

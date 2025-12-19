@@ -202,8 +202,8 @@ async function syncBets() {
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'New update available',
-    icon: '/icon-192x192.png',
-    badge: '/icon-192x192.png',
+    icon: '/puntersjournallogoblack-removebg-preview.png',
+    badge: '/puntersjournallogoblack-removebg-preview.png',
   };
 
   event.waitUntil(
