@@ -62,8 +62,7 @@ export async function middleware(request: NextRequest) {
     
     if (token_hash && type === 'recovery') {
       const url = request.nextUrl.clone();
-      url.pathname = '/settings';
-      url.hash = 'password-reset';
+      url.pathname = '/reset-password';
       // Preserve query parameters
       return NextResponse.redirect(url);
     }

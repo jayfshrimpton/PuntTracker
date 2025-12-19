@@ -34,8 +34,8 @@ export default function PasswordRecoveryRedirect() {
       
       // Check for password recovery hash fragments
       if (hash && hash.includes('access_token') && hash.includes('type=recovery')) {
-        console.log('[PasswordRecoveryRedirect] Redirecting to /settings#password-reset');
-        window.location.replace(`/settings#password-reset${hash}${search}`);
+        console.log('[PasswordRecoveryRedirect] Redirecting to /reset-password');
+        window.location.replace(`/reset-password${hash}${search}`);
         return true;
       }
       
@@ -45,8 +45,8 @@ export default function PasswordRecoveryRedirect() {
       const type = urlParams.get('type');
       
       if (token_hash && type === 'recovery') {
-        console.log('[PasswordRecoveryRedirect] Redirecting to /settings#password-reset with query params');
-        window.location.replace(`/settings?token_hash=${token_hash}&type=recovery#password-reset`);
+        console.log('[PasswordRecoveryRedirect] Redirecting to /reset-password with query params');
+        window.location.replace(`/reset-password?token_hash=${token_hash}&type=recovery`);
         return true;
       }
       

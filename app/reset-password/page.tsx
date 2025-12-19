@@ -29,8 +29,37 @@ export default function ResetPasswordPage() {
       // Supabase password reset uses hash fragments in the URL
       // Check if there's a hash in the URL (Supabase redirects with hash)
       const hash = window.location.hash;
+      const searchParams = new URLSearchParams(window.location.search);
+      const token_hash = searchParams.get('token_hash');
+      const type = searchParams.get('type');
       
-      // Check for hash fragment first (before Supabase processes it)
+      // Check for query parameters first (alternative format)
+      if (token_hash && type === 'recovery') {
+        try {
+          const { error } = await supabase.auth.verifyOtp({
+            type: 'recovery',
+            token_hash,
+          });
+          
+          if (!error) {
+            // Wait for session to be established
+            await new Promise(resolve => setTimeout(resolve, 300));
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              resolved = true;
+              setIsValidToken(true);
+              setCheckingToken(false);
+              // Clear query params from URL
+              window.history.replaceState(null, '', '/reset-password');
+              return;
+            }
+          }
+        } catch (err) {
+          console.error('Error verifying recovery token:', err);
+        }
+      }
+      
+      // Check for hash fragment (before Supabase processes it)
       if (hash && hash.includes('access_token') && hash.includes('type=recovery')) {
         // Set up auth state change listener to catch PASSWORD_RECOVERY event
         const { data } = supabase.auth.onAuthStateChange((event, session) => {
@@ -139,9 +168,13 @@ export default function ResetPasswordPage() {
 
       setSuccess(true);
       
+      // Sign out the recovery session after successful password reset
+      // This ensures the user needs to log in with their new password
+      await supabase.auth.signOut();
+      
       // Redirect to login after 2 seconds
       setTimeout(() => {
-        router.push('/login');
+        router.push('/login?password_reset=success');
       }, 2000);
     } catch (err) {
       setError('An unexpected error occurred');

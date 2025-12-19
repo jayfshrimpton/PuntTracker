@@ -107,8 +107,8 @@ export default function RootLayout({
                     
                     // Check for password recovery hash fragments
                     if (hash && hash.includes('access_token') && hash.includes('type=recovery')) {
-                      console.log('[Password Reset] Redirecting to /settings#password-reset with hash');
-                      window.location.replace('/settings#password-reset' + hash + search);
+                      console.log('[Password Reset] Redirecting to /reset-password with hash');
+                      window.location.replace('/reset-password' + hash + search);
                       return true;
                     }
                     
@@ -119,8 +119,8 @@ export default function RootLayout({
                       const type = params.get('type');
                       
                       if (token_hash && type === 'recovery') {
-                        console.log('[Password Reset] Redirecting to /settings#password-reset with query params');
-                        window.location.replace('/settings?token_hash=' + encodeURIComponent(token_hash) + '&type=' + encodeURIComponent(type) + '#password-reset');
+                        console.log('[Password Reset] Redirecting to /reset-password with query params');
+                        window.location.replace('/reset-password?token_hash=' + encodeURIComponent(token_hash) + '&type=' + encodeURIComponent(type));
                         return true;
                       }
                     }
