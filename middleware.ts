@@ -52,6 +52,22 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
+  const searchParams = request.nextUrl.searchParams;
+
+  // Check for password recovery query parameters on root path
+  // (Hash fragments are client-side only, but we can catch query params here)
+  if (pathname === '/') {
+    const token_hash = searchParams.get('token_hash');
+    const type = searchParams.get('type');
+    
+    if (token_hash && type === 'recovery') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/settings';
+      url.hash = 'password-reset';
+      // Preserve query parameters
+      return NextResponse.redirect(url);
+    }
+  }
 
   // Redirect /lander to root (legacy route cleanup)
   if (pathname === '/lander') {

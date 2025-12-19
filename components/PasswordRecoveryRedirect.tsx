@@ -16,19 +16,26 @@ export default function PasswordRecoveryRedirect() {
   useEffect(() => {
     // Check immediately on mount (before React hydration completes)
     const checkHash = () => {
+      if (typeof window === 'undefined') return false;
+      
       const hash = window.location.hash;
       const search = window.location.search;
-      const pathname = window.location.pathname;
+      const currentPathname = window.location.pathname;
+      
+      // Only redirect if we're NOT already on /reset-password
+      if (currentPathname === '/reset-password') {
+        return false;
+      }
       
       // Debug logging
       if (hash || search.includes('token_hash') || search.includes('type=recovery')) {
-        console.log('[PasswordRecoveryRedirect] Checking:', { hash, search, pathname });
+        console.log('[PasswordRecoveryRedirect] Checking:', { hash, search, pathname: currentPathname });
       }
       
       // Check for password recovery hash fragments
       if (hash && hash.includes('access_token') && hash.includes('type=recovery')) {
-        console.log('[PasswordRecoveryRedirect] Redirecting to /reset-password');
-        window.location.replace(`/reset-password${hash}${search}`);
+        console.log('[PasswordRecoveryRedirect] Redirecting to /settings#password-reset');
+        window.location.replace(`/settings#password-reset${hash}${search}`);
         return true;
       }
       
@@ -38,8 +45,8 @@ export default function PasswordRecoveryRedirect() {
       const type = urlParams.get('type');
       
       if (token_hash && type === 'recovery') {
-        console.log('[PasswordRecoveryRedirect] Redirecting to /reset-password with query params');
-        window.location.replace(`/reset-password?token_hash=${token_hash}&type=${type}`);
+        console.log('[PasswordRecoveryRedirect] Redirecting to /settings#password-reset with query params');
+        window.location.replace(`/settings?token_hash=${token_hash}&type=recovery#password-reset`);
         return true;
       }
       

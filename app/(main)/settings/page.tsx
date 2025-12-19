@@ -4,20 +4,34 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fetchProfile, updateProfile, type Profile } from '@/lib/api';
 import { showToast } from '@/lib/toast';
-import { User, Mail, Bell, Save, Loader2, Wallet, Target, DollarSign } from 'lucide-react';
+import { User, Mail, Bell, Save, Loader2, Wallet, Target, DollarSign, Lock, CheckCircle } from 'lucide-react';
 import { useCurrency } from '@/components/CurrencyContext';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // Assuming ProfileUpdate is a type derived from Profile or separately defined in '@/lib/api'
 // For this edit, we'll assume it's available or compatible with Profile.
 type ProfileUpdate = Partial<Profile> & { unit_size?: number | null };
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { mode, setUnitSize: setGlobalUnitSize } = useCurrency();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [unitSize, setUnitSize] = useState<string>('10');
   const [userEmail, setUserEmail] = useState<string>('');
+  
+  // Password reset state
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [passwordResetData, setPasswordResetData] = useState({
+    password: '',
+    confirmPassword: '',
+  });
+  const [passwordResetLoading, setPasswordResetLoading] = useState(false);
+  const [passwordResetSuccess, setPasswordResetSuccess] = useState(false);
+  const [passwordResetError, setPasswordResetError] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState({
     full_name: '',
     email_notifications_enabled: true,
@@ -35,6 +49,57 @@ export default function SettingsPage() {
 
   useEffect(() => {
     loadProfile();
+  }, []);
+
+  // Check for password recovery session
+  useEffect(() => {
+    const checkForRecoverySession = async () => {
+      if (typeof window === 'undefined') return;
+      
+      const hash = window.location.hash;
+      const search = window.location.search;
+      
+      // Check for recovery hash fragments or query params
+      const hasRecoveryHash = hash && hash.includes('access_token') && hash.includes('type=recovery');
+      const hasRecoveryParams = search.includes('token_hash') && search.includes('type=recovery');
+      
+      if (hasRecoveryHash || hasRecoveryParams) {
+        // Check if we have a recovery session
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          // Set up listener for PASSWORD_RECOVERY event
+          const { data } = supabase.auth.onAuthStateChange((event) => {
+            if (event === 'PASSWORD_RECOVERY') {
+              setShowPasswordReset(true);
+              // Scroll to password reset section
+              setTimeout(() => {
+                document.getElementById('password-reset')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 100);
+            }
+          });
+          
+          // Also check after a delay
+          setTimeout(async () => {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            if (currentSession) {
+              // If we have a session and recovery params, show password reset
+              setShowPasswordReset(true);
+              setTimeout(() => {
+                document.getElementById('password-reset')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 100);
+            }
+          }, 500);
+          
+          return () => {
+            data?.subscription?.unsubscribe();
+          };
+        }
+      }
+    };
+    
+    checkForRecoverySession();
   }, []);
 
   const loadProfile = async () => {
@@ -78,6 +143,57 @@ export default function SettingsPage() {
       showToast('Failed to load profile', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordResetError(null);
+
+    if (passwordResetData.password !== passwordResetData.confirmPassword) {
+      setPasswordResetError('Passwords do not match');
+      return;
+    }
+
+    if (passwordResetData.password.length < 6) {
+      setPasswordResetError('Password must be at least 6 characters');
+      return;
+    }
+
+    setPasswordResetLoading(true);
+
+    try {
+      const supabase = createClient();
+      
+      // Update the user's password
+      // This will only work if we have a valid recovery session
+      const { error } = await supabase.auth.updateUser({
+        password: passwordResetData.password,
+      });
+
+      if (error) {
+        setPasswordResetError(error.message || 'Failed to update password. Please request a new reset link.');
+        setPasswordResetLoading(false);
+        return;
+      }
+
+      setPasswordResetSuccess(true);
+      setPasswordResetData({ password: '', confirmPassword: '' });
+      
+      // Clear the hash/query params from URL
+      window.history.replaceState(null, '', '/settings');
+      
+      showToast('Password updated successfully', 'success');
+      
+      // Hide the form after 3 seconds
+      setTimeout(() => {
+        setShowPasswordReset(false);
+        setPasswordResetSuccess(false);
+      }, 3000);
+    } catch (err) {
+      setPasswordResetError('An unexpected error occurred');
+    } finally {
+      setPasswordResetLoading(false);
     }
   };
 
@@ -140,6 +256,104 @@ export default function SettingsPage() {
           Manage your profile, email preferences, bankroll, and goals
         </p>
       </div>
+
+      {/* Password Reset Section - Show when recovery session detected */}
+      {showPasswordReset && (
+        <div id="password-reset" className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl shadow-lg p-6 border-2 border-blue-500 dark:border-blue-400">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+              <Lock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Reset Your Password
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                You&apos;ve clicked a password reset link. Please enter your new password below.
+              </p>
+            </div>
+          </div>
+
+          {passwordResetSuccess ? (
+            <div className="flex items-center gap-3 p-4 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                Password updated successfully!
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+              {passwordResetError && (
+                <div className="p-4 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                  <p className="text-sm text-red-800 dark:text-red-200">{passwordResetError}</p>
+                </div>
+              )}
+
+              <div>
+                <label
+                  htmlFor="new_password"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  id="new_password"
+                  value={passwordResetData.password}
+                  onChange={(e) =>
+                    setPasswordResetData({ ...passwordResetData, password: e.target.value })
+                  }
+                  placeholder="Enter new password"
+                  required
+                  minLength={6}
+                  className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="confirm_password"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirm_password"
+                  value={passwordResetData.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordResetData({ ...passwordResetData, confirmPassword: e.target.value })
+                  }
+                  placeholder="Confirm new password"
+                  required
+                  minLength={6}
+                  className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={passwordResetLoading}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+                >
+                  {passwordResetLoading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="h-5 w-5" />
+                      Update Password
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Profile Section */}

@@ -23,12 +23,8 @@ export default function ForgotPasswordPage() {
       // Use environment variable if available, otherwise use current origin
       // This ensures localhost works for development
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-      // IMPORTANT: The redirectTo URL must be in Supabase's allowed Redirect URLs list
-      // Go to Supabase Dashboard → Authentication → URL Configuration → Redirect URLs
-      // Add: https://yourdomain.com/reset-password (and http://localhost:3000/reset-password for dev)
-      // If not added, Supabase will ignore redirectTo and use the Site URL instead
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${baseUrl}/reset-password`,
+        redirectTo: `${baseUrl}/settings#password-reset`,
       });
 
       if (error) {

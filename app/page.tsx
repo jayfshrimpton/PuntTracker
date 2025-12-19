@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import LandingPage from "@/components/LandingPage";
 import LandingNav from "@/components/LandingNav";
-import PasswordRecoveryRedirect from "@/components/PasswordRecoveryRedirect";
 import { generateMetadata } from "@/lib/seo";
 
 export const metadata = generateMetadata({
@@ -30,10 +29,9 @@ export default async function Home() {
 
   // Show landing page for non-authenticated users
   // Note: Hash fragments (#access_token=...&type=recovery) are client-side only
-  // PasswordRecoveryRedirect will check for these and redirect to reset-password
+  // PasswordRecoveryRedirect in root layout will check for these and redirect to reset-password
   return (
     <>
-      <PasswordRecoveryRedirect />
       <LandingNav />
       <LandingPage />
     </>

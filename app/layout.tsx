@@ -7,6 +7,7 @@ import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/lib/theme";
 import { generateMetadata as generateSEOMetadata, generateStructuredData } from "@/lib/seo";
 import PWARegister from "@/components/PWARegister";
+import PasswordRecoveryRedirect from "@/components/PasswordRecoveryRedirect";
 
 export const metadata: Metadata = {
   ...generateSEOMetadata({
@@ -72,10 +73,17 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  const theme = localStorage.getItem('theme') || 'dark';
-                  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                  const resolvedTheme = theme === 'system' ? systemTheme : theme;
-                  document.documentElement.classList.add(resolvedTheme);
+                  // Check if we're on landing page - always use dark mode
+                  const isLandingPage = window.location.pathname === '/';
+                  if (isLandingPage) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    // For dashboard, default to dark if no preference saved
+                    const theme = localStorage.getItem('theme') || 'dark';
+                    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                    const resolvedTheme = theme === 'system' ? systemTheme : theme;
+                    document.documentElement.classList.add(resolvedTheme);
+                  }
                 } catch (e) {}
                 
                 // Immediately check for password recovery hash fragments and redirect
@@ -87,6 +95,11 @@ export default function RootLayout({
                     const search = window.location.search;
                     const pathname = window.location.pathname;
                     
+                    // Only redirect if we're NOT already on /reset-password
+                    if (pathname === '/reset-password') {
+                      return false;
+                    }
+                    
                     // Debug logging (remove in production if needed)
                     if (hash || search.includes('token_hash') || search.includes('type=recovery')) {
                       console.log('[Password Reset] Detected:', { hash, search, pathname });
@@ -94,8 +107,8 @@ export default function RootLayout({
                     
                     // Check for password recovery hash fragments
                     if (hash && hash.includes('access_token') && hash.includes('type=recovery')) {
-                      console.log('[Password Reset] Redirecting to /reset-password with hash');
-                      window.location.replace('/reset-password' + hash + search);
+                      console.log('[Password Reset] Redirecting to /settings#password-reset with hash');
+                      window.location.replace('/settings#password-reset' + hash + search);
                       return true;
                     }
                     
@@ -106,8 +119,8 @@ export default function RootLayout({
                       const type = params.get('type');
                       
                       if (token_hash && type === 'recovery') {
-                        console.log('[Password Reset] Redirecting to /reset-password with query params');
-                        window.location.replace('/reset-password?token_hash=' + encodeURIComponent(token_hash) + '&type=' + encodeURIComponent(type));
+                        console.log('[Password Reset] Redirecting to /settings#password-reset with query params');
+                        window.location.replace('/settings?token_hash=' + encodeURIComponent(token_hash) + '&type=' + encodeURIComponent(type) + '#password-reset');
                         return true;
                       }
                     }
@@ -115,20 +128,28 @@ export default function RootLayout({
                     return false;
                   }
                   
-                  // Check immediately
+                  // Check immediately (before anything else)
                   if (checkAndRedirect()) {
                     return;
                   }
                   
-                  // Also check after a short delay (in case hash appears after page load)
-                  setTimeout(function() {
-                    checkAndRedirect();
-                  }, 50);
+                  // Check multiple times with increasing delays (hash might appear after page load)
+                  // This is important because Supabase might add the hash dynamically
+                  [10, 50, 100, 200, 500, 1000].forEach(function(delay) {
+                    setTimeout(function() {
+                      checkAndRedirect();
+                    }, delay);
+                  });
                   
                   // Listen for hash changes (in case Supabase adds it dynamically)
                   window.addEventListener('hashchange', function() {
                     checkAndRedirect();
-                  }, { once: true });
+                  }, { once: false });
+                  
+                  // Also listen for popstate (back/forward navigation)
+                  window.addEventListener('popstate', function() {
+                    setTimeout(checkAndRedirect, 10);
+                  }, { once: false });
                 })();
               })();
             `,
@@ -138,6 +159,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background text-foreground antialiased">
         <CurrencyProvider>
           <ThemeProvider>
+            <PasswordRecoveryRedirect />
             {children}
             <ToastProvider />
             <PWARegister />

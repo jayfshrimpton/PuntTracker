@@ -163,3 +163,5 @@ To verify the code-based solution works without Supabase redirect URL:
 
 Even if Supabase redirects to `/`, the script will catch it and redirect to `/reset-password`.
 
+
+

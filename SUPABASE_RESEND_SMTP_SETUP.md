@@ -166,3 +166,5 @@ After configuring SMTP:
 
 3. **Customize email templates** in Supabase if needed (using templates from `lib/email-templates.ts`)
 
+
+

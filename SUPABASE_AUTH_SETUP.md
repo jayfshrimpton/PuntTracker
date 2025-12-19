@@ -30,10 +30,7 @@ https://your-production-domain.com/auth/callback
 https://your-production-domain.com/reset-password
 ```
 
-**CRITICAL FOR PASSWORD RESET**: 
-- The `/reset-password` URL **MUST** be in the Redirect URLs list
-- If it's not added, password reset links will redirect to the Site URL (homepage) instead
-- Users won't be able to update their password if redirected to the wrong page
+**Important**: 
 - Add BOTH localhost URLs if you're developing locally
 - Add BOTH production URLs for your live site
 - Supabase will ONLY redirect to URLs in this allowed list

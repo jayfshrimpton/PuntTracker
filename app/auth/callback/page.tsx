@@ -17,9 +17,9 @@ function AuthCallbackContent() {
       
       // IMMEDIATELY check for recovery type in hash and redirect
       if (hash && hash.includes('type=recovery')) {
-        // Password recovery - redirect immediately to reset-password with hash preserved
+        // Password recovery - redirect immediately to settings with hash preserved
         // Don't wait for Supabase to process, just redirect with the hash
-        router.replace(`/reset-password${hash}`);
+        router.replace(`/settings#password-reset${hash}`);
         return;
       }
       
@@ -36,7 +36,7 @@ function AuthCallbackContent() {
         });
 
         if (!error) {
-          router.replace('/reset-password');
+          router.replace('/settings#password-reset');
         } else {
           router.replace('/forgot-password?error=invalid_token');
         }
