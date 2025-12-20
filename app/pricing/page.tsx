@@ -32,7 +32,7 @@ const plans = [
         ],
         // IMPORTANT: Use Price ID (starts with 'price_'), NOT Product ID (starts with 'prod_')
         // Get this from Stripe Dashboard → Products → [Your Product] → Pricing → Copy Price ID
-        priceId: 'price_1SZVqG7Uv9v0RZydSebiiCsw', // Replace with actual Price ID from Stripe
+        priceId: 'price_1SZP2o4kQE4g2R11vjO4bw5Q', // Replace with actual Price ID from Stripe
         popular: true,
     },
     {
@@ -49,7 +49,7 @@ const plans = [
         ],
         // IMPORTANT: Use Price ID (starts with 'price_'), NOT Product ID (starts with 'prod_')
         // Get this from Stripe Dashboard → Products → [Your Product] → Pricing → Copy Price ID
-        priceId: 'price_1SZVQM7Uv9v0RZydzVRWIcPs', // Replace with actual Price ID from Stripe
+        priceId: 'price_1SZP4P4kQE4g2R11ziTF4DFX', // Replace with actual Price ID from Stripe
     },
 ];
 
@@ -92,9 +92,21 @@ export default function PricingPage() {
             if (!response.ok) {
                 // Provide more helpful error messages
                 let errorMessage = data.message || 'Something went wrong';
-                if (errorMessage.includes('No such price') || errorMessage.includes('Price ID not found')) {
-                    errorMessage = `The price ID "${priceId}" was not found in your Stripe account. Please verify:\n\n1. You're using the correct Stripe account (test vs live)\n2. The price ID exists in that account\n3. The price is active (not archived)\n\nCheck your Stripe Dashboard → Products to find the correct Price ID.`;
+                
+                // Show the actual error message from the API
+                console.error('Stripe checkout error:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: data,
+                    priceId: priceId
+                });
+                
+                if (errorMessage.includes('No such price') || errorMessage.includes('Price ID not found') || errorMessage.includes('not found')) {
+                    errorMessage = `The price ID "${priceId}" was not found in your Stripe account.\n\nPlease verify:\n1. You're using the correct Stripe account (test vs live)\n2. The price ID exists in that account\n3. The price is active (not archived)\n\nVisit /api/stripe/debug to see available prices in your account.`;
+                } else if (errorMessage.includes('not active')) {
+                    errorMessage = `The price ID "${priceId}" exists but is not active. Please activate it in your Stripe Dashboard.`;
                 }
+                
                 throw new Error(errorMessage);
             }
 
@@ -130,7 +142,7 @@ export default function PricingPage() {
                 {!paymentsEnabled && (
                     <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg text-sm text-muted-foreground">
                         <Lock className="h-4 w-4" />
-                        <span>Paid plans are coming December 20th. Free plan is available now!</span>
+                        <span>Pro and Elite plans available now. Free plan also available!</span>
                     </div>
                 )}
             </div>
@@ -188,7 +200,7 @@ export default function PricingPage() {
                                     ? (
                                         <>
                                             <Lock className="h-4 w-4 mr-2" />
-                                            Coming Dec 20th
+                                            Coming Soon
                                         </>
                                     )
                                     : plan.priceId

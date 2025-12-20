@@ -18,7 +18,6 @@ import {
   PlusCircle,
   Check,
 } from 'lucide-react';
-import CountdownTimer from './CountdownTimer';
 import Logo from './Logo';
 
 export default function LandingPage() {
@@ -76,7 +75,7 @@ export default function LandingPage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
-              <span className="text-sm font-medium">Public Beta Now Live</span>
+              <span className="text-sm font-medium">Now Live</span>
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-tight">
@@ -87,8 +86,6 @@ export default function LandingPage() {
             </p>
             <p className="text-lg md:text-xl text-foreground/80 mb-12 max-w-3xl mx-auto">
               Keep the numbers clean, the workflow smooth, and the insights sharp.
-              <br />
-              <span className="text-primary font-bold mt-2 block">Currently free for all users during beta.</span>
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
@@ -105,8 +102,6 @@ export default function LandingPage() {
                 See How It Works
               </button>
             </div>
-
-            <CountdownTimer />
           </div>
         </div>
       </section>
@@ -432,7 +427,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-sm text-muted-foreground/110">
-            Currently free for all users while in beta
+            Start tracking your bets today - free plan available
           </p>
         </div>
       </section>

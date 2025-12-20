@@ -47,9 +47,6 @@ export default function LandingNav() {
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
               Punter&apos;s Journal
             </span>
-            <span className="ml-2 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full border border-blue-200 dark:border-blue-800">
-              BETA
-            </span>
           </Link>
 
           {/* Desktop Navigation */}
