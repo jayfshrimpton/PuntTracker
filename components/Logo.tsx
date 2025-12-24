@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { TrendingUp, Activity } from 'lucide-react';
 
 interface LogoProps {
@@ -42,16 +43,14 @@ export default function Logo({ size = 32, variant = 'dashboard', className = '' 
   }
 
   // Only render image after client-side check confirms it exists
-  // Using regular img tag to avoid Next.js Image optimization issues
   return (
     <div className={`relative overflow-hidden ${className}`} style={{ width: size, height: size }}>
-      <img
+      <Image
         src="/puntersjournallogoblack-removebg-preview.png"
         alt="Punter's Journal Logo"
         width={size}
         height={size}
         className="object-contain"
-        onError={() => setImageLoaded(false)}
         style={{ width: '100%', height: '100%' }}
       />
     </div>

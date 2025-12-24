@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Menu, X, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles, CreditCard, MessageSquare } from 'lucide-react';
+import { Menu, X, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles, CreditCard, MessageSquare, Shield } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -15,10 +15,19 @@ interface DashboardNavProps {
   user: User;
 }
 
+// Admin emails that have automatic access
+const ADMIN_EMAILS = [
+  'jayfshrimpton@gmail.com',
+  // Add more admin emails here as needed
+];
+
 export default function DashboardNav({ user }: DashboardNavProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { mode, toggleMode } = useCurrency();
+
+  // Check if user is an admin
+  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -49,6 +58,19 @@ export default function DashboardNav({ user }: DashboardNavProps) {
             </span>
           </Link>
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link href="/admin/dashboard">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 px-3 rounded-md border-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0 hover:from-purple-700 hover:to-blue-700 transition-all shadow-sm"
+                  title="Admin Portal"
+                >
+                  <Shield className="h-4 w-4 mr-1" />
+                  <span className="text-xs font-semibold">Admin</span>
+                </Button>
+              </Link>
+            )}
             <ThemeToggle />
             <Button
               variant="outline"
@@ -157,6 +179,18 @@ export default function DashboardNav({ user }: DashboardNavProps) {
             </div>
 
             <div className="flex items-center gap-3 pl-4 border-l border-border">
+              {isAdmin && (
+                <Link href="/admin/dashboard">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0 hover:from-purple-700 hover:to-blue-700 transition-all shadow-sm"
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
               <div className="flex flex-col items-end">
                 <span className="text-sm font-medium text-foreground">{user.email?.split('@')[0]}</span>
                 <span className="text-xs text-muted-foreground">Pro Plan</span>

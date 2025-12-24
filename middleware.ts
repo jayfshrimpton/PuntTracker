@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { requireAdmin } from '@/lib/admin-auth';
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -96,6 +97,14 @@ export async function middleware(request: NextRequest) {
 
   // Allow forgot-password and reset-password routes (no restrictions)
   // These routes handle their own authentication state
+
+  // Protect admin routes (except login page)
+  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+    const adminCheck = await requireAdmin(request);
+    if (adminCheck) {
+      return adminCheck;
+    }
+  }
 
   return supabaseResponse;
 }

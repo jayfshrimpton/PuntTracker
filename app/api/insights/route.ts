@@ -1,13 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@/lib/supabase/server';
+import { withSubscriptionCheck } from '@/lib/api-auth';
+import { UserSubscription, checkUsageLimit, incrementUsage } from '@/lib/subscription-guard';
 
 export const dynamic = 'force-dynamic';
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
-export async function POST(request: Request) {
+export const POST = withSubscriptionCheck(['pro', 'elite'], async (
+    request: NextRequest,
+    subscription: UserSubscription,
+    userId: string
+) => {
     try {
         const { message: question } = await request.json(); // Map 'message' from frontend to 'question'
 
@@ -18,33 +24,34 @@ export async function POST(request: Request) {
             );
         }
 
-        // Get user from session
-        const supabase = createClient();
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-        if (userError || !user) {
+        // Check AI insights rate limit
+        const usageCheck = await checkUsageLimit(userId, subscription, 'ai_insight', 'day');
+        
+        if (!usageCheck.canProceed) {
             return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
-        }
-
-        // Check feature access
-        const { checkFeatureAccess } = await import('@/utils/subscription');
-        const hasAccess = await checkFeatureAccess('ai_insights');
-
-        if (!hasAccess) {
-            return NextResponse.json(
-                { error: 'Upgrade to Elite to access AI Insights', upgradeRequired: true },
-                { status: 403 }
+                {
+                    error: 'Daily limit exceeded',
+                    message: subscription.tier === 'pro' 
+                        ? `You've reached your daily limit of ${usageCheck.limit} AI insights. Upgrade to Elite for unlimited insights.`
+                        : `You've reached your daily limit of ${usageCheck.limit} AI insights.`,
+                    currentTier: subscription.tier,
+                    requiredTier: 'elite' as const,
+                    upgradeUrl: '/pricing',
+                    code: 'LIMIT_EXCEEDED',
+                    currentUsage: usageCheck.currentUsage,
+                    limit: usageCheck.limit,
+                    remaining: usageCheck.remaining,
+                },
+                { status: 402 }
             );
         }
 
         // Fetch user's bets
+        const supabase = createClient();
         const { data: bets, error: betsError } = await supabase
             .from('bets')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('user_id', userId)
             .order('bet_date', { ascending: false });
 
         if (betsError) {
@@ -164,24 +171,33 @@ IMPORTANT: You can optionally return a JSON object for visualization.
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        const geminiResponse = await result.response;
+        const text = geminiResponse.text();
 
         // Try to parse as JSON, otherwise return as text
+        let apiResponse: NextResponse;
         try {
             // Clean up potential markdown code blocks
             const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
             const jsonResponse = JSON.parse(cleanText);
-            return NextResponse.json(jsonResponse);
+            apiResponse = NextResponse.json(jsonResponse);
         } catch {
-            return NextResponse.json({ message: text });
+            apiResponse = NextResponse.json({ message: text });
         }
 
+        // Increment usage tracking after successful generation
+        await incrementUsage(userId, 'ai_insight', 'day', 1);
+
+        return apiResponse;
     } catch (error: any) {
         console.error('API Error:', error);
         return NextResponse.json(
-            { error: error.message || 'Failed to generate insights' },
+            {
+                error: 'Internal server error',
+                message: error.message || 'Failed to generate insights',
+                code: 'INTERNAL_ERROR',
+            },
             { status: 500 }
         );
     }
-}
+});

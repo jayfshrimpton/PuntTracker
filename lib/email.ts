@@ -499,3 +499,129 @@ Happy punting! 🐴
 The Punter's Journal Team
   `.trim();
 }
+
+export interface AccessGrantedEmailData {
+  userEmail: string;
+  tier: 'free' | 'pro' | 'elite';
+}
+
+export async function sendAccessGrantedEmail(data: AccessGrantedEmailData): Promise<{ success: boolean; error?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    return { success: false, error: 'RESEND_API_KEY is not configured' };
+  }
+
+  if (!process.env.FROM_EMAIL) {
+    return { success: false, error: 'FROM_EMAIL is not configured' };
+  }
+
+  try {
+    const html = generateAccessGrantedHTML(data);
+    const text = generateAccessGrantedText(data);
+
+    const resend = getResendClient();
+    const { error } = await resend.emails.send({
+      from: process.env.FROM_EMAIL,
+      to: data.userEmail,
+      subject: `Your ${data.tier.toUpperCase()} Access Has Been Granted - Punter's Journal`,
+      html,
+      text,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Email sending error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+function generateAccessGrantedHTML(data: AccessGrantedEmailData): string {
+  const { tier } = data;
+  const tierName = tier.charAt(0).toUpperCase() + tier.slice(1);
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/dashboard`;
+
+  const features = tier === 'pro' 
+    ? ['Unlimited bets', '50 AI insights per day', 'Advanced statistics', 'Data export', 'Venue breakdown', 'Bankroll tools']
+    : tier === 'elite'
+    ? ['Unlimited bets', 'Unlimited AI insights', 'Advanced statistics', 'Data export', 'Venue breakdown', 'Bankroll tools']
+    : ['50 bets per month', 'Basic statistics'];
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Access Granted - Punter's Journal</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+  <div style="background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div style="text-align: center; margin-bottom: 30px;">
+      <h1 style="color: #2563eb; margin: 0; font-size: 28px;">🐴 Punter's Journal</h1>
+      <p style="color: #666; margin: 5px 0 0 0; font-size: 16px;">Access Granted!</p>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 30px; margin-bottom: 30px; text-align: center;">
+      <h2 style="color: white; margin: 0 0 10px 0; font-size: 28px;">🎉 ${tierName} Access Granted!</h2>
+      <p style="color: rgba(255,255,255,0.9); margin: 15px 0 0 0; font-size: 16px;">
+        Your account has been upgraded to ${tierName} tier.
+      </p>
+    </div>
+
+    <div style="margin-bottom: 30px;">
+      <h3 style="color: #333; font-size: 20px; margin: 0 0 15px 0; font-weight: 600;">
+        ✨ What You Can Do Now:
+      </h3>
+      <ul style="margin: 0; padding-left: 20px; color: #666; font-size: 15px; line-height: 1.8;">
+        ${features.map(feature => `<li style="margin-bottom: 10px;">${feature}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 30px;">
+      <a href="${dashboardUrl}" 
+         style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);">
+        Go to Dashboard
+      </a>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+      <p style="color: #999; font-size: 12px; margin: 0;">
+        Questions? Reply to this email or visit our help center.<br>
+        We're here to help you succeed!
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
+function generateAccessGrantedText(data: AccessGrantedEmailData): string {
+  const { tier } = data;
+  const tierName = tier.charAt(0).toUpperCase() + tier.slice(1);
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/dashboard`;
+
+  return `
+Punter's Journal - Access Granted
+
+🎉 ${tierName} Access Granted!
+
+Your account has been upgraded to ${tierName} tier.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Go to Dashboard: ${dashboardUrl}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Questions? Reply to this email or visit our help center.
+We're here to help you succeed!
+  `.trim();
+}
