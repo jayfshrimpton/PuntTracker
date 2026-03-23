@@ -82,12 +82,12 @@ export default function DashboardNav({ user }: DashboardNavProps) {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/92 backdrop-blur-xl border-b border-border/60">
         <div className="px-4 py-3 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center gap-2">
             <Logo size={32} variant="dashboard" className="rounded-lg" />
-            <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-              Punter&apos;s Journal
+            <span className="font-display font-semibold text-lg tracking-tight text-foreground">
+              Punter&apos;s <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Journal</span>
             </span>
           </Link>
           <div className="flex items-center gap-2">
@@ -133,7 +133,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
       </div>
 
       {/* Mobile Bottom Nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-t border-border pb-safe">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/92 backdrop-blur-xl border-t border-border/60 pb-safe">
         <nav className="flex justify-around items-center h-16 px-2">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -156,13 +156,13 @@ export default function DashboardNav({ user }: DashboardNavProps) {
       </div>
 
       {/* Desktop Top Bar */}
-      <div className="hidden lg:block sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="hidden lg:block sticky top-0 z-40 bg-background/92 backdrop-blur-xl border-b border-border/60">
         <div className="px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="flex items-center gap-2 mr-8">
               <Logo size={32} variant="dashboard" className="rounded-lg" />
-              <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                Punter&apos;s Journal
+              <span className="font-display font-semibold text-xl tracking-tight text-foreground">
+                Punter&apos;s <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Journal</span>
               </span>
             </Link>
 

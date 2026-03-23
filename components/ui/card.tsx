@@ -10,7 +10,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
         const variants = {
             default: "shadow-md",
-            glass: "bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg border-white/20 dark:border-gray-800/50 shadow-lg",
+            glass: "bg-card/75 dark:bg-card/75 backdrop-blur-lg border-border/80 shadow-lg",
             interactive: "shadow-md hover:shadow-xl hover:-translate-y-1 cursor-pointer",
         }
 

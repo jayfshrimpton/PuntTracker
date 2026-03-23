@@ -62,23 +62,23 @@ export default function BetCalendar({ bets, selectedDate, onDateSelect }: BetCal
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white pl-2">
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h3 className="text-lg font-semibold font-display text-foreground pl-2">
           {format(currentMonth, 'MMMM yyyy')}
         </h3>
         <div className="flex items-center gap-1">
           <button
             onClick={() => navigateMonth('prev')}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-600 dark:text-gray-400"
+            className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
             aria-label="Previous month"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={() => navigateMonth('next')}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-600 dark:text-gray-400"
+            className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
             aria-label="Next month"
           >
             <ChevronRight className="w-5 h-5" />
@@ -92,7 +92,7 @@ export default function BetCalendar({ bets, selectedDate, onDateSelect }: BetCal
           {weekDays.map((day) => (
             <div
               key={day}
-              className="text-center text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider"
+              className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider"
             >
               {day}
             </div>
@@ -114,11 +114,11 @@ export default function BetCalendar({ bets, selectedDate, onDateSelect }: BetCal
 
             // Determine background color with softer palette
             let bgColor = '';
-            let textColor = 'text-gray-700 dark:text-gray-300';
+            let textColor = 'text-muted-foreground';
 
             if (!isCurrentMonth) {
               bgColor = 'bg-transparent';
-              textColor = 'text-gray-300 dark:text-gray-700';
+              textColor = 'text-muted-foreground/40';
             } else if (hasBets) {
               if (hasProfit) {
                 // Softer green gradients
@@ -133,10 +133,10 @@ export default function BetCalendar({ bets, selectedDate, onDateSelect }: BetCal
                 else bgColor = 'bg-rose-50/50 dark:bg-rose-900/10 border border-rose-50 dark:border-rose-900/50';
                 textColor = 'text-rose-700 dark:text-rose-400';
               } else {
-                bgColor = 'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700';
+                bgColor = 'bg-muted border border-border';
               }
             } else {
-              bgColor = 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-gray-200 dark:border-gray-700 shadow-sm';
+              bgColor = 'bg-card hover:bg-muted/50 border border-border shadow-sm';
             }
 
             return (
@@ -152,7 +152,7 @@ export default function BetCalendar({ bets, selectedDate, onDateSelect }: BetCal
                   relative aspect-square rounded-xl p-1 transition-all duration-200
                   flex flex-col items-center justify-between
                   ${!isCurrentMonth ? 'cursor-default' : 'cursor-pointer hover:shadow-sm hover:-translate-y-0.5'}
-                  ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 z-10' : ''}
+                  ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background z-10' : ''}
                   ${isToday && !isSelected ? 'ring-1 ring-blue-300 dark:ring-blue-700' : ''}
                   ${bgColor}
                 `}
@@ -165,7 +165,7 @@ export default function BetCalendar({ bets, selectedDate, onDateSelect }: BetCal
 
                 {hasBets && isCurrentMonth && (
                   <div className="flex-1 flex flex-col items-center justify-center w-full pb-1">
-                    <span className={`text-[10px] font-bold ${hasProfit ? 'text-emerald-600 dark:text-emerald-400' : hasLoss ? 'text-rose-600 dark:text-rose-400' : 'text-gray-500'}`}>
+                    <span className={`text-[10px] font-bold ${hasProfit ? 'text-emerald-600 dark:text-emerald-400' : hasLoss ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground'}`}>
                       {hasProfit ? '+' : ''}{Math.abs(stats.totalProfit) >= 1000 ? (Math.abs(stats.totalProfit) / 1000).toFixed(1) + 'k' : Math.abs(stats.totalProfit).toFixed(0)}
                     </span>
                     <div className="flex gap-0.5 mt-0.5">
@@ -183,7 +183,7 @@ export default function BetCalendar({ bets, selectedDate, onDateSelect }: BetCal
         </div>
 
         {/* Legend */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-4">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground border-t border-border pt-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800"></div>
             <span>Profit</span>
@@ -197,7 +197,7 @@ export default function BetCalendar({ bets, selectedDate, onDateSelect }: BetCal
             <span>Selected</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-400"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50"></div>
             <span>Bets Placed</span>
           </div>
         </div>

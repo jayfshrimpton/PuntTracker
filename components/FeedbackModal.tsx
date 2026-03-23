@@ -66,8 +66,8 @@ export default function FeedbackModal({ onClose }: FeedbackModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 bg-gradient-to-r from-gray-700 to-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+      <div className="bg-card rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border" onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 border-b border-border px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Send Feedback</h2>
           <button
             onClick={onClose}
@@ -86,7 +86,7 @@ export default function FeedbackModal({ onClose }: FeedbackModalProps) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Feedback Type
             </label>
             <select
@@ -98,7 +98,7 @@ export default function FeedbackModal({ onClose }: FeedbackModalProps) {
                   feedback_type: e.target.value as FeedbackInput['feedback_type'],
                 })
               }
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+              className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-foreground bg-card"
               required
             >
               <option value="Bug Report">Bug Report</option>
@@ -108,7 +108,7 @@ export default function FeedbackModal({ onClose }: FeedbackModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Title
             </label>
             <input
@@ -118,14 +118,14 @@ export default function FeedbackModal({ onClose }: FeedbackModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+              className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-foreground bg-card placeholder:text-muted-foreground"
               placeholder="Brief summary of your feedback"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Description
             </label>
             <textarea
@@ -135,14 +135,14 @@ export default function FeedbackModal({ onClose }: FeedbackModalProps) {
                 setFormData({ ...formData, description: e.target.value })
               }
               rows={6}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+              className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-foreground bg-card placeholder:text-muted-foreground"
               placeholder="Please provide details about your feedback..."
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Email (for follow-up)
             </label>
             <input
@@ -152,7 +152,7 @@ export default function FeedbackModal({ onClose }: FeedbackModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+              className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-foreground bg-card placeholder:text-muted-foreground"
               placeholder="your@email.com"
               required
             />
@@ -162,7 +162,7 @@ export default function FeedbackModal({ onClose }: FeedbackModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-3 border border-input rounded-lg text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Cancel
             </button>

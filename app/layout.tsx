@@ -1,8 +1,22 @@
 import type { Metadata, Viewport } from "next";
+import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CurrencyProvider } from '@/components/CurrencyContext';
 import "./globals.css";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  subsets: ["latin"],
+  variable: "--font-dm-serif-display",
+  weight: "400",
+  display: "swap",
+});
 import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/lib/theme";
 import { generateMetadata as generateSEOMetadata, generateStructuredData } from "@/lib/seo";
@@ -39,8 +53,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+    { media: "(prefers-color-scheme: light)", color: "#fafaf9" },
+    { media: "(prefers-color-scheme: dark)", color: "#18181b" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -52,8 +66,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${dmSans.variable} ${dmSerifDisplay.variable}`}
+      suppressHydrationWarning
+    >
       <head>
+        {/* Sync theme before first paint — avoids white flash when using dark mode (must match lib/theme.tsx). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function() {
+  try {
+    var stored = localStorage.getItem('theme');
+    var resolved = 'light';
+    if (stored === 'dark') resolved = 'dark';
+    else if (stored === 'system') {
+      resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    var root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(resolved);
+  } catch (e) {}
+})();
+            `.trim(),
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -142,7 +180,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background text-foreground antialiased" suppressHydrationWarning>
+      <body
+        className={`${dmSans.className} min-h-screen bg-background text-foreground antialiased`}
+        suppressHydrationWarning
+      >
         <CurrencyProvider>
           <ThemeProvider>
             <PasswordRecoveryRedirect />

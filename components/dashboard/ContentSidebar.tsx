@@ -15,7 +15,7 @@ export default function ContentSidebar() {
                 </h3>
 
                 {/* Quick Stats Widget */}
-                <Card className="glass border-white/20 dark:border-gray-800/50">
+                <Card className="glass border-white/20 dark:border-border/50">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center gap-2">
                             <TrendingUp className="h-4 w-4 text-green-500" />
@@ -29,7 +29,7 @@ export default function ContentSidebar() {
                 </Card>
 
                 {/* Next Race Widget (Placeholder) */}
-                <Card className="glass border-white/20 dark:border-gray-800/50">
+                <Card className="glass border-white/20 dark:border-border/50">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center gap-2">
                             <Clock className="h-4 w-4 text-blue-500" />
@@ -81,7 +81,7 @@ export default function ContentSidebar() {
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
                     Featured Videos
                 </h3>
-                <Card className="overflow-hidden border-white/20 dark:border-gray-800/50 group cursor-pointer">
+                <Card className="overflow-hidden border-white/20 dark:border-border/50 group cursor-pointer">
                     <div className="relative aspect-video bg-black/50 flex items-center justify-center group-hover:bg-black/40 transition-colors">
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                         <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform z-10">

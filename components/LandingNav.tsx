@@ -101,7 +101,7 @@ export default function LandingNav() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-20 left-0 right-0 glass border-t border-white/20 dark:border-gray-800/50 p-4 animate-fade-in-up">
+          <div className="md:hidden absolute top-20 left-0 right-0 glass border-t border-white/20 dark:border-border/50 p-4 animate-fade-in-up">
             <div className="space-y-4">
               <button
                 onClick={() => scrollToSection('features')}

@@ -197,17 +197,17 @@ export default function BookieCombobox({ value, onChange, className = '' }: Book
           }}
           onKeyDown={handleKeyDown}
           placeholder="Select bookie..."
-          className="w-full px-4 py-3 pr-20 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+          className="w-full px-4 py-3 pr-20 border border-input rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring text-foreground bg-card placeholder:text-muted-foreground"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {value && (
             <button
               type="button"
               onClick={handleClear}
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              className="p-1 hover:bg-muted rounded transition-colors"
               aria-label="Clear selection"
             >
-              <X className="h-4 w-4 text-gray-500" />
+              <X className="h-4 w-4 text-muted-foreground" />
             </button>
           )}
           <button
@@ -218,11 +218,11 @@ export default function BookieCombobox({ value, onChange, className = '' }: Book
                 inputRef.current?.focus();
               }
             }}
-            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+            className="p-1 hover:bg-muted rounded transition-colors"
             aria-label="Toggle dropdown"
           >
             <ChevronDown
-              className={`h-4 w-4 text-gray-500 transition-transform ${
+              className={`h-4 w-4 text-muted-foreground transition-transform ${
                 isOpen ? 'rotate-180' : ''
               }`}
             />
@@ -233,17 +233,17 @@ export default function BookieCombobox({ value, onChange, className = '' }: Book
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 max-h-60 overflow-auto bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg"
+          className="absolute z-50 w-full mt-1 max-h-60 overflow-auto bg-card border border-input rounded-lg shadow-lg"
         >
           {showCustomOption && (
             <button
               type="button"
               onClick={handleCustomBookie}
               onMouseEnter={() => setHighlightedIndex(0)}
-              className={`w-full text-left px-4 py-2 text-sm transition-colors border-b border-gray-200 dark:border-gray-700 ${
+              className={`w-full text-left px-4 py-2 text-sm transition-colors border-b border-border ${
                 highlightedIndex === 0
                   ? 'bg-green-100 dark:bg-green-900/30 text-green-900 dark:text-green-100'
-                  : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  : 'text-foreground hover:bg-muted'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -256,7 +256,7 @@ export default function BookieCombobox({ value, onChange, className = '' }: Book
           )}
 
           {filteredBookies.length === 0 && !showCustomOption ? (
-            <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+            <div className="px-4 py-3 text-sm text-muted-foreground">
               No bookies found
             </div>
           ) : (
@@ -272,7 +272,7 @@ export default function BookieCombobox({ value, onChange, className = '' }: Book
                   className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${
                     adjustedIndex === highlightedIndex
                       ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100'
-                      : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      : 'text-foreground hover:bg-muted'
                   } ${
                     value === bookie
                       ? 'font-semibold bg-blue-50 dark:bg-blue-900/20'
@@ -281,7 +281,7 @@ export default function BookieCombobox({ value, onChange, className = '' }: Book
                 >
                   <span>{bookie}</span>
                   {customBookies.includes(bookie) && (
-                    <span className="text-[10px] uppercase tracking-wider bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300">
+                    <span className="text-[10px] uppercase tracking-wider bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
                       Custom
                     </span>
                   )}

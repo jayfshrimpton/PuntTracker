@@ -185,10 +185,10 @@ export default function ResetPasswordPage() {
   // Show loading state while checking token
   if (isValidToken === null || checkingToken) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4 bg-background">
         <div className="max-w-md w-full text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Verifying reset link...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Verifying reset link...</p>
         </div>
       </div>
     );
@@ -197,16 +197,16 @@ export default function ResetPasswordPage() {
   // Show error if token is invalid
   if (isValidToken === false) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4 bg-background">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
               <Lock className="h-8 w-8 text-red-600 dark:text-red-400" />
             </div>
-            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-4">
+            <h2 className="font-display text-3xl font-semibold tracking-tight text-foreground mb-4">
               Invalid or expired link
             </h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-6">
+            <p className="text-muted-foreground mb-6">
               This password reset link is invalid or has expired. Please request a new one.
             </p>
             <div className="space-y-4">
@@ -219,7 +219,7 @@ export default function ResetPasswordPage() {
               <div>
                 <Link
                   href="/login"
-                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400"
+                  className="inline-flex items-center text-sm text-primary hover:text-primary/80"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to login
@@ -234,16 +234,16 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4 bg-background">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
               <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
-            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-4">
+            <h2 className="font-display text-3xl font-semibold tracking-tight text-foreground mb-4">
               Password reset successful
             </h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-6">
+            <p className="text-muted-foreground mb-6">
               Your password has been successfully reset. Redirecting to login...
             </p>
           </div>
@@ -253,13 +253,13 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          <h2 className="mt-6 text-center font-display text-3xl font-semibold tracking-tight text-foreground">
             Set new password
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-700 dark:text-gray-300">
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             Enter your new password below
           </p>
         </div>
@@ -275,7 +275,7 @@ export default function ResetPasswordPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 placeholder:text-gray-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="appearance-none relative block w-full px-4 py-3 border border-input placeholder:text-muted-foreground text-foreground bg-card rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring sm:text-sm"
                 placeholder="New password (min 6 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -291,7 +291,7 @@ export default function ResetPasswordPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 placeholder:text-gray-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="appearance-none relative block w-full px-4 py-3 border border-input placeholder:text-muted-foreground text-foreground bg-card rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring sm:text-sm"
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -309,7 +309,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
             >
               {loading ? 'Resetting password...' : 'Reset password'}
             </button>
@@ -318,7 +318,7 @@ export default function ResetPasswordPage() {
           <div className="text-center">
             <Link
               href="/login"
-              className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400"
+              className="inline-flex items-center text-sm text-primary hover:text-primary/80"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to login

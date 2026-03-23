@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import {
     AreaChart,
     Area,
@@ -30,6 +31,8 @@ interface PerformanceChartsProps {
     strikeRateData: any[];
     pieData: any[];
     stats: any;
+    /** Rendered after Profit/Loss Over Time, before Monthly Comparison */
+    afterProfitLossChart?: ReactNode;
 }
 
 const COLORS = [
@@ -52,6 +55,7 @@ export function PerformanceCharts({
     strikeRateData,
     pieData,
     stats,
+    afterProfitLossChart,
 }: PerformanceChartsProps) {
     const { formatValue } = useCurrency();
 
@@ -166,6 +170,8 @@ export function PerformanceCharts({
                     </AreaChart>
                 </ResponsiveContainer>
             </ChartCard>
+
+            {afterProfitLossChart}
 
             {/* Monthly Comparison */}
             <ChartCard title="Monthly Comparison (Last 6 Months)">

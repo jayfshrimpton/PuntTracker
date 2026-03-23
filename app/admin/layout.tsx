@@ -9,9 +9,9 @@ export default function AdminLayout({
   // This layout just provides the structure
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-background text-foreground">
       <AdminSidebar />
-      <main className="flex-1 ml-64 p-8">
+      <main className="flex-1 ml-64 p-8 overflow-x-auto">
         {children}
       </main>
     </div>

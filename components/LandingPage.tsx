@@ -1,552 +1,957 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import {
-  Zap,
-  Calculator,
-  BarChart3,
-  PieChart,
-  Target,
-  Smartphone,
-  UserPlus,
-  LineChart,
-  AlertCircle,
-  TrendingDown,
-  Activity,
-  Tablet,
-  PlusCircle,
-  Check,
-} from 'lucide-react';
-import Logo from './Logo';
+import { useState, useEffect, useRef } from "react";
+import Logo from "@/components/Logo";
 
 export default function LandingPage() {
-  const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const [mounted, setMounted] = useState(false);
+  const [billingAnnual, setBillingAnnual] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [statsVisible, setStatsVisible] = useState(false);
+  const year = new Date().getFullYear();
 
   useEffect(() => {
-    setMounted(true);
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px',
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate-fade-in');
-        }
-      });
-    }, observerOptions);
-
-    const observedNodes = Object.values(sectionRefs.current);
-
-    observedNodes.forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
-
-    return () => {
-      observedNodes.forEach((ref) => {
-        if (ref) observer.unobserve(ref);
-      });
-    };
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setStatsVisible(true);
+      },
+      { threshold: 0.3 }
+    );
+    if (statsRef.current) observer.observe(statsRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const faqs = [
+    {
+      q: "Is this only for horse racing?",
+      a: "Yes — Punters Journal is built specifically for Australian horse racing punters. Every feature, stat, and insight is designed around the way Aussies bet on the races.",
+    },
+    {
+      q: "What bet types can I track?",
+      a: "Win, place, each-way, lay, multi, quinella, exacta, trifecta, first four, and more. If you're putting money on it, you can track it.",
+    },
+    {
+      q: "How is this different from a spreadsheet?",
+      a: "Automatic P&L calculations, AI-powered insights, visualisations, mobile-first design, and streak tracking — all without touching a formula. Your spreadsheet can't tell you your ROI is down 12% on wet tracks.",
+    },
+    {
+      q: "What's the founding member deal?",
+      a: "First 100 paying users lock in $10/month forever — even as the standard price rises. That's our way of saying thanks to the early believers.",
+    },
+    {
+      q: "Can I cancel anytime?",
+      a: "Yes, no lock-in contracts. Cancel from your account settings any time. We'd rather earn your subscription every month.",
+    },
+    {
+      q: "Is my data private?",
+      a: "Absolutely. Your bet history is private to you and stored securely. We'll never share or sell your data.",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* SECTION 1: Hero Section */}
-      <section className="bg-foreground text-background min-h-screen flex items-center justify-center pt-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <div
-            ref={(el) => {
-              sectionRefs.current['hero'] = el;
-            }}
-            className="opacity-0 transition-opacity duration-700"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 mb-8 animate-fade-in">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              <span className="text-sm font-medium">Now Live</span>
-            </div>
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-tight">
-              Track Your Punts With Ease
-            </h1>
-            <p className="text-xl md:text-2xl text-foreground/90 mb-6 max-w-3xl mx-auto font-medium">
-              Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.
-            </p>
-            <p className="text-lg md:text-xl text-foreground/80 mb-12 max-w-3xl mx-auto">
-              Keep the numbers clean, the workflow smooth, and the insights sharp.
-            </p>
+        html { scroll-behavior: smooth; }
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-              <Link
-                href="/signup"
-                className="px-8 py-3 rounded-lg font-semibold text-base bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200"
-              >
-                Start Tracking Free
-              </Link>
-              <button
-                onClick={() => scrollToSection('features')}
-                className="px-8 py-3 rounded-lg font-semibold text-base border border-border text-background hover:bg-background/10 transition-colors duration-200"
-              >
-                See How It Works
-              </button>
-            </div>
+        .nav {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+          padding: 0 2rem;
+          transition: all 0.3s ease;
+        }
+        .nav.scrolled {
+          background: rgba(250,250,249,0.92);
+          backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .nav-inner {
+          max-width: 1100px; margin: 0 auto;
+          display: flex; align-items: center; justify-content: space-between;
+          height: 64px;
+        }
+        .nav-logo {
+          display: flex; align-items: center; gap: 10px;
+          font-family: 'DM Serif Display', serif;
+          font-size: 1.2rem; color: #1a1a18; text-decoration: none;
+        }
+        .nav-logo .logo-wrap { flex-shrink: 0; }
+        .nav-links {
+          display: flex; align-items: center; gap: 2rem; list-style: none;
+        }
+        .nav-links a {
+          font-size: 0.875rem; color: #555; text-decoration: none;
+          font-weight: 400; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: #1a1a18; }
+        .nav-cta {
+          background: #1a1a18; color: #fff !important;
+          padding: 0.5rem 1.25rem; border-radius: 8px;
+          font-weight: 500 !important;
+          transition: background 0.2s, opacity 0.2s !important;
+        }
+        .nav-cta:hover { background: #333; opacity: 1 !important; }
+
+        .nav-mobile-shortcuts {
+          display: none; align-items: center; gap: 1rem;
+        }
+        .nav-mobile-shortcuts a {
+          font-size: 0.8rem; color: #555; text-decoration: none; font-weight: 400;
+        }
+        .nav-mobile-shortcuts a:hover { color: #1a1a18; }
+        .nav-cta-mini {
+          background: #1a1a18; color: #fff !important;
+          padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 500 !important; font-size: 0.8rem !important;
+        }
+        .nav-cta-mini:hover { background: #333; }
+
+        .hero {
+          padding: 140px 2rem 80px;
+          max-width: 1100px; margin: 0 auto;
+          display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+        }
+        @media (max-width: 768px) {
+          .hero { grid-template-columns: 1fr; padding: 120px 1.5rem 60px; gap: 3rem; }
+          .nav-links { display: none; }
+          .nav-mobile-shortcuts { display: flex; }
+          .hero-visual { order: -1; }
+          .stats-grid { grid-template-columns: 1fr 1fr !important; }
+          .features-grid { grid-template-columns: 1fr !important; }
+          .pricing-grid { grid-template-columns: 1fr !important; }
+          .social-grid { grid-template-columns: 1fr !important; }
+        }
+
+        .eyebrow {
+          display: inline-flex; align-items: center; gap: 6px;
+          font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em;
+          text-transform: uppercase; color: #6d28d9;
+          background: #ede9fe; padding: 4px 12px; border-radius: 20px;
+          margin-bottom: 1.5rem;
+        }
+        .eyebrow-dot { width: 6px; height: 6px; background: #6d28d9; border-radius: 50%; }
+
+        h1 {
+          font-family: 'DM Serif Display', serif;
+          font-size: clamp(2.4rem, 5vw, 3.6rem);
+          line-height: 1.1; color: #1a1a18;
+          margin-bottom: 1.5rem;
+        }
+        h1 em { font-style: italic; color: #6d28d9; }
+
+        .hero-sub {
+          font-size: 1.05rem; color: #555; line-height: 1.7;
+          margin-bottom: 2.5rem; font-weight: 300;
+        }
+
+        .hero-actions {
+          display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+        }
+
+        .btn-primary {
+          background: #1a1a18; color: #fff;
+          padding: 0.875rem 1.75rem; border-radius: 10px;
+          font-size: 0.95rem; font-weight: 500;
+          text-decoration: none; display: inline-block;
+          transition: all 0.2s; border: none; cursor: pointer;
+          font-family: 'DM Sans', sans-serif;
+        }
+        .btn-primary:hover { background: #333; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+
+        .btn-secondary {
+          color: #1a1a18; font-size: 0.95rem; font-weight: 400;
+          text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+          padding: 0.875rem 0; transition: gap 0.2s;
+          background: none; border: none; cursor: pointer;
+          font-family: 'DM Sans', sans-serif;
+        }
+        .btn-secondary:hover { gap: 10px; }
+
+        .trust-row {
+          display: flex; align-items: center; gap: 1.5rem; margin-top: 2.5rem;
+          flex-wrap: wrap;
+        }
+        .trust-avatars { display: flex; }
+        .trust-avatar {
+          width: 30px; height: 30px; border-radius: 50%;
+          border: 2px solid #fff; margin-left: -8px;
+          background: #ddd; overflow: hidden; font-size: 0.7rem;
+          display: flex; align-items: center; justify-content: center;
+          font-weight: 600; color: #555;
+        }
+        .trust-avatar:first-child { margin-left: 0; }
+        .trust-text { font-size: 0.8rem; color: #777; line-height: 1.4; }
+        .trust-text strong { color: #1a1a18; }
+
+        /* Dashboard mockup */
+        .dashboard-card {
+          background: #fff; border-radius: 16px;
+          border: 1px solid rgba(0,0,0,0.08);
+          box-shadow: 0 20px 60px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+          padding: 1.5rem; position: relative; overflow: hidden;
+        }
+        .dashboard-card::before {
+          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+          background: linear-gradient(90deg, #6d28d9, #8b5cf6);
+        }
+        .db-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+        .db-title { font-size: 0.8rem; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+        .db-badge { font-size: 0.7rem; background: #ede9fe; color: #6d28d9; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
+        .db-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+        .db-stat-label { font-size: 0.7rem; color: #aaa; margin-bottom: 4px; }
+        .db-stat-val { font-size: 1.3rem; font-weight: 600; color: #1a1a18; }
+        .db-stat-val.green { color: #6d28d9; }
+        .db-stat-val.red { color: #e05252; }
+        .db-chart { height: 80px; display: flex; align-items: flex-end; gap: 4px; margin-bottom: 1.25rem; }
+        .db-bar {
+          flex: 1; border-radius: 4px 4px 0 0;
+          transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .db-recent { border-top: 1px solid #f0f0ee; padding-top: 1rem; }
+        .db-recent-title { font-size: 0.7rem; color: #aaa; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+        .db-bet-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f8f8f7; }
+        .db-bet-row:last-child { border-bottom: none; }
+        .db-bet-name { font-size: 0.8rem; color: #333; }
+        .db-bet-type { font-size: 0.7rem; color: #aaa; }
+        .db-bet-amount { font-size: 0.8rem; font-weight: 500; }
+
+        /* Sections */
+        section { padding: 100px 2rem; }
+        .section-inner { max-width: 1100px; margin: 0 auto; }
+
+        .section-eyebrow {
+          font-size: 0.75rem; font-weight: 500; letter-spacing: 0.1em;
+          text-transform: uppercase; color: #6d28d9; margin-bottom: 1rem;
+        }
+        h2 {
+          font-family: 'DM Serif Display', serif;
+          font-size: clamp(2rem, 4vw, 2.8rem);
+          line-height: 1.15; color: #1a1a18; margin-bottom: 1.25rem;
+        }
+        h2 em { font-style: italic; color: #6d28d9; }
+        .section-sub {
+          font-size: 1rem; color: #666; line-height: 1.7; max-width: 500px;
+          font-weight: 300;
+        }
+
+        /* Stats bar */
+        .stats-section { background: #1a1a18; }
+        .stats-grid {
+          display: grid; grid-template-columns: repeat(4, 1fr);
+          gap: 0; max-width: 1100px; margin: 0 auto;
+        }
+        .stat-block {
+          padding: 3.5rem 2rem; border-right: 1px solid rgba(255,255,255,0.08);
+          text-align: center;
+        }
+        .stat-block:last-child { border-right: none; }
+        .stat-num {
+          font-family: 'DM Serif Display', serif;
+          font-size: clamp(2rem, 4vw, 3rem); color: #fff;
+          margin-bottom: 0.5rem;
+          opacity: 0; transform: translateY(20px);
+          transition: all 0.6s ease;
+        }
+        .stat-num.visible { opacity: 1; transform: translateY(0); }
+        .stat-num:nth-child(1) { transition-delay: 0s; }
+        .stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.08em; }
+
+        /* Features */
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; background: #e8e8e6; border-radius: 16px; overflow: hidden; }
+        .feature-card {
+          background: #fff; padding: 2rem;
+          transition: background 0.2s;
+        }
+        .feature-card:hover { background: #fdfdf9; }
+        .feature-icon {
+          width: 40px; height: 40px; background: #f5f3ff; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1.1rem; margin-bottom: 1rem;
+        }
+        .feature-title { font-size: 0.95rem; font-weight: 600; color: #1a1a18; margin-bottom: 0.5rem; }
+        .feature-desc { font-size: 0.85rem; color: #777; line-height: 1.6; }
+
+        /* Pricing */
+        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .pricing-card {
+          background: #fff; border: 1px solid #e8e8e6; border-radius: 16px;
+          padding: 2rem; position: relative;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .pricing-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+        .pricing-card.featured {
+          background: #1a1a18; color: #fff; border-color: #1a1a18;
+          transform: scale(1.03);
+        }
+        .pricing-card.featured:hover { transform: scale(1.03) translateY(-4px); }
+        .pricing-badge {
+          position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+          background: #6d28d9; color: #fff;
+          font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+          padding: 4px 14px; border-radius: 20px;
+        }
+        .plan-name { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #aaa; margin-bottom: 0.75rem; }
+        .pricing-card.featured .plan-name { color: rgba(255,255,255,0.5); }
+        .plan-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 0.5rem; }
+        .price-amount { font-family: 'DM Serif Display', serif; font-size: 2.5rem; color: #1a1a18; }
+        .pricing-card.featured .price-amount { color: #fff; }
+        .price-period { font-size: 0.85rem; color: #aaa; }
+        .pricing-card.featured .price-period { color: rgba(255,255,255,0.45); }
+        .plan-tagline { font-size: 0.85rem; color: #777; margin-bottom: 1.5rem; line-height: 1.5; }
+        .pricing-card.featured .plan-tagline { color: rgba(255,255,255,0.6); }
+        .plan-features { list-style: none; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.625rem; }
+        .plan-features li { display: flex; gap: 8px; align-items: flex-start; font-size: 0.85rem; color: #444; }
+        .pricing-card.featured .plan-features li { color: rgba(255,255,255,0.8); }
+        .check { color: #6d28d9; font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+        .pricing-card.featured .check { color: #8b5cf6; }
+        .plan-cta {
+          display: block; text-align: center; padding: 0.875rem;
+          border-radius: 10px; font-size: 0.9rem; font-weight: 500;
+          text-decoration: none; cursor: pointer; border: none;
+          font-family: 'DM Sans', sans-serif;
+          transition: all 0.2s;
+        }
+        .cta-dark { background: #1a1a18; color: #fff; }
+        .cta-dark:hover { background: #333; }
+        .cta-white { background: #fff; color: #1a1a18; }
+        .cta-white:hover { background: #f5f5f4; }
+        .cta-outline { background: transparent; color: #1a1a18; border: 1px solid #e8e8e6; }
+        .cta-outline:hover { background: #f8f8f7; }
+        .founding-note { text-align: center; margin-top: 1.5rem; font-size: 0.8rem; color: #999; }
+        .founding-note strong { color: #6d28d9; }
+
+        /* Billing toggle */
+        .billing-toggle { display: flex; align-items: center; gap: 1rem; margin-bottom: 3rem; justify-content: center; }
+        .toggle-label { font-size: 0.9rem; color: #555; }
+        .toggle-label.active { color: #1a1a18; font-weight: 500; }
+        .toggle {
+          width: 44px; height: 24px; background: #e8e8e6; border-radius: 12px;
+          cursor: pointer; position: relative; border: none; transition: background 0.2s;
+        }
+        .toggle.on { background: #6d28d9; }
+        .toggle-thumb {
+          position: absolute; top: 3px; left: 3px;
+          width: 18px; height: 18px; background: #fff; border-radius: 50%;
+          transition: transform 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        }
+        .toggle.on .toggle-thumb { transform: translateX(20px); }
+        .save-badge { background: #ede9fe; color: #6d28d9; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+
+        /* Social proof */
+        .social-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+        .testimonial {
+          background: #fff; border: 1px solid #e8e8e6; border-radius: 14px;
+          padding: 1.5rem;
+        }
+        .testimonial-text { font-size: 0.9rem; color: #444; line-height: 1.7; margin-bottom: 1.25rem; font-style: italic; }
+        .testimonial-author { display: flex; align-items: center; gap: 10px; }
+        .author-avatar {
+          width: 36px; height: 36px; border-radius: 50%;
+          background: #1a1a18; color: #fff;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 0.8rem; font-weight: 600; flex-shrink: 0;
+        }
+        .author-name { font-size: 0.85rem; font-weight: 600; color: #1a1a18; }
+        .author-sub { font-size: 0.75rem; color: #aaa; }
+        .stars { color: #f5a623; font-size: 0.8rem; margin-bottom: 0.75rem; }
+
+        /* FAQ */
+        .faq-list { max-width: 680px; margin: 3rem auto 0; display: flex; flex-direction: column; gap: 1px; background: #e8e8e6; border-radius: 14px; overflow: hidden; }
+        .faq-item { background: #fff; }
+        .faq-btn {
+          width: 100%; text-align: left; padding: 1.25rem 1.5rem;
+          background: none; border: none; cursor: pointer;
+          display: flex; justify-content: space-between; align-items: center;
+          font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: #1a1a18;
+          font-weight: 500;
+        }
+        .faq-icon { color: #aaa; font-size: 1.1rem; transition: transform 0.2s; flex-shrink: 0; }
+        .faq-icon.open { transform: rotate(45deg); }
+        .faq-answer { font-size: 0.875rem; color: #666; line-height: 1.7; padding: 0 1.5rem 1.25rem; }
+
+        /* CTA section */
+        .cta-section {
+          background: #1a1a18; padding: 100px 2rem; text-align: center;
+        }
+        .cta-section h2 { color: #fff; }
+        .cta-section h2 em { color: #8b5cf6; }
+        .cta-section p { color: rgba(255,255,255,0.5); font-size: 1rem; margin: 1rem auto 2.5rem; max-width: 460px; line-height: 1.7; }
+        .btn-light { background: #fff; color: #1a1a18; }
+        .btn-light:hover { background: #f5f5f4; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,255,255,0.15); }
+
+        /* Footer */
+        footer { background: #fafaf9; border-top: 1px solid #e8e8e6; padding: 3rem 2rem; }
+        .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.75rem; }
+        .footer-top {
+          display: flex; justify-content: space-between; align-items: flex-start;
+          flex-wrap: wrap; gap: 1.5rem;
+        }
+        .footer-brand {
+          display: flex; align-items: center; gap: 10px;
+          font-family: 'DM Serif Display', serif; font-size: 1rem; color: #1a1a18;
+          text-decoration: none;
+        }
+        .footer-columns { display: flex; flex-wrap: wrap; gap: 2rem 3rem; }
+        .footer-col h3 {
+          font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+          color: #888; margin-bottom: 0.75rem;
+        }
+        .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .footer-col a { font-size: 0.8rem; color: #aaa; text-decoration: none; }
+        .footer-col a:hover { color: #555; }
+        .footer-bottom {
+          display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+          padding-top: 1rem; border-top: 1px solid #e8e8e6;
+        }
+        .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+        .footer-links a { font-size: 0.8rem; color: #aaa; text-decoration: none; }
+        .footer-links a:hover { color: #555; }
+        .footer-legal { font-size: 0.75rem; color: #bbb; }
+        .guides-grid {
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+        }
+        @media (max-width: 768px) {
+          .guides-grid { grid-template-columns: 1fr; }
+        }
+        .guide-card {
+          display: block; background: #fff; border: 1px solid #e8e8e6; border-radius: 12px;
+          padding: 1.25rem 1.5rem; text-decoration: none; color: inherit;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .guide-card:hover { border-color: #c4b5fd; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .guide-card-title { font-size: 0.95rem; font-weight: 600; color: #1a1a18; margin-bottom: 0.35rem; }
+        .guide-card-desc { font-size: 0.8rem; color: #777; line-height: 1.5; }
+      `}</style>
+
+      {/* NAV */}
+      <nav className={`nav${scrolled ? " scrolled" : ""}`}>
+        <div className="nav-inner">
+          <a href="/" className="nav-logo">
+            <span className="logo-wrap">
+              <Logo size={32} variant="landing" />
+            </span>
+            Punters Journal
+          </a>
+          <ul className="nav-links">
+            <li>
+              <a href="#features">Features</a>
+            </li>
+            <li>
+              <a href="#guides">Guides</a>
+            </li>
+            <li>
+              <a href="#pricing">Pricing</a>
+            </li>
+            <li>
+              <a href="#faq">FAQ</a>
+            </li>
+            <li>
+              <a href="/login">Sign in</a>
+            </li>
+            <li>
+              <a href="/signup" className="nav-cta">
+                Get started free
+              </a>
+            </li>
+          </ul>
+          <div className="nav-mobile-shortcuts">
+            <a href="#guides">Guides</a>
+            <a href="/login">Sign in</a>
+            <a href="/signup" className="nav-cta-mini">
+              Start free
+            </a>
           </div>
         </div>
-      </section>
+      </nav>
 
-      {/* SECTION 2: Problem Statement */}
-      <section className="py-20 bg-muted/50">
-        <div
-          ref={(el) => {
-            sectionRefs.current['problem'] = el;
-          }}
-          className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-        >
-          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12">
-            Tired of Tracking Bets in Spreadsheets?
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: AlertCircle,
-                title: 'Broken formulas and manual calculations',
-                description: 'One wrong cell reference and your entire tracking system breaks. Hours wasted fixing formulas.',
-              },
-              {
-                icon: Smartphone,
-                title: 'No mobile access at the track',
-                description: 'Spreadsheets don\'t work well on your phone. You\'re stuck waiting until you get home to log bets.',
-              },
-              {
-                icon: TrendingDown,
-                title: 'Can\'t see what\'s actually profitable',
-                description: 'Raw numbers don\'t tell the full story. You need insights to understand what\'s working.',
-              },
-            ].map((pain, idx) => (
-              <div
-                key={idx}
-                className="rounded-xl p-8 bg-card border border-border shadow-sm"
-              >
-                <div className="mb-4 inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary">
-                  <pain.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">{pain.title}</h3>
-                <p className="text-foreground/80 text-lg">{pain.description}</p>
-              </div>
-            ))}
+      {/* HERO */}
+      <div className="hero">
+        <div>
+          <div className="eyebrow">
+            <span className="eyebrow-dot" />
+            Built for Australian punters
           </div>
-        </div>
-      </section>
-
-      {/* SECTION 2.5: Reality Check Promo */}
-      <section className="py-20 bg-background border-y border-border">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Most punters think they&apos;re close to break even.
-          </h2>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-            82% are down more than they realise.
+          <h1>
+            Know <em>exactly</em> how your betting is performing
+          </h1>
+          <p className="hero-sub">
+            Track every bet, see your real P&L, and get AI-powered insights that tell you where you&apos;re winning — and where you&apos;re bleeding money.
           </p>
-          <div className="bg-muted rounded-2xl p-8 border border-border shadow-sm">
-            <p className="text-lg md:text-xl font-medium mb-8">
-              If we could show you exactly where your betting is leaking money — would you want to know?
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/signup"
-                className="px-8 py-4 rounded-xl font-semibold text-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl"
-              >
-                Yes
-              </Link>
-              <button
-                onClick={() => scrollToSection('features')}
-                className="px-8 py-4 rounded-xl font-semibold text-lg bg-background border border-border text-foreground hover:bg-muted transition-all"
-              >
-                No
-              </button>
+          <div className="hero-actions">
+            <a href="/signup" className="btn-primary">
+              Start tracking free →
+            </a>
+            <a href="#features" className="btn-secondary">
+              See how it works ↓
+            </a>
+          </div>
+          <div className="trust-row">
+            <div className="trust-avatars">
+              {["JM", "RS", "TK", "AB", "LW"].map((ini, i) => (
+                <div
+                  key={i}
+                  className="trust-avatar"
+                  style={{
+                    background: ["#c8e6c9", "#bbdefb", "#f8bbd0", "#fff9c4", "#d7ccc8"][i],
+                  }}
+                >
+                  <span style={{ color: "#555" }}>{ini}</span>
+                </div>
+              ))}
+            </div>
+            <div className="trust-text">
+              <strong>50+ punters</strong> tracking bets in beta
+              <br />
+              Join the Wolfden community
             </div>
           </div>
         </div>
-      </section>
 
-      {/* SECTION 3: Features Grid */}
-      <section id="features" className="py-20 bg-background">
-        <div
-          ref={(el) => {
-            sectionRefs.current['features'] = el;
-          }}
-          className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-        >
-          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-4">
-            Everything You Need to Track Your Betting
-          </h2>
-          <p className="text-center text-xl text-foreground/80 mb-12 max-w-2xl mx-auto">
-            Built specifically for Australian horse racing punters
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Zap,
-                title: 'Quick Bet Entry',
-                description: 'Log bets in seconds from your phone. Works perfectly at the track or from home.',
-              },
-              {
-                icon: Calculator,
-                title: 'Smart Calculations',
-                description: 'Automatic P&L for wins, places, each-ways, multis, and all exotics. No formulas to break.',
-              },
-              {
-                icon: BarChart3,
-                title: 'Comprehensive Stats',
-                description: 'Strike rate, POT%, ROI, streaks, and more. See exactly what\'s working.',
-              },
-              {
-                icon: PieChart,
-                title: 'Beautiful Insights',
-                description: 'Visual charts show your performance over time. Spot trends instantly.',
-              },
-              {
-                icon: Target,
-                title: 'Bet Type Breakdown',
-                description: 'Compare profitability across wins, places, multis, and exotics. Know your strengths.',
-              },
-              {
-                icon: Tablet,
-                title: 'Mobile First',
-                description: 'Fully responsive design. Use it anywhere, anytime. Dark mode included.',
-              },
-            ].map((feature, idx) => (
-              <div
-                key={idx}
-                className="bg-card rounded-xl p-8 border border-border shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
-                  <feature.icon className="w-7 h-7 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-foreground/80 text-lg leading-relaxed">{feature.description}</p>
+        {/* Dashboard preview */}
+        <div className="hero-visual">
+          <div className="dashboard-card">
+            <div className="db-header">
+              <span className="db-title">Performance this month</span>
+              <span className="db-badge">↑ 12.4% ROI</span>
+            </div>
+            <div className="db-stats">
+              <div>
+                <div className="db-stat-label">P&L</div>
+                <div className="db-stat-val green">+$482</div>
               </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link
-              href="/signup"
-              className="inline-block px-8 py-3 rounded-lg font-semibold text-base border border-border hover:bg-muted transition-colors"
-            >
-              Start Tracking Free
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 4: How It Works */}
-      <section id="how-it-works" className="py-20 bg-muted/50">
-        <div
-          ref={(el) => {
-            sectionRefs.current['how-it-works'] = el;
-          }}
-          className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-        >
-          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12">
-            Start Tracking in 3 Simple Steps
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-            {/* Connecting line for desktop */}
-            <div className="hidden md:block absolute top-24 left-1/4 right-1/4 h-px bg-border"></div>
-
-            {[
-              {
-                number: 1,
-                icon: UserPlus,
-                title: 'Sign Up Free',
-                description: 'Create your account in 30 seconds. No credit card required.',
-              },
-              {
-                number: 2,
-                icon: PlusCircle,
-                title: 'Log Your Bets',
-                description: 'Enter your bets with just a few taps. Add results as races finish.',
-              },
-              {
-                number: 3,
-                icon: LineChart,
-                title: 'Get Insights',
-                description: 'Watch your stats update automatically. See what\'s profitable.',
-              },
-            ].map((step, idx) => (
-              <div key={idx} className="relative text-center">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-3xl font-semibold shadow-lg">
-                  {step.number}
-                </div>
-                <div className="bg-card rounded-xl p-8 border border-border shadow-sm">
-                  <div className="w-14 h-14 mx-auto mb-6 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <step.icon className="w-7 h-7 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-4">{step.title}</h3>
-                  <p className="text-foreground/80 text-lg">{step.description}</p>
-                </div>
+              <div>
+                <div className="db-stat-label">Strike rate</div>
+                <div className="db-stat-val">34%</div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 5: Screenshot/Demo Section */}
-      <section className="py-20 bg-background">
-        <div
-          ref={(el) => {
-            sectionRefs.current['demo'] = el;
-          }}
-          className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-        >
-          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-4">
-            Built for Aussie Punters
-          </h2>
-          <p className="text-center text-xl text-foreground/80 mb-12">
-            See your betting performance at a glance
-          </p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="order-2 lg:order-1">
-              <div className="bg-muted rounded-2xl p-8 border border-border">
-                <div className="bg-card rounded-lg p-6 space-y-4 border border-border shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm text-muted-foreground">Total Profit</div>
-                      <div className="text-3xl font-bold text-green-600">$2,450</div>
-                    </div>
-                    <BarChart3 className="w-10 h-10 text-muted-foreground/50" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
-                    <div>
-                      <div className="text-sm text-muted-foreground">Strike Rate</div>
-                      <div className="text-xl font-semibold">68%</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">ROI</div>
-                      <div className="text-xl font-semibold text-green-600">+12.5%</div>
-                    </div>
-                  </div>
-                  <div className="pt-4">
-                    <div className="text-sm text-muted-foreground mb-2">Recent Bets</div>
-                    <div className="space-y-2">
-                      {['Win - $50 → $120', 'Place - $30 → $45', 'Each-Way - $40 → $0'].map((bet, idx) => (
-                        <div key={idx} className="text-sm bg-muted/50 p-2 rounded">
-                          {bet}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+              <div>
+                <div className="db-stat-label">Turnover</div>
+                <div className="db-stat-val">$3,880</div>
               </div>
             </div>
-
-            <div className="order-1 lg:order-2 space-y-6">
+            <div className="db-chart">
+              {[35, 55, 40, 70, 45, 85, 60, 90, 50, 75, 95, 65].map((h, i) => (
+                <div
+                  key={i}
+                  className="db-bar"
+                  style={{
+                    height: `${h}%`,
+                    background: h > 70 ? "#6d28d9" : h > 50 ? "#c4b5fd" : "#e8e8e6",
+                  }}
+                />
+              ))}
+            </div>
+            <div className="db-recent">
+              <div className="db-recent-title">Recent bets</div>
               {[
-                { icon: Activity, text: 'Real-time stats update as you log bets' },
-                { icon: Target, text: 'Track all bet types: win, place, each-way, multis, exotics' },
-                { icon: PieChart, text: 'Visual charts show your performance trends' },
-                { icon: Smartphone, text: 'Works perfectly on mobile at the track' },
-              ].map((feature, idx) => (
-                <div key={idx} className="flex items-start space-x-4">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="w-6 h-6 text-primary" />
-                  </div>
+                { name: "Winx St – R6", type: "WIN", amount: "+$96", win: true },
+                { name: "Flemington – R3", type: "EW", amount: "-$50", win: false },
+                { name: "Eagle Farm – R8", type: "PLACE", amount: "+$38", win: true },
+              ].map((bet, i) => (
+                <div key={i} className="db-bet-row">
                   <div>
-                    <p className="text-lg text-foreground/90 font-medium">{feature.text}</p>
+                    <div className="db-bet-name">{bet.name}</div>
+                    <div className="db-bet-type">{bet.type}</div>
+                  </div>
+                  <div className="db-bet-amount" style={{ color: bet.win ? "#6d28d9" : "#e05252" }}>
+                    {bet.amount}
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
+      </div>
+
+      {/* STATS */}
+      <section className="stats-section" style={{ padding: 0 }}>
+        <div className="stats-grid" ref={statsRef}>
+          {[
+            { num: "50+", label: "Beta users" },
+            { num: "All", label: "Bet types covered" },
+            { num: "AI", label: "Powered insights" },
+            { num: "100%", label: "Mobile optimised" },
+          ].map((s, i) => (
+            <div key={i} className="stat-block">
+              <div
+                className={`stat-num${statsVisible ? " visible" : ""}`}
+                style={{ transitionDelay: `${i * 0.12}s` }}
+              >
+                {s.num}
+              </div>
+              <div className="stat-label">{s.label}</div>
+            </div>
+          ))}
+        </div>
       </section>
 
-      {/* SECTION 6: Built for You */}
-      <section className="py-20 bg-muted/50">
-        <div
-          ref={(el) => {
-            sectionRefs.current['built-for-you'] = el;
-          }}
-          className="opacity-0 transition-opacity duration-1000 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-        >
-          <h2 className="text-3xl md:text-4xl font-semibold text-center mb-12">
-            Why Aussie Punters Love Punter&apos;s Journal
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* FEATURES */}
+      <section id="features">
+        <div className="section-inner">
+          <div style={{ marginBottom: "3rem" }}>
+            <div className="section-eyebrow">Features</div>
+            <h2>
+              Everything you need to <em>punt smarter</em>
+            </h2>
+            <p className="section-sub">No spreadsheets, no guesswork. Just clean data that tells you what&apos;s working.</p>
+          </div>
+          <div className="features-grid">
             {[
               {
-                title: 'Track Every Bet Type',
-                description: 'Win, place, each-way, multis, quinellas, exactas, trifectas, first fours - we\'ve got you covered.',
-                borderColor: 'border-primary',
+                icon: "📊",
+                title: "Automatic P&L",
+                desc: "Every win, loss, place and each-way calculated instantly. Your real numbers, always up to date.",
               },
               {
-                title: 'Your Data, Your Privacy',
-                description: 'Completely private. Your bets are secure and only visible to you.',
-                borderColor: 'border-primary',
+                icon: "📈",
+                title: "ROI & strike rate",
+                desc: "See your return on investment and win rate across any date range, bet type, or track.",
               },
               {
-                title: 'Free to Start',
-                description: 'No hidden costs. Start tracking for free and see the value for yourself.',
-                borderColor: 'border-primary',
+                icon: "🤖",
+                title: "AI insights",
+                desc: "With Pro or Elite: personalised analysis of your betting patterns — where your edge is and where it is not.",
               },
-            ].map((benefit, idx) => (
-              <div
-                key={idx}
-                className={`bg-card rounded-xl p-8 border-l-4 ${benefit.borderColor} border-y border-r border-border shadow-sm`}
-              >
-                <h3 className="text-xl font-bold mb-4">{benefit.title}</h3>
-                <p className="text-foreground/80 text-lg">{benefit.description}</p>
+              {
+                icon: "🏇",
+                title: "All bet types",
+                desc: "Win, place, each-way, lay, multi, quinella, exacta, trifecta, first four. Every bet, tracked properly.",
+              },
+              {
+                icon: "📱",
+                title: "Mobile first",
+                desc: "Built for trackside. Log bets between races, check your running P&L, get insights on the go.",
+              },
+              {
+                icon: "📉",
+                title: "Streak tracking",
+                desc: "Know your current win streak, longest losing run, and how your form changes through a meeting.",
+              },
+              {
+                icon: "📤",
+                title: "CSV export",
+                desc: "Pro and Elite: export your full bet history for your own analysis or tax records.",
+              },
+              {
+                icon: "🏟️",
+                title: "Venue breakdown",
+                desc: "Pro and Elite: see your performance track-by-track — Flemington vs Eagle Farm and beyond.",
+              },
+              {
+                icon: "💰",
+                title: "Bankroll tools",
+                desc: "Pro and Elite: set bankroll targets, track staking consistency, and manage your betting bank.",
+              },
+            ].map((f, i) => (
+              <div key={i} className="feature-card">
+                <div className="feature-icon">{f.icon}</div>
+                <div className="feature-title">{f.title}</div>
+                <div className="feature-desc">{f.desc}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* SECTION 7: Pricing/CTA Section */}
-      <section id="pricing" className="py-20 bg-foreground text-background">
-        <div
-          ref={(el) => {
-            sectionRefs.current['pricing'] = el;
-          }}
-          className="opacity-0 transition-opacity duration-1000 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
-        >
-          <h2 className="text-3xl md:text-4xl font-semibold mb-6">
-            Ready to Track Like a Pro?
-          </h2>
-          <p className="text-xl text-foreground/90 mb-10">
-            Join Australian punters already using Punter&apos;s Journal
-          </p>
+      {/* GUIDES — internal links for SEO (same hub as /what-is-punters-journal) */}
+      <section id="guides" style={{ background: "#f5f5f3" }}>
+        <div className="section-inner">
+          <div style={{ marginBottom: "2.5rem" }}>
+            <div className="section-eyebrow">Guides &amp; resources</div>
+            <h2>
+              New to systematic <em>tracking?</em>
+            </h2>
+            <p className="section-sub" style={{ maxWidth: "560px" }}>
+              Start with the explainer and entry-level guides — the same paths we use across the site for Australian horse racing punters.
+            </p>
+          </div>
+          <div className="guides-grid">
+            <a href="/what-is-punters-journal" className="guide-card">
+              <div className="guide-card-title">What is Punters Journal?</div>
+              <div className="guide-card-desc">Workbook, analytics, and how serious punters use it.</div>
+            </a>
+            <a href="/getting-started" className="guide-card">
+              <div className="guide-card-title">Getting started</div>
+              <div className="guide-card-desc">30-day challenge, habits, and example journal entries.</div>
+            </a>
+            <a href="/race-day-betting-checklist" className="guide-card">
+              <div className="guide-card-title">Race day checklist</div>
+              <div className="guide-card-desc">Step-by-step framework before and during the meeting.</div>
+            </a>
+            <a href="/betting-journal-template-horse-racing" className="guide-card">
+              <div className="guide-card-title">Betting journal template</div>
+              <div className="guide-card-desc">Structured fields for horse racing bet records.</div>
+            </a>
+            <a href="/bankroll-management-workbook-australian-punters" className="guide-card">
+              <div className="guide-card-title">Bankroll workbook</div>
+              <div className="guide-card-desc">Staking, capital, and bankroll discipline for Aussies.</div>
+            </a>
+            <a href="/pricing" className="guide-card">
+              <div className="guide-card-title">Pricing</div>
+              <div className="guide-card-desc">Compare Free, Pro, and Elite in one place.</div>
+            </a>
+          </div>
+        </div>
+      </section>
 
-          <Link
-            href="/signup"
-            className="inline-block px-8 py-3 rounded-lg font-semibold text-base bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 mb-8"
-          >
-            Start Tracking Free
-          </Link>
+      {/* SOCIAL PROOF */}
+      <section style={{ background: "#fafaf9" }}>
+        <div className="section-inner">
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+            <div className="section-eyebrow">From the community</div>
+            <h2>
+              What punters are <em>saying</em>
+            </h2>
+          </div>
+          <div className="social-grid">
+            {[
+              {
+                text: "Finally know what my actual ROI is. Turns out I thought I was up but the numbers said otherwise. Game changer for the way I bet.",
+                name: "Jake M.",
+                sub: "Wolfden member",
+                init: "JM",
+              },
+              {
+                text: "Tracked my first 20 bets and the AI insight straight away picked up that I was losing money on wet track favourites. Would never have spotted that myself.",
+                name: "Ryan S.",
+                sub: "Beta tester",
+                init: "RS",
+              },
+              {
+                text: "Tried to do this in Excel for years. The automatic calculations alone make it worth it. On my phone at the track it's mint.",
+                name: "Tom K.",
+                sub: "Founding member",
+                init: "TK",
+              },
+            ].map((t, i) => (
+              <div key={i} className="testimonial">
+                <div className="stars">★★★★★</div>
+                <p className="testimonial-text">&ldquo;{t.text}&rdquo;</p>
+                <div className="testimonial-author">
+                  <div className="author-avatar">{t.init}</div>
+                  <div>
+                    <div className="author-name">{t.name}</div>
+                    <div className="author-sub">{t.sub}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <div className="flex flex-wrap justify-center items-center gap-6 text-primary-foreground/80 mb-6">
-            <div className="flex items-center space-x-2">
-              <Check className="w-5 h-5" />
-              <span>No credit card required</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Check className="w-5 h-5" />
-              <span>Free to use</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Check className="w-5 h-5" />
-              <span>Cancel anytime</span>
-            </div>
+      {/* PRICING */}
+      <section id="pricing">
+        <div className="section-inner">
+          <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+            <div className="section-eyebrow">Pricing</div>
+            <h2>
+              Simple, honest <em>pricing</em>
+            </h2>
+            <p className="section-sub" style={{ margin: "0 auto 2rem" }}>
+              Start free, upgrade when you&apos;re ready. No lock-in, cancel anytime.
+            </p>
           </div>
 
-          <p className="text-sm text-muted-foreground/110">
-            Start tracking your bets today - free plan available
+          <div className="billing-toggle">
+            <span className={`toggle-label${!billingAnnual ? " active" : ""}`}>Monthly</span>
+            <button type="button" className={`toggle${billingAnnual ? " on" : ""}`} onClick={() => setBillingAnnual(!billingAnnual)} aria-label="Toggle yearly billing">
+              <div className="toggle-thumb" />
+            </button>
+            <span className={`toggle-label${billingAnnual ? " active" : ""}`}>Yearly</span>
+            <span className="save-badge">Save up to 33%</span>
+          </div>
+
+          <div className="pricing-grid">
+            {[
+              {
+                name: "Free",
+                price: "0",
+                tagline: "50 bets/month. See if it clicks.",
+                featured: false,
+                features: [
+                  "50 bets per month",
+                  "Core P&L, strike rate & ROI",
+                  "Dashboard charts & date filters",
+                  "Mobile-friendly (trackside)",
+                  "Upgrade for AI insights & CSV export",
+                ],
+                cta: "Start for free",
+                ctaStyle: "cta-outline",
+                href: "/signup",
+              },
+              {
+                name: "Pro",
+                price: billingAnnual ? "10" : "15",
+                yearlyNote: billingAnnual ? "billed $120/yr" : "",
+                tagline: "Unlimited bets. AI insights. Serious tools.",
+                featured: true,
+                badge: "Most popular",
+                features: [
+                  "Unlimited bets",
+                  "All bet types",
+                  "Full stats & visualisations",
+                  "Venue & track breakdown",
+                  "Bankroll tools",
+                  "AI insights (50/day)",
+                  "CSV export",
+                  "Unlimited history",
+                  "Monthly email summary",
+                ],
+                cta: "Get Pro →",
+                ctaStyle: "cta-white",
+                href: "/signup?plan=pro",
+              },
+              {
+                name: "Elite",
+                price: billingAnnual ? "20.75" : "25",
+                yearlyNote: billingAnnual ? "billed $249/yr" : "",
+                tagline: "Every tool. Unlimited AI. Priority support.",
+                featured: false,
+                features: [
+                  "Everything in Pro",
+                  "Unlimited AI insights (no daily cap)",
+                  "Priority support",
+                ],
+                cta: "Get Elite",
+                ctaStyle: "cta-dark",
+                href: "/signup?plan=elite",
+              },
+            ].map((plan, i) => (
+              <div key={i} className={`pricing-card${plan.featured ? " featured" : ""}`}>
+                {plan.badge && <div className="pricing-badge">{plan.badge}</div>}
+                <div className="plan-name">{plan.name}</div>
+                <div className="plan-price">
+                  <span className="price-amount">${plan.price}</span>
+                  <span className="price-period">/mo{plan.yearlyNote ? ` — ${plan.yearlyNote}` : ""}</span>
+                </div>
+                <p className="plan-tagline">{plan.tagline}</p>
+                <ul className="plan-features">
+                  {plan.features.map((f, j) => (
+                    <li key={j}>
+                      <span className="check">✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <a href={plan.href} className={`plan-cta ${plan.ctaStyle}`}>
+                  {plan.cta}
+                </a>
+              </div>
+            ))}
+          </div>
+          <p className="founding-note">
+            🎯 <strong>Founding member deal:</strong> First 100 paying users lock in Pro at $10/month forever.
           </p>
         </div>
       </section>
 
-      {/* SECTION 8: Footer */}
-      <footer className="bg-background border-t border-border py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Logo size={24} variant="landing" />
-                <span className="text-xl font-bold">Punter&apos;s Journal</span>
+      {/* FAQ */}
+      <section id="faq" style={{ background: "#f5f5f3" }}>
+        <div className="section-inner">
+          <div style={{ textAlign: "center" }}>
+            <div className="section-eyebrow">Questions</div>
+            <h2>
+              Anything else you&apos;re <em>wondering?</em>
+            </h2>
+          </div>
+          <div className="faq-list">
+            {faqs.map((faq, i) => (
+              <div key={i} className="faq-item">
+                <button type="button" className="faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                  {faq.q}
+                  <span className={`faq-icon${openFaq === i ? " open" : ""}`}>+</span>
+                </button>
+                {openFaq === i && <div className="faq-answer">{faq.a}</div>}
               </div>
-              <p className="text-muted-foreground text-sm">
-                Punters Journal is an Australian race-day workbook and education hub for serious, value-driven horse racing punters.
-              </p>
-            </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-            <div>
-              <h4 className="font-bold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <button onClick={() => scrollToSection('features')} className="hover:text-primary transition-colors">
-                    Features
-                  </button>
-                </li>
-                <li>
-                  <button onClick={() => scrollToSection('how-it-works')} className="hover:text-primary transition-colors">
-                    How It Works
-                  </button>
-                </li>
-                <li>
-                  <Link href="/what-is-punters-journal" className="hover:text-primary transition-colors">
-                    What is Punters Journal?
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/getting-started" className="hover:text-primary transition-colors">
-                    Getting Started
-                  </Link>
-                </li>
-              </ul>
-            </div>
+      {/* FINAL CTA */}
+      <section className="cta-section">
+        <h2>
+          Ready to know your <em>real numbers?</em>
+        </h2>
+        <p>Free to start, takes 2 minutes. Start tracking your bets today.</p>
+        <a href="/signup" className="btn-primary btn-light">
+          Start for free — no card needed →
+        </a>
+      </section>
 
-            <div>
-              <h4 className="font-bold mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="/race-day-betting-checklist" className="hover:text-primary transition-colors">
-                    Race Day Checklist
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/bankroll-management-workbook-australian-punters" className="hover:text-primary transition-colors">
-                    Bankroll Workbook
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/betting-journal-template-horse-racing" className="hover:text-primary transition-colors">
-                    Journal Template
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="/privacy" className="hover:text-primary transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-primary transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
+      {/* FOOTER */}
+      <footer>
+        <div className="footer-inner">
+          <div className="footer-top">
+            <a href="/" className="footer-brand">
+              <Logo size={28} variant="landing" />
+              Punters Journal
+            </a>
+            <div className="footer-columns">
+              <div className="footer-col">
+                <h3>Guides</h3>
+                <ul>
+                  <li>
+                    <a href="/what-is-punters-journal">What is Punters Journal?</a>
+                  </li>
+                  <li>
+                    <a href="/getting-started">Getting started</a>
+                  </li>
+                  <li>
+                    <a href="/race-day-betting-checklist">Race day checklist</a>
+                  </li>
+                  <li>
+                    <a href="/betting-journal-template-horse-racing">Journal template</a>
+                  </li>
+                  <li>
+                    <a href="/bankroll-management-workbook-australian-punters">Bankroll workbook</a>
+                  </li>
+                  <li>
+                    <a href="/pricing">Pricing</a>
+                  </li>
+                </ul>
+              </div>
+              <div className="footer-col">
+                <h3>Product</h3>
+                <ul>
+                  <li>
+                    <a href="#features">Features</a>
+                  </li>
+                  <li>
+                    <a href="#guides">Guides</a>
+                  </li>
+                  <li>
+                    <a href="#pricing">Pricing</a>
+                  </li>
+                  <li>
+                    <a href="/signup">Sign up</a>
+                  </li>
+                  <li>
+                    <a href="/login">Sign in</a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-
-          <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2025 Punter&apos;s Journal. Built for Aussie punters.</p>
+          <div className="footer-bottom">
+            <div className="footer-links">
+              <a href="/what-is-punters-journal">About</a>
+              <a href="/privacy">Privacy</a>
+              <a href="/terms">Terms</a>
+              <a href="mailto:hello@puntersjournal.com.au">Contact</a>
+            </div>
+            <div className="footer-legal">
+              © {year} Punters Journal. Gamble responsibly. 18+
+            </div>
           </div>
         </div>
       </footer>
     </div>
   );
 }
-

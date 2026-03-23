@@ -27,11 +27,11 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed left-0 top-0 overflow-y-auto">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+    <div className="w-64 bg-card border-r border-border h-screen fixed left-0 top-0 overflow-y-auto">
+      <div className="p-6 border-b border-border">
         <div className="flex items-center space-x-2 mb-4">
-          <Shield className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Admin Portal</h2>
+          <Shield className="h-6 w-6 text-primary" />
+          <h2 className="font-display text-xl font-semibold text-foreground">Admin Portal</h2>
         </div>
         <Link href="/dashboard">
           <Button variant="ghost" size="sm" className="w-full justify-start">
@@ -53,8 +53,8 @@ export function AdminSidebar() {
               className={cn(
                 'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors',
                 isActive
-                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
               )}
             >
               <Icon className="h-5 w-5" />

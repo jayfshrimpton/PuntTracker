@@ -53,7 +53,7 @@ export default function UserDetailPage() {
   if (isLoading || !userDetail) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600 dark:text-gray-400">Loading user details...</div>
+        <div className="text-muted-foreground">Loading user details...</div>
       </div>
     );
   }
@@ -97,10 +97,10 @@ export default function UserDetailPage() {
           Back
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-foreground">
             {profile.full_name || 'User'}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">{profile.email}</p>
+          <p className="text-muted-foreground mt-1">{profile.email}</p>
         </div>
       </div>
 
@@ -111,16 +111,16 @@ export default function UserDetailPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Email</label>
-              <p className="text-gray-900 dark:text-white">{profile.email}</p>
+              <label className="text-sm font-medium text-muted-foreground">Email</label>
+              <p className="text-foreground">{profile.email}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Name</label>
-              <p className="text-gray-900 dark:text-white">{profile.full_name || 'N/A'}</p>
+              <label className="text-sm font-medium text-muted-foreground">Name</label>
+              <p className="text-foreground">{profile.full_name || 'N/A'}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Joined</label>
-              <p className="text-gray-900 dark:text-white">
+              <label className="text-sm font-medium text-muted-foreground">Joined</label>
+              <p className="text-foreground">
                 {new Date(profile.created_at).toLocaleDateString()}
               </p>
             </div>
@@ -133,14 +133,14 @@ export default function UserDetailPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Tier</label>
-              <p className="text-gray-900 dark:text-white">
+              <label className="text-sm font-medium text-muted-foreground">Tier</label>
+              <p className="text-foreground">
                 {subscription?.tier?.toUpperCase() || 'FREE'}
               </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</label>
-              <p className="text-gray-900 dark:text-white">
+              <label className="text-sm font-medium text-muted-foreground">Status</label>
+              <p className="text-foreground">
                 {subscription?.status || 'active'}
               </p>
             </div>
@@ -218,20 +218,20 @@ export default function UserDetailPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Bets</label>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <label className="text-sm font-medium text-muted-foreground">Total Bets</label>
+              <p className="text-2xl font-bold text-foreground">
                 {stats.totalBets}
               </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Bets This Month</label>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <label className="text-sm font-medium text-muted-foreground">Bets This Month</label>
+              <p className="text-2xl font-bold text-foreground">
                 {Object.values(stats.betsPerMonth)[0] || 0}
               </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Usage Stats</label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <label className="text-sm font-medium text-muted-foreground">Usage Stats</label>
+              <p className="text-sm text-muted-foreground">
                 {stats.usageStats.length} periods tracked
               </p>
             </div>
@@ -246,31 +246,31 @@ export default function UserDetailPage() {
         </CardHeader>
         <CardContent>
           {recentBets.length === 0 ? (
-            <p className="text-gray-600 dark:text-gray-400">No bets found</p>
+            <p className="text-muted-foreground">No bets found</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-800">
-                    <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Date</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Race</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Horse</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Stake</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">P/L</th>
+                  <tr className="bg-gradient-to-r from-blue-600 to-purple-600">
+                    <th className="text-left p-4 text-sm font-medium text-white">Date</th>
+                    <th className="text-left p-4 text-sm font-medium text-white">Race</th>
+                    <th className="text-left p-4 text-sm font-medium text-white">Horse</th>
+                    <th className="text-left p-4 text-sm font-medium text-white">Stake</th>
+                    <th className="text-left p-4 text-sm font-medium text-white">P/L</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentBets.map((bet) => (
                     <tr
                       key={bet.id}
-                      className="border-b border-gray-100 dark:border-gray-800"
+                      className="border-b border-border"
                     >
-                      <td className="p-4 text-sm text-gray-900 dark:text-white">
+                      <td className="p-4 text-sm text-foreground">
                         {new Date(bet.bet_date).toLocaleDateString()}
                       </td>
-                      <td className="p-4 text-sm text-gray-900 dark:text-white">{bet.race_name}</td>
-                      <td className="p-4 text-sm text-gray-900 dark:text-white">{bet.horse_name}</td>
-                      <td className="p-4 text-sm text-gray-900 dark:text-white">${bet.stake}</td>
+                      <td className="p-4 text-sm text-foreground">{bet.race_name}</td>
+                      <td className="p-4 text-sm text-foreground">{bet.horse_name}</td>
+                      <td className="p-4 text-sm text-foreground">${bet.stake}</td>
                       <td className={`p-4 text-sm font-medium ${
                         bet.profit_loss >= 0
                           ? 'text-green-600 dark:text-green-400'

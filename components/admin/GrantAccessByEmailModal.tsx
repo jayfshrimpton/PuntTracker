@@ -93,13 +93,13 @@ export function GrantAccessByEmailModal({ onClose, onSuccess }: GrantAccessByEma
                 placeholder="user@example.com"
                 required
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 The user will be found in Supabase auth.users. A profile will be created if it doesn&apos;t exist.
               </p>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 Tier *
               </label>
               <select
@@ -115,7 +115,7 @@ export function GrantAccessByEmailModal({ onClose, onSuccess }: GrantAccessByEma
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 Special Pricing Type
               </label>
               <select
@@ -140,7 +140,7 @@ export function GrantAccessByEmailModal({ onClose, onSuccess }: GrantAccessByEma
                 step="0.01"
                 min="0"
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Leave empty to use default tier pricing
               </p>
             </div>
@@ -152,13 +152,13 @@ export function GrantAccessByEmailModal({ onClose, onSuccess }: GrantAccessByEma
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 For temporary access grants
               </p>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 Reason for Grant *
               </label>
               <textarea

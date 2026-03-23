@@ -77,7 +77,7 @@ export default function AdminFeedbackPage() {
       case 'completed':
         return 'bg-green-100 text-green-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
     }
   };
 
@@ -89,14 +89,14 @@ export default function AdminFeedbackPage() {
   if (!isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <Shield className="h-12 w-12 text-gray-400" />
+        <Shield className="h-12 w-12 text-muted-foreground" />
         <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900">Access Denied</h2>
-          <p className="text-gray-600 mt-2">
+          <h2 className="text-xl font-bold text-foreground">Access Denied</h2>
+          <p className="text-muted-foreground mt-2">
             {error || 'You do not have permission to access this page.'}
           </p>
           {userEmail && (
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Logged in as: {userEmail}
             </p>
           )}
@@ -108,7 +108,7 @@ export default function AdminFeedbackPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-900">Loading feedback...</div>
+        <div className="text-foreground">Loading feedback...</div>
       </div>
     );
   }
@@ -123,14 +123,14 @@ export default function AdminFeedbackPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Feedback Admin</h1>
-        <p className="mt-1 text-sm text-gray-900">
+        <h1 className="text-2xl font-bold text-foreground">Feedback Admin</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Manage and review all user feedback submissions
         </p>
       </div>
 
       {/* Status Filter */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4 border border-border">
         <div className="flex flex-wrap gap-2">
           {(['all', 'new', 'reviewing', 'completed'] as const).map((status) => (
             <button
@@ -139,7 +139,7 @@ export default function AdminFeedbackPage() {
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 filterStatus === status
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                  : 'bg-muted text-foreground hover:bg-muted/80'
               }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)} (
@@ -150,24 +150,24 @@ export default function AdminFeedbackPage() {
       </div>
 
       {/* Feedback List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <div className="bg-card rounded-lg shadow overflow-hidden border border-border">
+        <div className="px-6 py-4 border-b border-border bg-gradient-to-r from-blue-600 to-purple-600">
+          <h2 className="text-lg font-semibold text-white">
             All Feedback ({filteredFeedback.length})
           </h2>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-border">
           {filteredFeedback.length === 0 ? (
-            <div className="px-6 py-8 text-center text-gray-900">
+            <div className="px-6 py-8 text-center text-foreground">
               No feedback found.
             </div>
           ) : (
             filteredFeedback.map((item) => (
-              <div key={item.id} className="px-6 py-4 hover:bg-gray-50">
+              <div key={item.id} className="px-6 py-4 hover:bg-muted/50">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-lg font-semibold text-foreground">
                         {item.title}
                       </h3>
                       <span
@@ -178,15 +178,15 @@ export default function AdminFeedbackPage() {
                         {item.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-sm text-muted-foreground mb-2">
                       <span className="font-medium">{item.feedback_type}</span>
                       {' • '}
                       <span>{item.email}</span>
                     </p>
-                    <p className="text-gray-900 mb-2 whitespace-pre-wrap">
+                    <p className="text-foreground mb-2 whitespace-pre-wrap">
                       {item.description}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       User ID: {item.user_id.substring(0, 8)}... • Submitted on{' '}
                       {format(new Date(item.created_at), 'MMM dd, yyyy HH:mm')}
                     </p>
@@ -200,4 +200,3 @@ export default function AdminFeedbackPage() {
     </div>
   );
 }
-

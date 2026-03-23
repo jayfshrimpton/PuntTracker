@@ -84,16 +84,16 @@ export function GrantAccessModal({ user, onClose, onSuccess }: GrantAccessModalP
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 Current Tier
               </label>
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm text-gray-600 dark:text-gray-400">
+              <div className="p-3 bg-muted rounded-lg text-sm text-muted-foreground">
                 {user.tier.toUpperCase()}
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 New Tier *
               </label>
               <select
@@ -109,13 +109,13 @@ export function GrantAccessModal({ user, onClose, onSuccess }: GrantAccessModalP
             </div>
 
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-xs text-muted-foreground mb-4">
                 Note: Pricing and special pricing are managed in Stripe. This only grants free access to tier features.
               </p>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 Reason for Change *
               </label>
               <textarea

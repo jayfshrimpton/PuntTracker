@@ -117,8 +117,8 @@ export function EarlyInsightCard({ bets, wantsTruth }: EarlyInsightCardProps) {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-border p-8 text-center">
-        <div className="text-muted-foreground">Analyzing your betting patterns...</div>
+      <div className="rounded-xl border border-border bg-card/50 px-4 py-3 text-center">
+        <div className="text-xs text-muted-foreground">Analyzing your betting patterns...</div>
       </div>
     );
   }
@@ -131,28 +131,30 @@ export function EarlyInsightCard({ bets, wantsTruth }: EarlyInsightCardProps) {
   const monthlyLossFormatted = formatValue(monthlyLoss);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-6">
+    <div className="rounded-xl border border-border bg-card/80 px-4 py-3 md:px-5 md:py-4 space-y-3">
       {/* Insight Message */}
-      <div className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-semibold text-foreground">Early Insight</h2>
-        <p className="text-base md:text-lg text-foreground leading-relaxed">{insight.message}</p>
+      <div className="space-y-1.5">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Early insight
+        </h2>
+        <p className="text-sm text-foreground leading-snug">{insight.message}</p>
       </div>
 
       {/* Cost of Inaction */}
       {monthlyLoss > 0 && (
-        <div className="space-y-2 pt-4 border-t border-border">
-          <p className="text-sm text-muted-foreground">Doing nothing costs you about</p>
-          <p className="text-2xl md:text-3xl font-bold text-foreground">{monthlyLossFormatted} per month.</p>
-          <p className="text-sm text-muted-foreground">Pro costs $10/month.</p>
+        <div className="space-y-1 pt-2 border-t border-border/80">
+          <p className="text-xs text-muted-foreground">Doing nothing costs you about</p>
+          <p className="text-lg font-bold text-foreground tabular-nums">{monthlyLossFormatted}/mo</p>
+          <p className="text-xs text-muted-foreground">Pro is $10/month.</p>
         </div>
       )}
 
       {/* Paywalled Answer Section */}
-      <div className="pt-4 border-t border-border">
+      <div className="pt-2 border-t border-border/80">
         {isPro ? (
-          <div className="space-y-3">
-            <h3 className="font-semibold text-foreground">Your Biggest Betting Leak</h3>
-            <p className="text-muted-foreground">
+          <div className="space-y-1.5">
+            <h3 className="text-sm font-semibold text-foreground">Your biggest betting leak</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {insight.type === 'stake_sizing' &&
                 'You\'re betting more on losing positions than winning ones. This pattern amplifies losses while limiting gains. The fix: standardize your stake sizing or use a staking plan that increases bets only when you have an edge.'}
               {insight.type === 'day_of_week' &&
@@ -164,21 +166,22 @@ export function EarlyInsightCard({ bets, wantsTruth }: EarlyInsightCardProps) {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg border border-border">
-              <Lock className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-              <div className="flex-1 space-y-2">
-                <p className="font-medium text-foreground">
+          <div className="space-y-2">
+            <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 p-2.5">
+              <Lock className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <p className="text-xs font-medium text-foreground">
                   We&apos;ve identified your biggest betting leak.
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground leading-snug">
                   Unlock Pro to see exactly what it is and how to fix it.
                 </p>
               </div>
             </div>
             <button
+              type="button"
               onClick={handleUpgrade}
-              className="w-full py-3 px-4 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-colors"
+              className="w-full rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
               Upgrade to Pro
             </button>

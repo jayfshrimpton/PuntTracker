@@ -252,7 +252,7 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
           Settings
         </h1>
-        <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+        <p className="mt-1 text-sm text-muted-foreground">
           Manage your profile, email preferences, bankroll, and goals
         </p>
       </div>
@@ -265,10 +265,10 @@ export default function SettingsPage() {
               <Lock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 Reset Your Password
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 You&apos;ve clicked a password reset link. Please enter your new password below.
               </p>
             </div>
@@ -292,7 +292,7 @@ export default function SettingsPage() {
               <div>
                 <label
                   htmlFor="new_password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-muted-foreground mb-2"
                 >
                   New Password
                 </label>
@@ -306,14 +306,14 @@ export default function SettingsPage() {
                   placeholder="Enter new password"
                   required
                   minLength={6}
-                  className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                  className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="confirm_password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-muted-foreground mb-2"
                 >
                   Confirm Password
                 </label>
@@ -327,7 +327,7 @@ export default function SettingsPage() {
                   placeholder="Confirm new password"
                   required
                   minLength={6}
-                  className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                  className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
                 />
               </div>
 
@@ -357,16 +357,16 @@ export default function SettingsPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Profile Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-card rounded-xl shadow-lg p-6 border border-border">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
               <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 Profile Information
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Update your personal information
               </p>
             </div>
@@ -376,23 +376,23 @@ export default function SettingsPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-muted-foreground mb-2"
               >
                 Email Address
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <input
                   type="email"
                   id="email"
                   value={userEmail}
                   disabled
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                  className="block w-full pl-10 pr-3 py-2 border border-input rounded-lg bg-muted text-muted-foreground cursor-not-allowed"
                 />
               </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Email cannot be changed here. Contact support if you need to update your email.
               </p>
             </div>
@@ -400,7 +400,7 @@ export default function SettingsPage() {
             <div>
               <label
                 htmlFor="full_name"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-muted-foreground mb-2"
               >
                 Full Name
               </label>
@@ -412,38 +412,38 @@ export default function SettingsPage() {
                   setFormData({ ...formData, full_name: e.target.value })
                 }
                 placeholder="Enter your full name"
-                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
               />
             </div>
           </div>
         </div>
 
         {/* Email Preferences Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-card rounded-xl shadow-lg p-6 border border-border">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
               <Bell className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 Email Preferences
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Control how you receive email notifications
               </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
               <div className="flex-1">
                 <label
                   htmlFor="email_notifications"
-                  className="block text-sm font-medium text-gray-900 dark:text-white mb-1"
+                  className="block text-sm font-medium text-foreground mb-1"
                 >
                   Monthly Summary Emails
                 </label>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   Receive monthly summaries of your betting performance
                 </p>
               </div>
@@ -461,7 +461,7 @@ export default function SettingsPage() {
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                  <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 dark:peer-focus:ring-primary/40 rounded-full peer dark:bg-secondary peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:border-input after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </div>
             </div>
@@ -469,31 +469,31 @@ export default function SettingsPage() {
         </div>
 
         {/* Bankroll Management Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-card rounded-xl shadow-lg p-6 border border-border">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
               <Wallet className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 Bankroll Management
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Track and manage your betting bankroll
               </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg mb-4">
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg mb-4">
               <div className="flex-1">
                 <label
                   htmlFor="bankroll_tracking"
-                  className="block text-sm font-medium text-gray-900 dark:text-white mb-1"
+                  className="block text-sm font-medium text-foreground mb-1"
                 >
                   Enable Bankroll Tracking
                 </label>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   Track your bankroll to monitor your betting performance
                 </p>
               </div>
@@ -511,7 +511,7 @@ export default function SettingsPage() {
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
+                  <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-secondary peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:border-input after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                 </label>
               </div>
             </div>
@@ -521,7 +521,7 @@ export default function SettingsPage() {
                 <div>
                   <label
                     htmlFor="bankroll_starting_amount"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-sm font-medium text-muted-foreground mb-2"
                   >
                     Starting Bankroll ($)
                   </label>
@@ -538,9 +538,9 @@ export default function SettingsPage() {
                       })
                     }
                     placeholder="0.00"
-                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                    className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
                   />
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Your initial bankroll amount
                   </p>
                 </div>
@@ -548,7 +548,7 @@ export default function SettingsPage() {
                 <div>
                   <label
                     htmlFor="bankroll_current_amount"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-sm font-medium text-muted-foreground mb-2"
                   >
                     Current Bankroll ($)
                   </label>
@@ -565,20 +565,20 @@ export default function SettingsPage() {
                       })
                     }
                     placeholder="0.00"
-                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                    className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
                   />
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Your current bankroll amount
                   </p>
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label htmlFor="unitSize" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="unitSize" className="text-sm font-medium text-muted-foreground">
                     Unit Size ($)
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign className="h-4 w-4 text-gray-400" />
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <input
                       id="unitSize"
@@ -586,7 +586,7 @@ export default function SettingsPage() {
                       value={unitSize}
                       onChange={(e) => setUnitSize(e.target.value)}
                       placeholder="10"
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                      className="block w-full pl-10 pr-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
                     />
                   </div>
                   {formData.bankroll_starting_amount && !isNaN(parseFloat(formData.bankroll_starting_amount)) && (
@@ -607,7 +607,7 @@ export default function SettingsPage() {
                       </button>
                     </div>
                   )}
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Recommended: 1-2% of your total bankroll.
                   </p>
                 </div>
@@ -617,31 +617,31 @@ export default function SettingsPage() {
         </div>
 
         {/* Goals and Targets Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-card rounded-xl shadow-lg p-6 border border-border">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
               <Target className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 Goals and Targets
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Set performance targets to track your progress
               </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg mb-4">
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg mb-4">
               <div className="flex-1">
                 <label
                   htmlFor="goals_enabled"
-                  className="block text-sm font-medium text-gray-900 dark:text-white mb-1"
+                  className="block text-sm font-medium text-foreground mb-1"
                 >
                   Enable Goals Tracking
                 </label>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   Set and track your betting performance goals
                 </p>
               </div>
@@ -659,7 +659,7 @@ export default function SettingsPage() {
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange-600"></div>
+                  <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-secondary peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:border-input after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
                 </label>
               </div>
             </div>
@@ -670,7 +670,7 @@ export default function SettingsPage() {
                   <div>
                     <label
                       htmlFor="monthly_profit_target"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      className="block text-sm font-medium text-muted-foreground mb-2"
                     >
                       Monthly Profit Target ($)
                     </label>
@@ -686,14 +686,14 @@ export default function SettingsPage() {
                         })
                       }
                       placeholder="0.00"
-                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                      className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="annual_profit_target"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      className="block text-sm font-medium text-muted-foreground mb-2"
                     >
                       Annual Profit Target ($)
                     </label>
@@ -709,7 +709,7 @@ export default function SettingsPage() {
                         })
                       }
                       placeholder="0.00"
-                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                      className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
                     />
                   </div>
                 </div>
@@ -718,7 +718,7 @@ export default function SettingsPage() {
                   <div>
                     <label
                       htmlFor="monthly_roi_target"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      className="block text-sm font-medium text-muted-foreground mb-2"
                     >
                       Monthly ROI Target (%)
                     </label>
@@ -734,9 +734,9 @@ export default function SettingsPage() {
                         })
                       }
                       placeholder="0.0"
-                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                      className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
                     />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Target return on investment percentage
                     </p>
                   </div>
@@ -744,7 +744,7 @@ export default function SettingsPage() {
                   <div>
                     <label
                       htmlFor="strike_rate_target"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      className="block text-sm font-medium text-muted-foreground mb-2"
                     >
                       Strike Rate Target (%)
                     </label>
@@ -762,9 +762,9 @@ export default function SettingsPage() {
                         })
                       }
                       placeholder="0.0"
-                      className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-500 transition-colors"
+                      className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
                     />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Target win percentage
                     </p>
                   </div>

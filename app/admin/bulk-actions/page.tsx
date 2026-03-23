@@ -151,8 +151,8 @@ export default function AdminBulkActionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Bulk Actions</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Perform bulk operations on users</p>
+        <h1 className="text-3xl font-bold text-foreground">Bulk Actions</h1>
+        <p className="text-muted-foreground mt-2">Perform bulk operations on users</p>
       </div>
 
       <Card>
@@ -166,17 +166,17 @@ export default function AdminBulkActionsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             This will send an email to all current users reminding them about the launch, that beta is over, 
             that everyone is on the Free plan by default, and information about the different subscription plans (Free, Pro, Elite).
           </p>
           
           {/* Test Email Section */}
-          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+          <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
+            <h4 className="text-sm font-semibold text-foreground mb-2">
               📧 Preview Email First
             </h4>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-xs text-muted-foreground mb-3">
               Send a test email to yourself first to preview how it looks before sending to all users.
             </p>
             <div className="flex gap-2">
@@ -231,7 +231,7 @@ export default function AdminBulkActionsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             This will upgrade all beta testers from Free to Pro tier. They will keep their beta_tester special pricing.
           </p>
           <Button
@@ -275,7 +275,7 @@ export default function AdminBulkActionsPage() {
                 value={foundingMemberCutoff}
                 onChange={(e) => setFoundingMemberCutoff(e.target.value)}
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Users who signed up before this date will be eligible
               </p>
             </div>
@@ -315,7 +315,7 @@ export default function AdminBulkActionsPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 New Tier *
               </label>
               <select
@@ -330,7 +330,7 @@ export default function AdminBulkActionsPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 Reason *
               </label>
               <textarea

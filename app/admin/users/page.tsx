@@ -87,13 +87,13 @@ export default function AdminUsersPage() {
   const getTierBadgeColor = (tier: string) => {
     switch (tier) {
       case 'free':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+        return 'bg-muted text-foreground';
       case 'pro':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'elite':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+        return 'bg-muted text-foreground';
     }
   };
 
@@ -112,8 +112,8 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">User Management</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">Manage user subscriptions and access</p>
+          <h1 className="text-3xl font-bold text-foreground">User Management</h1>
+          <p className="text-muted-foreground mt-2">Manage user subscriptions and access</p>
         </div>
         <Button
           onClick={() => setShowGrantByEmailModal(true)}
@@ -200,11 +200,11 @@ export default function AdminUsersPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-gray-600 dark:text-gray-400">
+            <div className="text-center py-8 text-muted-foreground">
               Loading users...
             </div>
           ) : users.length === 0 ? (
-            <div className="text-center py-8 text-gray-600 dark:text-gray-400">
+            <div className="text-center py-8 text-muted-foreground">
               No users found
             </div>
           ) : (
@@ -212,25 +212,25 @@ export default function AdminUsersPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-800">
-                      <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Email</th>
-                      <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Name</th>
-                      <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Tier</th>
-                      <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Status</th>
-                      <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Special Pricing</th>
-                      <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Bets</th>
-                      <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Joined</th>
-                      <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Actions</th>
+                    <tr className="bg-gradient-to-r from-blue-600 to-purple-600">
+                      <th className="text-left p-4 text-sm font-medium text-white">Email</th>
+                      <th className="text-left p-4 text-sm font-medium text-white">Name</th>
+                      <th className="text-left p-4 text-sm font-medium text-white">Tier</th>
+                      <th className="text-left p-4 text-sm font-medium text-white">Status</th>
+                      <th className="text-left p-4 text-sm font-medium text-white">Special Pricing</th>
+                      <th className="text-left p-4 text-sm font-medium text-white">Bets</th>
+                      <th className="text-left p-4 text-sm font-medium text-white">Joined</th>
+                      <th className="text-left p-4 text-sm font-medium text-white">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {users.map((user) => (
                       <tr
                         key={user.id}
-                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50"
+                        className="border-b border-border hover:bg-muted/50"
                       >
-                        <td className="p-4 text-sm text-gray-900 dark:text-white">{user.email}</td>
-                        <td className="p-4 text-sm text-gray-900 dark:text-white">{user.name}</td>
+                        <td className="p-4 text-sm text-foreground">{user.email}</td>
+                        <td className="p-4 text-sm text-foreground">{user.name}</td>
                         <td className="p-4">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTierBadgeColor(user.tier)}`}>
                             {user.tier.toUpperCase()}
@@ -241,11 +241,11 @@ export default function AdminUsersPage() {
                             {user.status}
                           </span>
                         </td>
-                        <td className="p-4 text-sm text-gray-600 dark:text-gray-400">
+                        <td className="p-4 text-sm text-muted-foreground">
                           {user.specialPricing || 'None'}
                         </td>
-                        <td className="p-4 text-sm text-gray-900 dark:text-white">{user.betsCount}</td>
-                        <td className="p-4 text-sm text-gray-600 dark:text-gray-400">
+                        <td className="p-4 text-sm text-foreground">{user.betsCount}</td>
+                        <td className="p-4 text-sm text-muted-foreground">
                           {new Date(user.joinedDate).toLocaleDateString()}
                         </td>
                         <td className="p-4">
@@ -280,7 +280,7 @@ export default function AdminUsersPage() {
 
               {/* Pagination */}
               <div className="mt-6 flex items-center justify-between">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-muted-foreground">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
                   {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
                   {pagination.total} users
@@ -294,7 +294,7 @@ export default function AdminUsersPage() {
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm text-muted-foreground">
                     Page {pagination.page} of {pagination.totalPages}
                   </span>
                   <Button

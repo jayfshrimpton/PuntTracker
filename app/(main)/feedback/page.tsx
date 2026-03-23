@@ -99,14 +99,14 @@ export default function FeedbackPage() {
       case 'completed':
         return 'bg-green-100 text-green-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
     }
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-900">Loading feedback...</div>
+        <div className="text-foreground">Loading feedback...</div>
       </div>
     );
   }
@@ -114,15 +114,15 @@ export default function FeedbackPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Feedback</h1>
-        <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+        <h1 className="text-2xl font-bold text-foreground">Feedback</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Share your thoughts, report bugs, or suggest new features
         </p>
       </div>
 
       {/* Feedback Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Submit Feedback</h2>
+      <div className="bg-card rounded-xl shadow-lg p-6 border border-border">
+        <h2 className="text-lg font-semibold mb-4 text-foreground">Submit Feedback</h2>
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
             {error}
@@ -130,7 +130,7 @@ export default function FeedbackPage() {
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Feedback Type
             </label>
             <select
@@ -142,7 +142,7 @@ export default function FeedbackPage() {
                   feedback_type: e.target.value as FeedbackInput['feedback_type'],
                 })
               }
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800"
+              className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring text-foreground bg-card"
               required
             >
               <option value="Bug Report">Bug Report</option>
@@ -152,7 +152,7 @@ export default function FeedbackPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Title
             </label>
             <input
@@ -162,14 +162,14 @@ export default function FeedbackPage() {
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+              className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring text-foreground bg-card placeholder:text-muted-foreground"
               placeholder="Brief summary of your feedback"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Description
             </label>
             <textarea
@@ -179,14 +179,14 @@ export default function FeedbackPage() {
                 setFormData({ ...formData, description: e.target.value })
               }
               rows={6}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+              className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring text-foreground bg-card placeholder:text-muted-foreground"
               placeholder="Please provide details about your feedback..."
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Email (for follow-up)
             </label>
             <input
@@ -196,7 +196,7 @@ export default function FeedbackPage() {
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
+              className="w-full px-4 py-3 border border-input rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring text-foreground bg-card placeholder:text-muted-foreground"
               placeholder="your@email.com"
               required
             />
@@ -213,13 +213,13 @@ export default function FeedbackPage() {
       </div>
 
       {/* Previous Feedback */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-card border-b border-border">
+      <div className="bg-card rounded-xl shadow-lg overflow-hidden border border-border">
+        <div className="px-6 py-4 border-b border-border bg-card border-b border-border">
           <h2 className="text-lg font-semibold text-white">Your Previous Feedback</h2>
         </div>
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="divide-y divide-border">
           {feedback.length === 0 ? (
-            <div className="px-6 py-8 text-center text-gray-900 dark:text-gray-100">
+            <div className="px-6 py-8 text-center text-foreground">
               No feedback submitted yet. Be the first to share your thoughts!
             </div>
           ) : (
@@ -228,7 +228,7 @@ export default function FeedbackPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      <h3 className="text-lg font-semibold text-foreground">
                         {item.title}
                       </h3>
                       <span
@@ -239,11 +239,11 @@ export default function FeedbackPage() {
                         {item.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <p className="text-sm text-muted-foreground mb-2">
                       <span className="font-medium">{item.feedback_type}</span>
                     </p>
-                    <p className="text-gray-900 dark:text-gray-100 mb-2">{item.description}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-foreground mb-2">{item.description}</p>
+                    <p className="text-xs text-muted-foreground">
                       Submitted on{' '}
                       {format(new Date(item.created_at), 'MMM dd, yyyy HH:mm')}
                     </p>

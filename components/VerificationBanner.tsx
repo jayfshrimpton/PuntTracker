@@ -61,14 +61,14 @@ export default function VerificationBanner({ email, isVerified }: VerificationBa
     if (!isVisible) return null;
 
     return (
-        <div className="bg-blue-50 dark:bg-blue-900/30 border-b border-blue-100 dark:border-blue-800">
+        <div className="bg-primary/10 border-b border-primary/20">
             <div className="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between flex-wrap">
                     <div className="w-0 flex-1 flex items-center">
-                        <span className="flex p-2 rounded-lg bg-blue-600 dark:bg-blue-500">
+                        <span className="flex p-2 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 text-primary-foreground shadow-sm">
                             <Mail className="h-6 w-6 text-white" aria-hidden="true" />
                         </span>
-                        <div className="ml-3 font-medium text-blue-900 dark:text-blue-100 truncate">
+                        <div className="ml-3 font-medium text-foreground truncate">
                             <span className="md:hidden">Verify your email address</span>
                             <span className="hidden md:inline">
                                 Please verify your email address ({email}) to secure your account.
@@ -77,7 +77,7 @@ export default function VerificationBanner({ email, isVerified }: VerificationBa
                     </div>
                     <div className="order-3 mt-2 flex-shrink-0 w-full sm:order-2 sm:mt-0 sm:w-auto">
                         {status === 'success' ? (
-                            <div className="flex items-center text-green-600 dark:text-green-400 text-sm font-medium px-4 py-2">
+                            <div className="flex items-center text-emerald-600 dark:text-emerald-400 text-sm font-medium px-4 py-2">
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 {message}
                             </div>
@@ -85,13 +85,13 @@ export default function VerificationBanner({ email, isVerified }: VerificationBa
                             <button
                                 onClick={handleResend}
                                 disabled={sending}
-                                className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                                className="flex items-center justify-center px-4 py-2 border border-border rounded-lg shadow-sm text-sm font-medium text-primary bg-card hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                             >
                                 {sending ? 'Sending...' : 'Resend Verification Email'}
                             </button>
                         )}
                         {status === 'error' && (
-                            <p className="mt-1 text-xs text-red-600 dark:text-red-400 text-center sm:text-left">
+                            <p className="mt-1 text-xs text-destructive text-center sm:text-left">
                                 {message}
                             </p>
                         )}
@@ -100,10 +100,10 @@ export default function VerificationBanner({ email, isVerified }: VerificationBa
                         <button
                             type="button"
                             onClick={handleDismiss}
-                            className="-mr-1 flex p-2 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-white sm:-mr-2"
+                            className="-mr-1 flex p-2 rounded-md hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:-mr-2"
                         >
                             <span className="sr-only">Dismiss</span>
-                            <X className="h-6 w-6 text-blue-600 dark:text-blue-300" aria-hidden="true" />
+                            <X className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
                         </button>
                     </div>
                 </div>

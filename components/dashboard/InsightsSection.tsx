@@ -71,12 +71,12 @@ export function InsightsSection({
                         {insights.map((insight, index) => (
                             <div
                                 key={index}
-                                className="rounded-lg border border-blue-100 bg-white p-4 shadow-sm dark:border-blue-900/50 dark:bg-gray-800"
+                                className="rounded-lg border border-blue-100 bg-card p-4 shadow-sm dark:border-blue-900/50"
                             >
-                                <h3 className="mb-1 font-semibold text-gray-900 dark:text-gray-100">
+                                <h3 className="mb-1 font-semibold text-foreground">
                                     {insight.title}
                                 </h3>
-                                <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+                                <p className="mb-2 text-sm text-muted-foreground">
                                     {insight.description}
                                 </p>
                                 <div className="text-sm font-medium text-red-600 dark:text-red-400">

@@ -17,7 +17,7 @@ export default function ThemeToggle() {
 
   return (
     <div className="relative inline-block">
-      <div className="flex items-center gap-1 bg-white/10 dark:bg-gray-800/50 rounded-lg p-1 backdrop-blur-sm">
+      <div className="flex items-center gap-1 bg-white/10 dark:bg-muted/50 rounded-lg p-1 backdrop-blur-sm">
         {themes.map((t) => (
           <button
             key={t.value}
@@ -26,7 +26,7 @@ export default function ThemeToggle() {
               flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all
               ${theme === t.value
                 ? 'bg-blue-600 text-white shadow-md'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-white/10 dark:hover:bg-gray-700/50'
+                : 'text-foreground hover:bg-white/10 dark:hover:bg-muted'
               }
             `}
             title={`Switch to ${t.label} mode`}

@@ -243,21 +243,21 @@ export default function DashboardPage() {
         setDateRange={setDateRange}
       />
 
-      {/* Early Insight Card - Show if user wants truth and has bets */}
-      {wantsTruth === true && bets.length > 0 && (
-        <EarlyInsightCard bets={bets} wantsTruth={true} />
-      )}
-
       <StatsOverview stats={stats} betsCount={bets.length} />
 
       {filteredBets.length === 0 ? (
-        bets.length === 0 ? (
-          <EmptyState onAddFirstBet={handleAddFirstBet} />
-        ) : (
-          <div className="rounded-2xl border border-dashed border-border p-12 text-center">
-            <p className="text-muted-foreground">No data available for this period.</p>
-          </div>
-        )
+        <>
+          {bets.length > 0 && wantsTruth === true && (
+            <EarlyInsightCard bets={bets} wantsTruth={true} />
+          )}
+          {bets.length === 0 ? (
+            <EmptyState onAddFirstBet={handleAddFirstBet} />
+          ) : (
+            <div className="rounded-2xl border border-dashed border-border p-12 text-center">
+              <p className="text-muted-foreground">No data available for this period.</p>
+            </div>
+          )}
+        </>
       ) : (
         <>
           <PerformanceCharts
@@ -267,6 +267,11 @@ export default function DashboardPage() {
             strikeRateData={strikeRateData}
             pieData={pieData}
             stats={stats}
+            afterProfitLossChart={
+              wantsTruth === true && bets.length > 0 ? (
+                <EarlyInsightCard bets={bets} wantsTruth={true} />
+              ) : undefined
+            }
           />
 
           {/* Only show advanced insights if user wants truth */}

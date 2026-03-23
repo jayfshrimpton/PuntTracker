@@ -43,7 +43,7 @@ export default function AdminDashboard() {
   if (isLoading || !stats) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600 dark:text-gray-400">Loading dashboard...</div>
+        <div className="text-muted-foreground">Loading dashboard...</div>
       </div>
     );
   }
@@ -78,8 +78,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Overview of your platform metrics</p>
+        <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-2">Overview of your platform metrics</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
           return (
             <Card key={stat.title} className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
                 </CardTitle>
                 <div className={`${stat.bgColor} p-2 rounded-lg`}>
@@ -96,10 +96,10 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-2xl font-bold text-foreground">
                   {stat.value}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {stat.description}
                 </p>
               </CardContent>
@@ -116,20 +116,20 @@ export default function AdminDashboard() {
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Free</span>
-              <span className="font-semibold text-gray-900 dark:text-white">
+              <span className="text-muted-foreground">Free</span>
+              <span className="font-semibold text-foreground">
                 {stats.tierCounts.free}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Pro</span>
-              <span className="font-semibold text-gray-900 dark:text-white">
+              <span className="text-muted-foreground">Pro</span>
+              <span className="font-semibold text-foreground">
                 {stats.tierCounts.pro}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Elite</span>
-              <span className="font-semibold text-gray-900 dark:text-white">
+              <span className="text-muted-foreground">Elite</span>
+              <span className="font-semibold text-foreground">
                 {stats.tierCounts.elite}
               </span>
             </div>

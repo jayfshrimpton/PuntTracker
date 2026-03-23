@@ -49,7 +49,7 @@ export default function AdminMetricsPage() {
   if (isLoading || !metrics) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600 dark:text-gray-400">Loading metrics...</div>
+        <div className="text-muted-foreground">Loading metrics...</div>
       </div>
     );
   }
@@ -76,8 +76,8 @@ export default function AdminMetricsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Metrics Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Platform analytics and insights</p>
+        <h1 className="text-3xl font-bold text-foreground">Metrics Dashboard</h1>
+        <p className="text-muted-foreground mt-2">Platform analytics and insights</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -90,14 +90,14 @@ export default function AdminMetricsPage() {
             <div className="space-y-4">
               {funnelData.map((item) => (
                 <div key={item.name} className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{item.name}</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{item.value}</span>
+                  <span className="text-muted-foreground">{item.name}</span>
+                  <span className="font-semibold text-foreground">{item.value}</span>
                 </div>
               ))}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
+              <div className="pt-4 border-t border-border">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Conversion Rate</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
+                  <span className="text-muted-foreground">Conversion Rate</span>
+                  <span className="font-semibold text-foreground">
                     {metrics.conversionFunnel.conversionRate}%
                   </span>
                 </div>
@@ -111,10 +111,10 @@ export default function AdminMetricsPage() {
             <CardTitle>Average Bets Per User</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-gray-900 dark:text-white">
+            <div className="text-4xl font-bold text-foreground">
               {metrics.avgBetsPerUser}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Average number of bets per user
             </p>
           </CardContent>
@@ -184,23 +184,23 @@ export default function AdminMetricsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-800">
-                  <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Rank</th>
-                  <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Email</th>
-                  <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Name</th>
-                  <th className="text-left p-4 text-sm font-medium text-gray-600 dark:text-gray-400">Bets</th>
+                <tr className="bg-gradient-to-r from-blue-600 to-purple-600">
+                  <th className="text-left p-4 text-sm font-medium text-white">Rank</th>
+                  <th className="text-left p-4 text-sm font-medium text-white">Email</th>
+                  <th className="text-left p-4 text-sm font-medium text-white">Name</th>
+                  <th className="text-left p-4 text-sm font-medium text-white">Bets</th>
                 </tr>
               </thead>
               <tbody>
                 {metrics.topUsers.map((user, index) => (
                   <tr
                     key={user.email}
-                    className="border-b border-gray-100 dark:border-gray-800"
+                    className="border-b border-border"
                   >
-                    <td className="p-4 text-sm text-gray-900 dark:text-white">{index + 1}</td>
-                    <td className="p-4 text-sm text-gray-900 dark:text-white">{user.email}</td>
-                    <td className="p-4 text-sm text-gray-900 dark:text-white">{user.name}</td>
-                    <td className="p-4 text-sm font-semibold text-gray-900 dark:text-white">{user.betsCount}</td>
+                    <td className="p-4 text-sm text-foreground">{index + 1}</td>
+                    <td className="p-4 text-sm text-foreground">{user.email}</td>
+                    <td className="p-4 text-sm text-foreground">{user.name}</td>
+                    <td className="p-4 text-sm font-semibold text-foreground">{user.betsCount}</td>
                   </tr>
                 ))}
               </tbody>

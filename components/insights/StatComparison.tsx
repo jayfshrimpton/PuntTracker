@@ -24,7 +24,7 @@ export function StatComparison({ label, value1, value2, className }: StatCompari
             case 'down':
                 return <ArrowDownRight className="h-4 w-4 text-red-500" />;
             default:
-                return <Minus className="h-4 w-4 text-gray-400" />;
+                return <Minus className="h-4 w-4 text-muted-foreground" />;
         }
     };
 
