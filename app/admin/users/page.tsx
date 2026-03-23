@@ -73,7 +73,7 @@ export default function AdminUsersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [pagination.page, search, tierFilter, specialPricingFilter, sortBy, sortOrder]);
+  }, [pagination.page, pagination.limit, search, tierFilter, specialPricingFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     fetchUsers();

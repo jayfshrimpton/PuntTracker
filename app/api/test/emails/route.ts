@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { testVerificationEmail, testPasswordResetEmail, testMonthlySummaryEmail, testAllEmails } from '@/lib/test-emails';
+import { testVerificationEmail, testPasswordResetEmail, testMonthlySummaryEmail, testLaunchAnnouncementEmail, testAllEmails } from '@/lib/test-emails';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +33,11 @@ export async function GET(request: NextRequest) {
         result = await testMonthlySummaryEmail();
         break;
 
+      case 'launch':
+      case 'launch-announcement':
+        result = await testLaunchAnnouncementEmail();
+        break;
+
       case 'all':
         result = await testAllEmails();
         break;
@@ -41,7 +46,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(
           {
             error: 'Invalid type parameter',
-            usage: 'Use ?type=verification|reset|summary|all',
+            usage: 'Use ?type=verification|reset|summary|launch|all',
           },
           { status: 400 }
         );

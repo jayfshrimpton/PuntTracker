@@ -37,6 +37,7 @@ export interface Bet {
   race_class?: string | null;
   // Best starting price for comparison
   best_starting_price?: number | null;
+  bookie?: string | null;
 }
 
 export interface BetInput {
@@ -72,6 +73,7 @@ export interface BetInput {
   race_class?: string | null;
   // Best starting price for comparison
   best_starting_price?: number | null;
+  bookie?: string | null;
 }
 
 export type DateRange = 'all' | 'this-month' | 'last-month' | 'custom';
@@ -350,6 +352,7 @@ export interface Profile {
   unit_size: number; // Default 10
   display_units: boolean; // Default false
   custom_venues: string[] | null; // User's custom venue names
+  custom_bookies: string[] | null; // User's custom bookie names
   created_at: string;
   updated_at: string;
 }
@@ -370,6 +373,7 @@ export interface ProfileUpdate {
   unit_size?: number;
   display_units?: boolean;
   custom_venues?: string[] | null;
+  custom_bookies?: string[] | null;
 }
 
 export async function fetchProfile(): Promise<{

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ChatInterface, Message } from '@/components/insights/ChatInterface';
 import { InsightInput } from '@/components/insights/InsightInput';
+import { FeatureGate } from '@/components/FeatureGate';
 
 import { Bot } from 'lucide-react';
 
@@ -59,34 +60,36 @@ export default function InsightsPage() {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)] max-w-5xl mx-auto">
-            <div className="flex-none p-4 border-b border-border/50 bg-background/80 backdrop-blur-md z-10">
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                        <Bot className="w-6 h-6 text-primary" />
+        <FeatureGate requiredTier={['pro', 'elite']} featureName="AI Insights">
+            <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)] max-w-5xl mx-auto">
+                <div className="flex-none p-4 border-b border-border/50 bg-background/80 backdrop-blur-md z-10">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                            <Bot className="w-6 h-6 text-primary" />
+                        </div>
+                        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+                            AI Punting Insights
+                        </h1>
                     </div>
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                        AI Punting Insights
-                    </h1>
+                    <p className="text-sm text-muted-foreground mb-2">
+                        Ask me anything about your betting performance
+                    </p>
+                    <div className="text-xs text-muted-foreground/80 bg-secondary/50 p-2 rounded-md border border-border/50 inline-flex items-center gap-2">
+                        <span className="i-lucide-info w-3 h-3" />
+                        <span>
+                            <strong>Note:</strong> Analysis defaults to your last 50 bets. Mention &quot;all bets&quot; to analyze your full history (may take longer).
+                        </span>
+                    </div>
                 </div>
-                <p className="text-sm text-muted-foreground mb-2">
-                    Ask me anything about your betting performance
-                </p>
-                <div className="text-xs text-muted-foreground/80 bg-secondary/50 p-2 rounded-md border border-border/50 inline-flex items-center gap-2">
-                    <span className="i-lucide-info w-3 h-3" />
-                    <span>
-                        <strong>Note:</strong> Analysis defaults to your last 50 bets. Mention &quot;all bets&quot; to analyze your full history (may take longer).
-                    </span>
+
+                <ChatInterface messages={messages} isLoading={isLoading} />
+
+                <div className="flex-none p-4 bg-background/80 backdrop-blur-md border-t border-border/50">
+                    <div className="max-w-3xl mx-auto">
+                        <InsightInput onSend={handleSend} isLoading={isLoading} />
+                    </div>
                 </div>
             </div>
-
-            <ChatInterface messages={messages} isLoading={isLoading} />
-
-            <div className="flex-none p-4 bg-background/80 backdrop-blur-md border-t border-border/50">
-                <div className="max-w-3xl mx-auto">
-                    <InsightInput onSend={handleSend} isLoading={isLoading} />
-                </div>
-            </div>
-        </div>
+        </FeatureGate>
     );
 }

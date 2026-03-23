@@ -64,7 +64,7 @@ export default function AdminAuditLogPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [pagination.page, actionFilter, startDate, endDate]);
+  }, [pagination.page, pagination.limit, actionFilter, startDate, endDate]);
 
   useEffect(() => {
     fetchLogs();

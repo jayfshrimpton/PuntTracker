@@ -151,6 +151,37 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* SECTION 2.5: Reality Check Promo */}
+      <section className="py-20 bg-background border-y border-border">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Most punters think they&apos;re close to break even.
+          </h2>
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8">
+            82% are down more than they realise.
+          </p>
+          <div className="bg-muted rounded-2xl p-8 border border-border shadow-sm">
+            <p className="text-lg md:text-xl font-medium mb-8">
+              If we could show you exactly where your betting is leaking money — would you want to know?
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/signup"
+                className="px-8 py-4 rounded-xl font-semibold text-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl"
+              >
+                Yes
+              </Link>
+              <button
+                onClick={() => scrollToSection('features')}
+                className="px-8 py-4 rounded-xl font-semibold text-lg bg-background border border-border text-foreground hover:bg-muted transition-all"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 3: Features Grid */}
       <section id="features" className="py-20 bg-background">
         <div

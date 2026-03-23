@@ -48,7 +48,7 @@ export const POST = withAuth(async (req: NextRequest, userId: string) => {
     // Check bet limit for free tier
     if (subscription.tier === 'free') {
       const usageCheck = await checkUsageLimit(userId, subscription, 'bet', 'month');
-      
+
       if (!usageCheck.canProceed) {
         return NextResponse.json(
           {

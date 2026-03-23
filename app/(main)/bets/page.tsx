@@ -29,6 +29,7 @@ import BetCalendar from '@/components/BetCalendar';
 import { exportBetsToCSV, downloadCSV } from '@/lib/csv-utils';
 import { getTrackLabel } from '@/lib/racing-tracks';
 import VenueCombobox from '@/components/VenueCombobox';
+import BookieCombobox from '@/components/BookieCombobox';
 
 import { useCurrency } from '@/components/CurrencyContext';
 
@@ -60,6 +61,7 @@ export default function BetsPage() {
     race_number: null,
     race_class: null,
     best_starting_price: null,
+    bookie: null,
   });
 
   const [showLayInfo, setShowLayInfo] = useState(false);
@@ -395,6 +397,7 @@ export default function BetsPage() {
         race_number: null,
         race_class: null,
         best_starting_price: null,
+        bookie: null,
       });
       setManualProfitEdit(false);
       // Reset multi-legs and result
@@ -489,6 +492,7 @@ export default function BetsPage() {
         race_number: editForm.race_number ?? null,
         race_class: editForm.race_class ?? null,
         best_starting_price: editForm.best_starting_price ?? null,
+        bookie: editForm.bookie ?? null,
       });
 
       if (updateError) {
@@ -749,6 +753,17 @@ export default function BetsPage() {
                   }
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-500"
                   placeholder="e.g. 1"
+                />
+              </div>
+
+              {/* Bookie */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Bookie <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <BookieCombobox
+                  value={formData.bookie ?? null}
+                  onChange={(value) => setFormData({ ...formData, bookie: value })}
                 />
               </div>
 
@@ -1778,6 +1793,14 @@ export default function BetsPage() {
                           className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 dark:text-white"
                         />
                       </div>
+                      <div className="col-span-2">
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Bookie</label>
+                        <BookieCombobox
+                          value={editForm.bookie || null}
+                          onChange={(value) => setEditForm({ ...editForm, bookie: value })}
+                          className="text-sm"
+                        />
+                      </div>
                       <div>
                         <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Position</label>
                         <input
@@ -1813,6 +1836,7 @@ export default function BetsPage() {
                           <span>•</span>
                           <span>{bet.venue || 'Unknown Venue'}</span>
                           {bet.race_number && <span>• R{bet.race_number}</span>}
+                          {bet.bookie && <span>• {bet.bookie}</span>}
                         </div>
                         <h3 className="font-bold text-gray-900 dark:text-white text-lg">
                           {bet.horse_name || (bet.exotic_numbers ? `#${bet.exotic_numbers}` : bet.description || 'No Selection')}
@@ -1919,6 +1943,9 @@ export default function BetsPage() {
                   Venue
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  Bookie
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   Horse
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
@@ -1947,7 +1974,7 @@ export default function BetsPage() {
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredBets.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-10 text-center">
+                  <td colSpan={11} className="px-4 py-10 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Activity className="h-10 w-10 text-blue-600" />
                       <p className="text-gray-900 dark:text-gray-100 font-medium">No bets yet</p>
@@ -2016,6 +2043,13 @@ export default function BetsPage() {
                           <VenueCombobox
                             value={editForm.venue || null}
                             onChange={(value) => setEditForm({ ...editForm, venue: value })}
+                            className="text-sm"
+                          />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <BookieCombobox
+                            value={editForm.bookie || null}
+                            onChange={(value) => setEditForm({ ...editForm, bookie: value })}
                             className="text-sm"
                           />
                         </td>
@@ -2122,7 +2156,7 @@ export default function BetsPage() {
                         </td>
                       </tr>
                       <tr key={`${bet.id}-edit-extra`} className="bg-amber-50 dark:bg-gray-700/50">
-                        <td colSpan={10} className="px-4 py-3">
+                        <td colSpan={11} className="px-4 py-3">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -2181,6 +2215,9 @@ export default function BetsPage() {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {bet.venue ? getTrackLabel(bet.venue) : '-'}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {bet.bookie || '-'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                         <div>

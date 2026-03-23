@@ -1,4 +1,5 @@
 import { sendVerificationEmail, sendPasswordResetEmail, sendMonthlySummary } from './resend';
+import { sendLaunchAnnouncementEmail } from './email';
 
 const TEST_EMAIL = 'jayfshrimpton@gmail.com';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://puntersjournal.com.au';
@@ -62,12 +63,23 @@ export async function testMonthlySummaryEmail(): Promise<{ success: boolean; err
 }
 
 /**
+ * Test launch announcement email
+ */
+export async function testLaunchAnnouncementEmail(): Promise<{ success: boolean; error?: string }> {
+  return await sendLaunchAnnouncementEmail({
+    userEmail: TEST_EMAIL,
+    userName: 'Test User',
+  });
+}
+
+/**
  * Test all email types
  */
 export async function testAllEmails(): Promise<{
   verification: { success: boolean; error?: string };
   passwordReset: { success: boolean; error?: string };
   monthlySummary: { success: boolean; error?: string };
+  launchAnnouncement: { success: boolean; error?: string };
 }> {
   console.log('Testing all email types...');
   
@@ -75,6 +87,7 @@ export async function testAllEmails(): Promise<{
     verification: await testVerificationEmail(),
     passwordReset: await testPasswordResetEmail(),
     monthlySummary: await testMonthlySummaryEmail(),
+    launchAnnouncement: await testLaunchAnnouncementEmail(),
   };
 
   console.log('Email test results:', results);

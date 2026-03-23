@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Menu, X, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles, CreditCard, MessageSquare, Shield } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -15,6 +15,12 @@ interface DashboardNavProps {
   user: User;
 }
 
+interface SubscriptionData {
+  tier: 'free' | 'pro' | 'elite';
+  status: string;
+  isActive: boolean;
+}
+
 // Admin emails that have automatic access
 const ADMIN_EMAILS = [
   'jayfshrimpton@gmail.com',
@@ -25,9 +31,36 @@ export default function DashboardNav({ user }: DashboardNavProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { mode, toggleMode } = useCurrency();
+  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
 
   // Check if user is an admin
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
+
+  // Fetch subscription data
+  useEffect(() => {
+    async function fetchSubscription() {
+      try {
+        const response = await fetch('/api/check-subscription');
+        if (response.ok) {
+          const data = await response.json();
+          setSubscription({
+            tier: data.tier || 'free',
+            status: data.status || 'active',
+            isActive: data.isActive !== false,
+          });
+        } else {
+          // Default to free if API fails
+          setSubscription({ tier: 'free', status: 'active', isActive: true });
+        }
+      } catch (error) {
+        console.error('Error fetching subscription:', error);
+        // Default to free on error
+        setSubscription({ tier: 'free', status: 'active', isActive: true });
+      }
+    }
+
+    fetchSubscription();
+  }, []);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -193,7 +226,13 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               )}
               <div className="flex flex-col items-end">
                 <span className="text-sm font-medium text-foreground">{user.email?.split('@')[0]}</span>
-                <span className="text-xs text-muted-foreground">Pro Plan</span>
+                <span className="text-xs text-muted-foreground">
+                  {subscription ? (
+                    subscription.tier === 'free' ? 'Free Plan' :
+                    subscription.tier === 'pro' ? 'Pro Plan' :
+                    'Elite Plan'
+                  ) : 'Loading...'}
+                </span>
               </div>
               <Button
                 variant="ghost"

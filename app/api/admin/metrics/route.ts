@@ -57,16 +57,44 @@ export async function GET(request: NextRequest) {
       mrrOverTime[monthKey] = (mrrOverTime[monthKey] || 0) + price;
     });
 
-    // Get conversion funnel
+    // Get conversion funnel - need to count all users, not just those with subscriptions
+    const { data: allProfiles } = await supabase
+      .from('profiles')
+      .select('id');
+
     const { data: allSubscriptions } = await supabase
       .from('user_subscriptions')
-      .select('tier, status');
+      .select('user_id, tier, status');
 
-    const freeCount = allSubscriptions?.filter(s => s.tier === 'free').length || 0;
-    const proCount = allSubscriptions?.filter(s => s.tier === 'pro' && s.status === 'active').length || 0;
-    const eliteCount = allSubscriptions?.filter(s => s.tier === 'elite' && s.status === 'active').length || 0;
+    // Create a map of user_id -> subscription
+    const subscriptionMap = new Map<string, { tier: string; status: string }>();
+    allSubscriptions?.forEach((sub) => {
+      subscriptionMap.set(sub.user_id, { tier: sub.tier, status: sub.status });
+    });
 
-    const totalUsers = freeCount + proCount + eliteCount;
+    // Count users by tier (default to 'free' if no subscription entry)
+    let freeCount = 0;
+    let proCount = 0;
+    let eliteCount = 0;
+
+    allProfiles?.forEach((profile) => {
+      const sub = subscriptionMap.get(profile.id);
+      if (!sub) {
+        // No subscription entry = free tier
+        freeCount++;
+      } else if (sub.tier === 'free') {
+        freeCount++;
+      } else if (sub.tier === 'pro' && sub.status === 'active') {
+        proCount++;
+      } else if (sub.tier === 'elite' && sub.status === 'active') {
+        eliteCount++;
+      } else if (sub.tier === 'pro' || sub.tier === 'elite') {
+        // Inactive pro/elite subscriptions still count as free for conversion purposes
+        freeCount++;
+      }
+    });
+
+    const totalUsers = allProfiles?.length || 0;
     const conversionRate = totalUsers > 0 ? ((proCount + eliteCount) / totalUsers) * 100 : 0;
 
     // Get churn rate over time

@@ -21,6 +21,8 @@ import { useRouter } from 'next/navigation';
 import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
 import { EmptyState } from '@/components/onboarding/EmptyState';
 import { Celebration } from '@/components/onboarding/Celebration';
+
+import { EarlyInsightCard } from '@/components/onboarding/EarlyInsightCard';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
 // Dynamically import heavy chart components to improve initial page load
@@ -48,7 +50,8 @@ export default function DashboardPage() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
-
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
+  const [wantsTruth, setWantsTruth] = useState<boolean | null>(null);
   useEffect(() => {
     const dismissed = localStorage.getItem('welcome_dismissed');
     if (dismissed === 'true') {
@@ -59,12 +62,38 @@ export default function DashboardPage() {
   useEffect(() => {
     loadBets();
     loadProfile();
+    checkOnboardingStatus();
     (async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) setUserEmail(user.email);
     })();
   }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed, wants_truth')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const completed = profile?.onboarding_completed ?? false;
+      const truth = profile?.wants_truth ?? true; // Default to true so users see insights without prompt
+
+      setOnboardingCompleted(completed);
+      setWantsTruth(truth);
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+    }
+  };
 
   const loadProfile = async () => {
     const { data } = await fetchProfile();
@@ -159,6 +188,8 @@ export default function DashboardPage() {
     router.push('/bets');
   };
 
+
+
   const stats = calculateMonthlyStats(filteredBets);
   const betTypeStats = calculateStatsByBetType(filteredBets);
   const profitLossData = getProfitLossTimeSeries(filteredBets);
@@ -194,7 +225,9 @@ export default function DashboardPage() {
     strikeRate: (betTypeStats as any)[t]?.totalBets > 0 ? (betTypeStats as any)[t].strikeRate : 0,
   }));
 
-  if (loading || currencyLoading) {
+
+
+  if (loading || currencyLoading || onboardingCompleted === null) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-muted-foreground">Loading dashboard...</div>
@@ -209,6 +242,11 @@ export default function DashboardPage() {
         dateRange={dateRange}
         setDateRange={setDateRange}
       />
+
+      {/* Early Insight Card - Show if user wants truth and has bets */}
+      {wantsTruth === true && bets.length > 0 && (
+        <EarlyInsightCard bets={bets} wantsTruth={true} />
+      )}
 
       <StatsOverview stats={stats} betsCount={bets.length} />
 
@@ -231,13 +269,16 @@ export default function DashboardPage() {
             stats={stats}
           />
 
-          <InsightsSection
-            insights={insights}
-            streakStats={streakStats}
-            weeklyData={weeklyData}
-            oddsRangeData={oddsRangeData}
-            dayOfWeekData={dayOfWeekData}
-          />
+          {/* Only show advanced insights if user wants truth */}
+          {wantsTruth === true && (
+            <InsightsSection
+              insights={insights}
+              streakStats={streakStats}
+              weeklyData={weeklyData}
+              oddsRangeData={oddsRangeData}
+              dayOfWeekData={dayOfWeekData}
+            />
+          )}
         </>
       )}
 

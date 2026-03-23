@@ -46,15 +46,42 @@ export async function GET(request: NextRequest) {
       .from('bets')
       .select('*', { count: 'exact', head: true });
 
-    // Get tier breakdown
+    // Get tier breakdown - need to count all users, not just those with subscriptions
+    // Users without a subscription entry default to 'free' tier
+    const { data: allProfiles } = await supabase
+      .from('profiles')
+      .select('id');
+
     const { data: allSubscriptions } = await supabase
       .from('user_subscriptions')
-      .select('tier, status');
+      .select('user_id, tier, status');
+
+    // Create a map of user_id -> subscription tier
+    const subscriptionMap = new Map<string, string>();
+    allSubscriptions?.forEach((sub) => {
+      subscriptionMap.set(sub.user_id, sub.tier);
+    });
+
+    // Count users by tier (default to 'free' if no subscription entry)
+    let freeCount = 0;
+    let proCount = 0;
+    let eliteCount = 0;
+
+    allProfiles?.forEach((profile) => {
+      const tier = subscriptionMap.get(profile.id) || 'free';
+      if (tier === 'free') {
+        freeCount++;
+      } else if (tier === 'pro') {
+        proCount++;
+      } else if (tier === 'elite') {
+        eliteCount++;
+      }
+    });
 
     const tierCounts = {
-      free: allSubscriptions?.filter(s => s.tier === 'free').length || 0,
-      pro: allSubscriptions?.filter(s => s.tier === 'pro').length || 0,
-      elite: allSubscriptions?.filter(s => s.tier === 'elite').length || 0,
+      free: freeCount,
+      pro: proCount,
+      elite: eliteCount,
     };
 
     return NextResponse.json({

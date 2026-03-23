@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/button';
-import { Zap, Crown, Shield, AlertTriangle } from 'lucide-react';
+import { Zap, Crown, Shield, AlertTriangle, Mail } from 'lucide-react';
 import { showToast } from '@/lib/toast';
 
 export default function AdminBulkActionsPage() {
@@ -14,6 +14,7 @@ export default function AdminBulkActionsPage() {
   const [revokeUserId, setRevokeUserId] = useState('');
   const [revokeTier, setRevokeTier] = useState('free');
   const [revokeReason, setRevokeReason] = useState('');
+  const [testEmail, setTestEmail] = useState('jayfshrimpton@gmail.com');
 
   const handleBulkAction = async (action: string, params?: any) => {
     setIsLoading(action);
@@ -79,12 +80,145 @@ export default function AdminBulkActionsPage() {
     });
   };
 
+  const handleSendTestEmail = async () => {
+    if (!testEmail || !testEmail.includes('@')) {
+      showToast('Please enter a valid email address', 'error');
+      return;
+    }
+
+    setIsLoading('send_test_email');
+
+    try {
+      const response = await fetch('/api/admin/send-launch-announcement', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          testEmail: testEmail,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showToast(`Test email sent successfully to ${testEmail}!`, 'success');
+      } else {
+        showToast(data.error || 'Failed to send test email', 'error');
+      }
+    } catch (error) {
+      console.error('Test email error:', error);
+      showToast('An error occurred while sending test email', 'error');
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
+  const handleSendLaunchAnnouncement = async () => {
+    if (!confirm('Are you sure you want to send the launch announcement email to ALL users? This will send emails to everyone in the system.')) {
+      return;
+    }
+
+    setIsLoading('send_launch_announcement');
+
+    try {
+      const response = await fetch('/api/admin/send-launch-announcement', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showToast(
+          `Launch announcement sent! ${data.results?.sent || 0} emails sent, ${data.results?.failed || 0} failed, ${data.results?.skipped || 0} skipped.`,
+          'success'
+        );
+        console.log('Email results:', data.results);
+      } else {
+        showToast(data.error || 'Failed to send launch announcement', 'error');
+      }
+    } catch (error) {
+      console.error('Launch announcement error:', error);
+      showToast('An error occurred while sending emails', 'error');
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Bulk Actions</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">Perform bulk operations on users</p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center space-x-2">
+            <Mail className="h-5 w-5 text-blue-600" />
+            <CardTitle>Send Launch Announcement</CardTitle>
+          </div>
+          <CardDescription>
+            Send a welcome email to all users about the launch and subscription plans
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            This will send an email to all current users reminding them about the launch, that beta is over, 
+            that everyone is on the Free plan by default, and information about the different subscription plans (Free, Pro, Elite).
+          </p>
+          
+          {/* Test Email Section */}
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              📧 Preview Email First
+            </h4>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Send a test email to yourself first to preview how it looks before sending to all users.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                label="Test Email Address"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="your-email@example.com"
+                className="flex-1"
+              />
+              <Button
+                onClick={handleSendTestEmail}
+                isLoading={isLoading === 'send_test_email'}
+                disabled={!!isLoading || !testEmail}
+                variant="outline"
+                className="mt-6"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Send Test Email
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-4">
+            <AlertTriangle className="h-5 w-5 text-blue-600" />
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              This will send emails to ALL users in the system. Make sure you want to do this before proceeding.
+            </p>
+          </div>
+          <Button
+            onClick={handleSendLaunchAnnouncement}
+            isLoading={isLoading === 'send_launch_announcement'}
+            disabled={!!isLoading}
+            variant="primary"
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Send Launch Announcement to All Users
+          </Button>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

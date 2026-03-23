@@ -57,3 +57,7 @@ ALTER TABLE bets ADD COLUMN IF NOT EXISTS race_class TEXT;
 
 -- Best starting price for comparison with odds taken
 ALTER TABLE bets ADD COLUMN IF NOT EXISTS best_starting_price DECIMAL(10,2);
+ALTER TABLE bets ADD COLUMN IF NOT EXISTS bookie TEXT;
+
+-- Profiles custom bookies tracking
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS custom_bookies TEXT[];

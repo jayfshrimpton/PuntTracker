@@ -625,3 +625,237 @@ Questions? Reply to this email or visit our help center.
 We're here to help you succeed!
   `.trim();
 }
+
+export interface LaunchAnnouncementEmailData {
+  userEmail: string;
+  userName?: string;
+}
+
+export async function sendLaunchAnnouncementEmail(data: LaunchAnnouncementEmailData): Promise<{ success: boolean; error?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    return { success: false, error: 'RESEND_API_KEY is not configured' };
+  }
+
+  if (!process.env.FROM_EMAIL) {
+    return { success: false, error: 'FROM_EMAIL is not configured' };
+  }
+
+  try {
+    const html = generateLaunchAnnouncementHTML(data);
+    const text = generateLaunchAnnouncementText(data);
+
+    const resend = getResendClient();
+    const { error } = await resend.emails.send({
+      from: process.env.FROM_EMAIL,
+      to: data.userEmail,
+      subject: "🎉 Punter's Journal is Now Live! - Beta is Over",
+      html,
+      text,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Email sending error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+function generateLaunchAnnouncementHTML(data: LaunchAnnouncementEmailData): string {
+  const { userName } = data;
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/dashboard`;
+  const pricingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/pricing`;
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Launch Announcement - Punter's Journal</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+  <div style="background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div style="text-align: center; margin-bottom: 30px;">
+      <h1 style="color: #2563eb; margin: 0; font-size: 28px;">🐴 Punter's Journal</h1>
+      <p style="color: #666; margin: 5px 0 0 0; font-size: 16px;">We're Officially Live!</p>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 30px; margin-bottom: 30px; text-align: center;">
+      <h2 style="color: white; margin: 0 0 10px 0; font-size: 28px;">🎉 Beta is Over - We're Live!</h2>
+      ${userName ? `<p style="color: rgba(255,255,255,0.95); margin: 10px 0 0 0; font-size: 18px;">Hi ${userName}!</p>` : ''}
+      <p style="color: rgba(255,255,255,0.9); margin: 15px 0 0 0; font-size: 16px;">
+        Thank you for being part of our beta journey!
+      </p>
+    </div>
+
+    <div style="margin-bottom: 30px;">
+      <p style="color: #333; font-size: 16px; margin: 0 0 15px 0;">
+        ${userName ? `Hi ${userName},` : 'Hi there,'}
+      </p>
+      <p style="color: #666; font-size: 16px; margin: 0 0 15px 0; line-height: 1.7;">
+        We're excited to announce that <strong>Punter's Journal is now officially live!</strong> The beta period has ended, and we're ready to help you take your punting to the next level.
+      </p>
+      <p style="color: #666; font-size: 16px; margin: 0 0 15px 0; line-height: 1.7;">
+        As a thank you for being part of our beta, <strong>all current users are now on the Free plan by default</strong>. You can continue tracking your bets and analyzing your performance at no cost.
+      </p>
+    </div>
+
+    <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
+      <h3 style="color: #166534; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">
+        📋 Your Current Plan: Free
+      </h3>
+      <p style="color: #15803d; margin: 0 0 10px 0; font-size: 14px; font-style: italic;">Perfect for casual punters</p>
+      <ul style="margin: 0; padding-left: 20px; color: #15803d; font-size: 15px; line-height: 1.8;">
+        <li style="margin-bottom: 10px;">Track up to 50 bets per month</li>
+        <li style="margin-bottom: 10px;">Basic performance stats</li>
+        <li style="margin-bottom: 10px;">Manual bet entry</li>
+        <li style="margin-bottom: 10px;">Community support</li>
+      </ul>
+    </div>
+
+    <div style="margin-bottom: 30px;">
+      <h3 style="color: #333; font-size: 20px; margin: 0 0 20px 0; font-weight: 600; text-align: center;">
+        🚀 Ready to Level Up?
+      </h3>
+      
+      <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 15px; border: 2px solid #e5e7eb;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <div>
+            <h4 style="color: #333; margin: 0; font-size: 18px; font-weight: 600;">Pro Plan - $15/month</h4>
+            <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">For serious bettors</p>
+          </div>
+        </div>
+        <ul style="margin: 0; padding-left: 20px; color: #666; font-size: 14px; line-height: 1.8;">
+          <li style="margin-bottom: 8px;">Unlimited bets</li>
+          <li style="margin-bottom: 8px;">Advanced analytics</li>
+          <li style="margin-bottom: 8px;">Priority support</li>
+        </ul>
+      </div>
+
+      <div style="background-color: #fef3c7; border-radius: 8px; padding: 20px; margin-bottom: 15px; border: 2px solid #f59e0b;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <div>
+            <h4 style="color: #333; margin: 0; font-size: 18px; font-weight: 600;">Elite Plan - $25/month</h4>
+            <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Best value for pros</p>
+          </div>
+        </div>
+        <ul style="margin: 0; padding-left: 20px; color: #666; font-size: 14px; line-height: 1.8;">
+          <li style="margin-bottom: 8px;">All Pro features</li>
+          <li style="margin-bottom: 8px;">AI Insights</li>
+          <li style="margin-bottom: 8px;">CSV Import/Export</li>
+          <li style="margin-bottom: 8px;">Early access to new features</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 30px;">
+      <a href="${pricingUrl}" 
+         style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); margin-right: 10px;">
+        View All Plans
+      </a>
+      <a href="${dashboardUrl}" 
+         style="display: inline-block; background-color: white; color: #667eea; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px; border: 2px solid #667eea; margin-left: 10px;">
+        Go to Dashboard
+      </a>
+    </div>
+
+    <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+      <h3 style="color: #333; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">
+        💡 What's Next?
+      </h3>
+      <ul style="margin: 0; padding-left: 20px; color: #666; font-size: 14px; line-height: 1.8;">
+        <li style="margin-bottom: 8px;">Continue tracking your bets on the Free plan</li>
+        <li style="margin-bottom: 8px;">Upgrade anytime to unlock advanced features</li>
+        <li style="margin-bottom: 8px;">Your data is safe and will continue to be available</li>
+        <li style="margin-bottom: 8px;">Questions? Just reply to this email!</li>
+      </ul>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+      <p style="color: #999; font-size: 12px; margin: 0;">
+        Thank you for being part of our community!<br>
+        We're here to help you succeed with your punting journey.
+      </p>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+      <p style="color: #999; font-size: 12px; margin: 0;">
+        Happy punting! 🐴<br>
+        The Punter's Journal Team
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
+function generateLaunchAnnouncementText(data: LaunchAnnouncementEmailData): string {
+  const { userName } = data;
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/dashboard`;
+  const pricingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/pricing`;
+
+  return `
+Punter's Journal - We're Officially Live! 🎉
+
+${userName ? `Hi ${userName},` : 'Hi there,'}
+
+We're excited to announce that Punter's Journal is now officially live! The beta period has ended, and we're ready to help you take your punting to the next level.
+
+As a thank you for being part of our beta, all current users are now on the Free plan by default. You can continue tracking your bets and analyzing your performance at no cost.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 Your Current Plan: Free
+Perfect for casual punters
+
+• Track up to 50 bets per month
+• Basic performance stats
+• Manual bet entry
+• Community support
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 Ready to Level Up?
+
+PRO PLAN - $15/month
+For serious bettors
+• Unlimited bets
+• Advanced analytics
+• Priority support
+
+ELITE PLAN - $25/month
+Best value for pros
+• All Pro features
+• AI Insights
+• CSV Import/Export
+• Early access to new features
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+View All Plans: ${pricingUrl}
+Go to Dashboard: ${dashboardUrl}
+
+💡 What's Next?
+• Continue tracking your bets on the Free plan
+• Upgrade anytime to unlock advanced features
+• Your data is safe and will continue to be available
+• Questions? Just reply to this email!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Thank you for being part of our community!
+We're here to help you succeed with your punting journey.
+
+Happy punting! 🐴
+The Punter's Journal Team
+  `.trim();
+}
