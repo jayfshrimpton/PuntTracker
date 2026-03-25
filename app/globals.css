@@ -95,6 +95,8 @@
 
   html {
     @apply scroll-smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   ::selection {
@@ -111,6 +113,7 @@
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    overflow-x: hidden;
   }
 }
 

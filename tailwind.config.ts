@@ -72,6 +72,11 @@ const config: Config = {
         '18': '4.5rem',
         '112': '28rem',
         '128': '32rem',
+        /** iOS home indicator / notch — use with pb-safe, pt-safe-top, etc. */
+        safe: "env(safe-area-inset-bottom, 0px)",
+        "safe-top": "env(safe-area-inset-top, 0px)",
+        "safe-left": "env(safe-area-inset-left, 0px)",
+        "safe-right": "env(safe-area-inset-right, 0px)",
       },
       boxShadow: {
         'glow': '0 0 20px rgba(59, 130, 246, 0.5)',

@@ -58,6 +58,7 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -78,13 +79,19 @@ export default function RootLayout({
             __html: `
 (function() {
   try {
+    var path = window.location.pathname;
+    var root = document.documentElement;
+    if (path === '/' || path === '') {
+      root.classList.remove('light', 'dark');
+      root.classList.add('light');
+      return;
+    }
     var stored = localStorage.getItem('theme');
     var resolved = 'light';
     if (stored === 'dark') resolved = 'dark';
     else if (stored === 'system') {
       resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-    var root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(resolved);
   } catch (e) {}

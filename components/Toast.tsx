@@ -43,11 +43,11 @@ export function ToastComponent({ toast, onClose }: ToastProps) {
 
   return (
     <div
-      className={`${bgColors[toast.type]} ${textColors[toast.type]} border rounded-lg shadow-lg p-4 mb-4 flex items-center justify-between min-w-[300px] max-w-md`}
+      className={`${bgColors[toast.type]} ${textColors[toast.type]} border rounded-lg shadow-lg p-3 sm:p-4 mb-4 flex items-center justify-between gap-3 min-w-0 w-full max-w-md`}
     >
-      <div className="flex items-center space-x-3">
-        {icons[toast.type]}
-        <p className="text-sm font-medium">{toast.message}</p>
+      <div className="flex min-w-0 flex-1 items-center space-x-3">
+        <span className="shrink-0">{icons[toast.type]}</span>
+        <p className="text-sm font-medium break-words">{toast.message}</p>
       </div>
       <button
         onClick={() => onClose(toast.id)}
@@ -68,7 +68,7 @@ export function ToastContainer({ toasts, onClose }: ToastContainerProps) {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed left-3 right-3 top-[calc(0.75rem+env(safe-area-inset-top,0px))] z-50 space-y-2 sm:left-auto sm:right-4 sm:w-[min(28rem,calc(100vw-2rem))]">
       {toasts.map((toast) => (
         <ToastComponent key={toast.id} toast={toast} onClose={onClose} />
       ))}

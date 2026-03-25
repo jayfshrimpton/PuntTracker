@@ -9,6 +9,7 @@ import {
   useCallback,
   useRef,
 } from 'react';
+import { usePathname } from 'next/navigation';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -32,7 +33,13 @@ function getResolvedTheme(theme: Theme): 'light' | 'dark' {
   return theme;
 }
 
+/** Home marketing page is always light; user theme applies again after they leave. */
+function isPublicLandingPath(pathname: string | null): boolean {
+  return pathname === '/' || pathname === '';
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [theme, setThemeState] = useState<Theme>('light');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
   const didInit = useRef(false);
@@ -41,7 +48,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === 'undefined') return;
 
     const root = window.document.documentElement;
-    const resolved = getResolvedTheme(newTheme);
+    const resolved = isPublicLandingPath(pathname)
+      ? 'light'
+      : getResolvedTheme(newTheme);
 
     root.classList.remove('light', 'dark');
     root.classList.add(resolved);
@@ -54,7 +63,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         // Ignore localStorage errors
       }
     }
-  }, []);
+  }, [pathname]);
 
   useLayoutEffect(() => {
     if (!didInit.current) {

@@ -39,7 +39,7 @@ export function OnboardingChecklist({ hasBets, hasResults, viewedStats }: Onboar
     if (isMinimized) {
         return (
             <div
-                className="fixed bottom-4 right-4 z-40 bg-card border border-border shadow-lg rounded-full p-3 cursor-pointer hover:scale-105 transition-transform"
+                className="fixed bottom-24 right-4 z-40 bg-card border border-border shadow-lg rounded-full p-3 cursor-pointer hover:scale-105 transition-transform lg:bottom-4"
                 onClick={() => setIsMinimized(false)}
             >
                 <div className="relative">
@@ -66,7 +66,7 @@ export function OnboardingChecklist({ hasBets, hasResults, viewedStats }: Onboar
     }
 
     return (
-        <div className="fixed bottom-4 right-4 z-40 w-80 bg-card border border-border shadow-xl rounded-xl overflow-hidden animate-in slide-in-from-bottom-5 duration-500">
+        <div className="fixed bottom-24 left-4 right-4 z-40 mx-auto w-auto max-w-sm bg-card border border-border shadow-xl rounded-xl overflow-hidden animate-in slide-in-from-bottom-5 duration-500 sm:left-auto sm:right-4 sm:mx-0 sm:w-80 lg:bottom-4">
             <div className="bg-primary/5 p-4 flex items-center justify-between border-b border-border">
                 <h3 className="font-semibold text-foreground">Getting Started</h3>
                 <div className="flex items-center gap-2">

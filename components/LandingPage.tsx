@@ -65,6 +65,7 @@ export default function LandingPage() {
         .nav {
           position: fixed; top: 0; left: 0; right: 0; z-index: 100;
           padding: 0 2rem;
+          padding-top: env(safe-area-inset-top, 0px);
           transition: all 0.3s ease;
         }
         .nav.scrolled {
@@ -79,7 +80,7 @@ export default function LandingPage() {
         }
         .nav-logo {
           display: flex; align-items: center; gap: 10px;
-          font-family: 'DM Serif Display', serif;
+          font-family: var(--font-dm-serif-display), ui-serif, Georgia, serif;
           font-size: 1.2rem; color: #1a1a18; text-decoration: none;
         }
         .nav-logo .logo-wrap { flex-shrink: 0; }
@@ -113,19 +114,39 @@ export default function LandingPage() {
         .nav-cta-mini:hover { background: #333; }
 
         .hero {
-          padding: 140px 2rem 80px;
+          padding: calc(140px + env(safe-area-inset-top, 0px)) 2rem 80px;
           max-width: 1100px; margin: 0 auto;
           display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
         }
         @media (max-width: 768px) {
-          .hero { grid-template-columns: 1fr; padding: 120px 1.5rem 60px; gap: 3rem; }
+          .hero { grid-template-columns: 1fr; padding: calc(120px + env(safe-area-inset-top, 0px)) 1rem 56px; gap: 2.5rem; }
+          .nav { padding: 0 1rem; }
+          .nav-inner { height: auto; min-height: 56px; }
           .nav-links { display: none; }
-          .nav-mobile-shortcuts { display: flex; }
+          .nav-mobile-shortcuts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem 0.75rem; max-width: 58%; }
           .hero-visual { order: -1; }
           .stats-grid { grid-template-columns: 1fr 1fr !important; }
+          .stat-block {
+            border-right: none !important;
+            padding: 2.25rem 1rem;
+          }
+          .stat-block:nth-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,0.08); }
           .features-grid { grid-template-columns: 1fr !important; }
           .pricing-grid { grid-template-columns: 1fr !important; }
+          .pricing-card.featured { transform: none; }
+          .pricing-card.featured:hover { transform: translateY(-4px); }
           .social-grid { grid-template-columns: 1fr !important; }
+          section { padding: 72px 1rem; }
+          .cta-section { padding: 72px 1rem; }
+          footer { padding: 2.5rem 1rem; }
+          .billing-toggle { flex-wrap: wrap; justify-content: center; row-gap: 0.75rem; column-gap: 1rem; }
+          .faq-btn { padding: 1rem 1.1rem; font-size: 0.9rem; }
+          .faq-answer { padding: 0 1.1rem 1.1rem; }
+        }
+        @media (max-width: 480px) {
+          .db-stats { gap: 0.65rem; }
+          .db-stat-val { font-size: 1.1rem; }
+          .db-chart { gap: 2px; }
         }
 
         .eyebrow {
@@ -138,7 +159,7 @@ export default function LandingPage() {
         .eyebrow-dot { width: 6px; height: 6px; background: #6d28d9; border-radius: 50%; }
 
         h1 {
-          font-family: 'DM Serif Display', serif;
+          font-family: var(--font-dm-serif-display), ui-serif, Georgia, serif;
           font-size: clamp(2.4rem, 5vw, 3.6rem);
           line-height: 1.1; color: #1a1a18;
           margin-bottom: 1.5rem;
@@ -160,7 +181,7 @@ export default function LandingPage() {
           font-size: 0.95rem; font-weight: 500;
           text-decoration: none; display: inline-block;
           transition: all 0.2s; border: none; cursor: pointer;
-          font-family: 'DM Sans', sans-serif;
+          font-family: var(--font-dm-sans), system-ui, sans-serif;
         }
         .btn-primary:hover { background: #333; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
 
@@ -169,7 +190,7 @@ export default function LandingPage() {
           text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
           padding: 0.875rem 0; transition: gap 0.2s;
           background: none; border: none; cursor: pointer;
-          font-family: 'DM Sans', sans-serif;
+          font-family: var(--font-dm-sans), system-ui, sans-serif;
         }
         .btn-secondary:hover { gap: 10px; }
 
@@ -230,7 +251,7 @@ export default function LandingPage() {
           text-transform: uppercase; color: #6d28d9; margin-bottom: 1rem;
         }
         h2 {
-          font-family: 'DM Serif Display', serif;
+          font-family: var(--font-dm-serif-display), ui-serif, Georgia, serif;
           font-size: clamp(2rem, 4vw, 2.8rem);
           line-height: 1.15; color: #1a1a18; margin-bottom: 1.25rem;
         }
@@ -252,7 +273,7 @@ export default function LandingPage() {
         }
         .stat-block:last-child { border-right: none; }
         .stat-num {
-          font-family: 'DM Serif Display', serif;
+          font-family: var(--font-dm-serif-display), ui-serif, Georgia, serif;
           font-size: clamp(2rem, 4vw, 3rem); color: #fff;
           margin-bottom: 0.5rem;
           opacity: 0; transform: translateY(20px);
@@ -299,7 +320,7 @@ export default function LandingPage() {
         .plan-name { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #aaa; margin-bottom: 0.75rem; }
         .pricing-card.featured .plan-name { color: rgba(255,255,255,0.5); }
         .plan-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 0.5rem; }
-        .price-amount { font-family: 'DM Serif Display', serif; font-size: 2.5rem; color: #1a1a18; }
+        .price-amount { font-family: var(--font-dm-serif-display), ui-serif, Georgia, serif; font-size: 2.5rem; color: #1a1a18; }
         .pricing-card.featured .price-amount { color: #fff; }
         .price-period { font-size: 0.85rem; color: #aaa; }
         .pricing-card.featured .price-period { color: rgba(255,255,255,0.45); }
@@ -314,7 +335,7 @@ export default function LandingPage() {
           display: block; text-align: center; padding: 0.875rem;
           border-radius: 10px; font-size: 0.9rem; font-weight: 500;
           text-decoration: none; cursor: pointer; border: none;
-          font-family: 'DM Sans', sans-serif;
+          font-family: var(--font-dm-sans), system-ui, sans-serif;
           transition: all 0.2s;
         }
         .cta-dark { background: #1a1a18; color: #fff; }
@@ -368,7 +389,7 @@ export default function LandingPage() {
           width: 100%; text-align: left; padding: 1.25rem 1.5rem;
           background: none; border: none; cursor: pointer;
           display: flex; justify-content: space-between; align-items: center;
-          font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: #1a1a18;
+          font-family: var(--font-dm-sans), system-ui, sans-serif; font-size: 0.95rem; color: #1a1a18;
           font-weight: 500;
         }
         .faq-icon { color: #aaa; font-size: 1.1rem; transition: transform 0.2s; flex-shrink: 0; }
@@ -394,7 +415,7 @@ export default function LandingPage() {
         }
         .footer-brand {
           display: flex; align-items: center; gap: 10px;
-          font-family: 'DM Serif Display', serif; font-size: 1rem; color: #1a1a18;
+          font-family: var(--font-dm-serif-display), ui-serif, Georgia, serif; font-size: 1rem; color: #1a1a18;
           text-decoration: none;
         }
         .footer-columns { display: flex; flex-wrap: wrap; gap: 2rem 3rem; }

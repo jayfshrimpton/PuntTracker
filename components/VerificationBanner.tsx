@@ -61,7 +61,7 @@ export default function VerificationBanner({ email, isVerified }: VerificationBa
     if (!isVisible) return null;
 
     return (
-        <div className="bg-primary/10 border-b border-primary/20">
+        <div className="bg-primary/10 border-b border-primary/20 lg:pt-0 pt-[calc(4rem+env(safe-area-inset-top,0px))]">
             <div className="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between flex-wrap">
                     <div className="w-0 flex-1 flex items-center">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Menu, X, Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles, CreditCard, MessageSquare, Shield } from 'lucide-react';
+import { Home, PlusCircle, Settings, UserCog, Coins, DollarSign, BookOpen, LogOut, Sparkles, CreditCard, MessageSquare, Shield } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -82,25 +82,26 @@ export default function DashboardNav({ user }: DashboardNavProps) {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/92 backdrop-blur-xl border-b border-border/60">
-        <div className="px-4 py-3 flex justify-between items-center">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Logo size={32} variant="dashboard" className="rounded-lg" />
-            <span className="font-display font-semibold text-lg tracking-tight text-foreground">
-              Punter&apos;s <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Journal</span>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/92 backdrop-blur-xl border-b border-border/60 pt-[env(safe-area-inset-top,0px)]">
+        <div className="px-2 sm:px-4 py-2.5 flex justify-between items-center gap-2 min-h-[3rem]">
+          <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
+            <Logo size={28} variant="dashboard" className="rounded-lg shrink-0" />
+            <span className="font-display font-semibold text-sm sm:text-lg tracking-tight text-foreground truncate max-w-[9rem] min-[380px]:max-w-none">
+              <span className="hidden min-[380px]:inline">Punter&apos;s </span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Journal</span>
             </span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {isAdmin && (
               <Link href="/admin/dashboard">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 rounded-md border-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0 hover:from-purple-700 hover:to-blue-700 transition-all shadow-sm"
+                  className="h-9 w-9 p-0 sm:w-auto sm:px-3 rounded-md border-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0 hover:from-purple-700 hover:to-blue-700 transition-all shadow-sm"
                   title="Admin Portal"
                 >
-                  <Shield className="h-4 w-4 mr-1" />
-                  <span className="text-xs font-semibold">Admin</span>
+                  <Shield className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline text-xs font-semibold">Admin</span>
                 </Button>
               </Link>
             )}
@@ -109,32 +110,32 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               variant="outline"
               size="sm"
               onClick={toggleMode}
-              className="h-9 px-2.5 rounded-md border-2 bg-background hover:bg-muted transition-colors"
+              className="h-9 w-9 p-0 sm:w-auto sm:px-2.5 rounded-md border-2 bg-background hover:bg-muted transition-colors"
               title={mode === 'currency' ? 'Switch to Units' : 'Switch to Currency'}
             >
               {mode === 'currency' ? (
-                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400 mx-auto" />
               ) : (
-                <Coins className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                <Coins className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mx-auto" />
               )}
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="h-9 px-3 rounded-md border-2 border-destructive/30 hover:border-destructive bg-background hover:bg-destructive/10 text-destructive transition-colors font-medium"
+              className="h-9 w-9 p-0 sm:w-auto sm:px-3 rounded-md border-2 border-destructive/30 hover:border-destructive bg-background hover:bg-destructive/10 text-destructive transition-colors font-medium"
               title="Sign out"
             >
-              <LogOut className="h-4 w-4 mr-1" />
-              <span className="text-xs font-semibold">Out</span>
+              <LogOut className="h-4 w-4 sm:mr-1 mx-auto sm:mx-0" />
+              <span className="hidden sm:inline text-xs font-semibold">Out</span>
             </Button>
           </div>
         </div>
       </div>
 
       {/* Mobile Bottom Nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/92 backdrop-blur-xl border-t border-border/60 pb-safe">
-        <nav className="flex justify-around items-center h-16 px-2">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/92 backdrop-blur-xl border-t border-border/60 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]">
+        <nav className="flex justify-around items-center min-h-14 h-14 px-1 sm:px-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
