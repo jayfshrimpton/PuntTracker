@@ -82,52 +82,50 @@ export default function DashboardNav({ user }: DashboardNavProps) {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/92 backdrop-blur-xl border-b border-border/60 pt-[env(safe-area-inset-top,0px)]">
-        <div className="px-2 sm:px-4 py-2.5 flex justify-between items-center gap-2 min-h-[3rem]">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/95 backdrop-blur-xl pt-[env(safe-area-inset-top,0px)] supports-[backdrop-filter]:bg-background/90">
+        <div className="px-2 sm:px-3 py-2 flex justify-between items-center gap-2 min-h-[3rem]">
           <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
             <Logo size={28} variant="dashboard" className="rounded-lg shrink-0" />
-            <span className="font-display font-semibold text-sm sm:text-lg tracking-tight text-foreground truncate max-w-[9rem] min-[380px]:max-w-none">
+            <span className="font-display font-semibold text-sm sm:text-lg tracking-tight text-foreground truncate max-w-[5.5rem] min-[360px]:max-w-[9rem] min-[380px]:max-w-none">
               <span className="hidden min-[380px]:inline">Punter&apos;s </span>
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Journal</span>
             </span>
           </Link>
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             {isAdmin && (
-              <Link href="/admin/dashboard">
+              <Link href="/admin/dashboard" className="shrink-0">
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="h-9 w-9 p-0 sm:w-auto sm:px-3 rounded-md border-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0 hover:from-purple-700 hover:to-blue-700 transition-all shadow-sm"
+                  size="icon"
+                  className="h-10 w-10 rounded-lg border-0 bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md shadow-purple-900/25 hover:from-purple-700 hover:to-blue-700 hover:text-white"
                   title="Admin Portal"
                 >
-                  <Shield className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline text-xs font-semibold">Admin</span>
+                  <Shield className="h-5 w-5 text-white drop-shadow-sm" strokeWidth={2.25} />
                 </Button>
               </Link>
             )}
-            <ThemeToggle />
+            <ThemeToggle variant="compact" />
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={toggleMode}
-              className="h-9 w-9 p-0 sm:w-auto sm:px-2.5 rounded-md border-2 bg-background hover:bg-muted transition-colors"
+              className="h-10 w-10 rounded-lg border-2 border-border bg-card text-foreground shadow-sm ring-1 ring-border/60 hover:bg-muted dark:bg-card"
               title={mode === 'currency' ? 'Switch to Units' : 'Switch to Currency'}
             >
               {mode === 'currency' ? (
-                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400 mx-auto" />
+                <DollarSign className="h-5 w-5 text-emerald-700 dark:text-emerald-400 drop-shadow-sm" strokeWidth={2.25} />
               ) : (
-                <Coins className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mx-auto" />
+                <Coins className="h-5 w-5 text-amber-700 dark:text-amber-400 drop-shadow-sm" strokeWidth={2.25} />
               )}
             </Button>
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={handleLogout}
-              className="h-9 w-9 p-0 sm:w-auto sm:px-3 rounded-md border-2 border-destructive/30 hover:border-destructive bg-background hover:bg-destructive/10 text-destructive transition-colors font-medium"
+              className="h-10 w-10 rounded-lg border-2 border-destructive/70 bg-red-50 text-red-700 shadow-sm hover:bg-red-100 hover:text-red-800 dark:border-destructive/80 dark:bg-destructive/20 dark:text-red-200 dark:hover:bg-destructive/30"
               title="Sign out"
             >
-              <LogOut className="h-4 w-4 sm:mr-1 mx-auto sm:mx-0" />
-              <span className="hidden sm:inline text-xs font-semibold">Out</span>
+              <LogOut className="h-5 w-5 drop-shadow-sm" strokeWidth={2.25} />
             </Button>
           </div>
         </div>
