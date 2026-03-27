@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import Logo from "@/components/Logo";
-
 export default function LandingPage() {
   const [billingAnnual, setBillingAnnual] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);

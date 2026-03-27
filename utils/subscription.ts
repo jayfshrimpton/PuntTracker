@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
+import { priceIdToTier } from '@/lib/stripe/price-tier';
 import { cache } from 'react';
-
-// Price IDs for each tier (from Stripe)
-const PRO_PRICE_ID = 'price_1SZVqG7Uv9v0RZydSebiiCsw';
-const ELITE_PRICE_ID = 'price_1SZVQM7Uv9v0RZydzVRWIcPs';
 
 export type SubscriptionTier = 'free' | 'pro' | 'elite';
 
@@ -30,16 +27,8 @@ export const getSubscriptionTier = cache(async (): Promise<SubscriptionTier> => 
         return 'free';
     }
 
-    const priceId = subscription.price_id;
-
-    if (priceId === ELITE_PRICE_ID) {
-        return 'elite';
-    } else if (priceId === PRO_PRICE_ID) {
-        return 'pro';
-    }
-
-    // Default to free if price ID doesn't match known tiers
-    return 'free';
+    const mapped = priceIdToTier(subscription.price_id);
+    return mapped ?? 'free';
 });
 
 export const getSubscriptionStatus = cache(async () => {

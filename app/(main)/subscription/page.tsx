@@ -4,15 +4,30 @@ import { getSubscription } from '@/utils/subscription';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PAYMENTS_ENABLED } from '@/lib/stripe/stripe';
+import { syncUserAfterCheckoutSession } from '@/lib/stripe/reconcile-checkout';
 import { Lock, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 
-export default async function SubscriptionPage() {
+export default async function SubscriptionPage({
+    searchParams,
+}: {
+    searchParams?: { session_id?: string };
+}) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
         redirect('/login');
+    }
+
+    if (searchParams?.session_id && PAYMENTS_ENABLED) {
+        const synced = await syncUserAfterCheckoutSession(
+            searchParams.session_id,
+            user.id
+        );
+        if (synced.ok) {
+            redirect('/subscription');
+        }
     }
 
     const subscription = await getSubscription();
