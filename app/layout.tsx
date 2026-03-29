@@ -19,13 +19,13 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/lib/theme";
-import { generateMetadata as generateSEOMetadata, generateStructuredData } from "@/lib/seo";
+import { generateMetadata as generateSEOMetadata, generateHomePageStructuredData } from "@/lib/seo";
 import PWARegister from "@/components/PWARegister";
 import PasswordRecoveryRedirect from "@/components/PasswordRecoveryRedirect";
 
 export const metadata: Metadata = {
   ...generateSEOMetadata({
-    title: "Horse Racing Bet Tracker for Australian Punters",
+    title: "Australian Horse Racing Bet Tracker",
     description: "Track your horse racing bets with ease. Automatic stats, beautiful charts, and insights. Built for Aussie punters. Free to start.",
     keywords: ["horse racing", "bet tracker", "betting stats", "punt tracker", "racing bets", "Australian horse racing", "betting analytics"],
     path: "/",
@@ -102,15 +102,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(generateStructuredData('WebApplication', {
-              applicationCategory: 'FinanceApplication',
-              operatingSystem: 'Web',
-              offers: {
-                '@type': 'Offer',
-                price: '0',
-                priceCurrency: 'AUD',
-              },
-            })),
+            __html: JSON.stringify(generateHomePageStructuredData()),
           }}
         />
         <script

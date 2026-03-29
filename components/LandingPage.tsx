@@ -456,7 +456,7 @@ export default function LandingPage() {
             <span className="logo-wrap">
               <Logo size={32} variant="landing" />
             </span>
-            Punters Journal
+            Punter&apos;s Journal
           </a>
           <ul className="nav-links">
             <li>

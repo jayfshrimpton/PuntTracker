@@ -30,7 +30,7 @@ export function generateMetadata({
   publishedTime,
   modifiedTime,
 }: SEOConfig): Metadata {
-  const fullTitle = title ? `${title} | ${siteName}` : siteName;
+  const fullTitle = title ? `${siteName} | ${title}` : siteName;
   // Ensure title is within SEO best practices (50-60 chars)
   const truncatedTitle = fullTitle.length > 60 ? fullTitle.substring(0, 57) + '...' : fullTitle;
   const url = `${siteUrl}${path}`;
@@ -102,6 +102,36 @@ export function generateMetadata({
       yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION,
       yahoo: process.env.NEXT_PUBLIC_YAHOO_VERIFICATION,
     },
+  };
+}
+
+/** JSON-LD for the home page: WebSite (Google site name in SERPs) + WebApplication. */
+export function generateHomePageStructuredData() {
+  const homeUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        name: siteName,
+        alternateName: ['Punters Journal', 'puntersjournal.com.au'],
+        url: homeUrl,
+        description: brandPositioning,
+      },
+      {
+        '@type': 'WebApplication',
+        name: siteName,
+        url: siteUrl,
+        description: brandPositioning,
+        applicationCategory: 'FinanceApplication',
+        operatingSystem: 'Web',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'AUD',
+        },
+      },
+    ],
   };
 }
 
