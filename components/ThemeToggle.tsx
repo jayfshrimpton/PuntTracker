@@ -5,7 +5,7 @@ import { Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type ThemeToggleProps = {
-  /** One icon button — use in tight mobile headers */
+  /** One icon button; use in tight mobile headers */
   variant?: 'full' | 'compact';
   className?: string;
 };

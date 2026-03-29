@@ -1,5 +1,5 @@
 -- ============================================================================
--- Punter's Journal — full Supabase (PostgreSQL) schema
+-- Punter's Journal: full Supabase (PostgreSQL) schema
 -- Run in the SQL Editor (new projects: run once; existing DBs: safe sections
 -- use IF NOT EXISTS / ADD COLUMN IF NOT EXISTS where noted).
 -- ============================================================================

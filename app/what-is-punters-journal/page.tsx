@@ -156,7 +156,7 @@ export default function WhatIsPuntersJournalPage() {
                     <div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">TAB</h3>
                       <p>
-                        TAB is a bookmaker. Punters Journal is a tracking and analytics tool. You can use Punters Journal to track bets placed on TAB, Betfair, or any other bookmaker. It&apos;s agnostic about where you bet—it focuses on helping you understand your performance.
+                        TAB is a bookmaker. Punters Journal is a tracking and analytics tool. You can use Punters Journal to track bets placed on TAB, Betfair, or any other bookmaker. It&apos;s agnostic about where you bet. It focuses on helping you understand your performance.
                       </p>
                     </div>
                     <div>

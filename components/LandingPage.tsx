@@ -30,7 +30,7 @@ export default function LandingPage() {
   const faqs = [
     {
       q: "Is this only for horse racing?",
-      a: "Yes — Punters Journal is built specifically for Australian horse racing punters. Every feature, stat, and insight is designed around the way Aussies bet on the races.",
+      a: "Yes. Punters Journal is built specifically for Australian horse racing punters. Every feature, stat, and insight is designed around the way Aussies bet on the races.",
     },
     {
       q: "What bet types can I track?",
@@ -38,11 +38,11 @@ export default function LandingPage() {
     },
     {
       q: "How is this different from a spreadsheet?",
-      a: "Automatic P&L calculations, AI-powered insights, visualisations, mobile-first design, and streak tracking — all without touching a formula. Your spreadsheet can't tell you your ROI is down 12% on wet tracks.",
+      a: "Automatic P&L calculations, AI-powered insights, visualisations, mobile-first design, and streak tracking, all without touching a formula. Your spreadsheet can't tell you your ROI is down 12% on wet tracks.",
     },
     {
       q: "What's the founding member deal?",
-      a: "First 100 paying users lock in $10/month forever — even as the standard price rises. That's our way of saying thanks to the early believers.",
+      a: "First 100 paying users lock in $10/month forever, even as the standard price rises. That's our way of saying thanks to the early believers.",
     },
     {
       q: "Can I cancel anytime?",
@@ -134,7 +134,6 @@ export default function LandingPage() {
           .pricing-grid { grid-template-columns: 1fr !important; }
           .pricing-card.featured { transform: none; }
           .pricing-card.featured:hover { transform: translateY(-4px); }
-          .social-grid { grid-template-columns: 1fr !important; }
           section { padding: 72px 1rem; }
           .cta-section { padding: 72px 1rem; }
           footer { padding: 2.5rem 1rem; }
@@ -197,16 +196,7 @@ export default function LandingPage() {
           display: flex; align-items: center; gap: 1.5rem; margin-top: 2.5rem;
           flex-wrap: wrap;
         }
-        .trust-avatars { display: flex; }
-        .trust-avatar {
-          width: 30px; height: 30px; border-radius: 50%;
-          border: 2px solid #fff; margin-left: -8px;
-          background: #ddd; overflow: hidden; font-size: 0.7rem;
-          display: flex; align-items: center; justify-content: center;
-          font-weight: 600; color: #555;
-        }
-        .trust-avatar:first-child { margin-left: 0; }
-        .trust-text { font-size: 0.8rem; color: #777; line-height: 1.4; }
+        .trust-text { font-size: 0.8rem; color: #777; line-height: 1.5; max-width: 340px; }
         .trust-text strong { color: #1a1a18; }
 
         /* Dashboard mockup */
@@ -363,24 +353,6 @@ export default function LandingPage() {
         .toggle.on .toggle-thumb { transform: translateX(20px); }
         .save-badge { background: #ede9fe; color: #6d28d9; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
 
-        /* Social proof */
-        .social-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-        .testimonial {
-          background: #fff; border: 1px solid #e8e8e6; border-radius: 14px;
-          padding: 1.5rem;
-        }
-        .testimonial-text { font-size: 0.9rem; color: #444; line-height: 1.7; margin-bottom: 1.25rem; font-style: italic; }
-        .testimonial-author { display: flex; align-items: center; gap: 10px; }
-        .author-avatar {
-          width: 36px; height: 36px; border-radius: 50%;
-          background: #1a1a18; color: #fff;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 0.8rem; font-weight: 600; flex-shrink: 0;
-        }
-        .author-name { font-size: 0.85rem; font-weight: 600; color: #1a1a18; }
-        .author-sub { font-size: 0.75rem; color: #aaa; }
-        .stars { color: #f5a623; font-size: 0.8rem; margin-bottom: 0.75rem; }
-
         /* FAQ */
         .faq-list { max-width: 680px; margin: 3rem auto 0; display: flex; flex-direction: column; gap: 1px; background: #e8e8e6; border-radius: 14px; overflow: hidden; }
         .faq-item { background: #fff; }
@@ -501,7 +473,7 @@ export default function LandingPage() {
             Know <em>exactly</em> how your betting is performing
           </h1>
           <p className="hero-sub">
-            Track every bet, see your real P&L, and get AI-powered insights that tell you where you&apos;re winning — and where you&apos;re bleeding money.
+            Track every bet, see your real P&L, and get AI-powered insights that tell you where you&apos;re winning and where you&apos;re bleeding money.
           </p>
           <div className="hero-actions">
             <a href="/signup" className="btn-primary">
@@ -512,23 +484,8 @@ export default function LandingPage() {
             </a>
           </div>
           <div className="trust-row">
-            <div className="trust-avatars">
-              {["JM", "RS", "TK", "AB", "LW"].map((ini, i) => (
-                <div
-                  key={i}
-                  className="trust-avatar"
-                  style={{
-                    background: ["#c8e6c9", "#bbdefb", "#f8bbd0", "#fff9c4", "#d7ccc8"][i],
-                  }}
-                >
-                  <span style={{ color: "#555" }}>{ini}</span>
-                </div>
-              ))}
-            </div>
             <div className="trust-text">
-              <strong>50+ punters</strong> tracking bets in beta
-              <br />
-              Join the Wolfden community
+              <strong>Free to start.</strong> Try core tracking with no credit card, then upgrade if you want Pro or Elite.
             </div>
           </div>
         </div>
@@ -543,7 +500,7 @@ export default function LandingPage() {
             <div className="db-stats">
               <div>
                 <div className="db-stat-label">P&L</div>
-                <div className="db-stat-val green">+$482</div>
+                <div className="db-stat-val green">+$422</div>
               </div>
               <div>
                 <div className="db-stat-label">Strike rate</div>
@@ -569,14 +526,14 @@ export default function LandingPage() {
             <div className="db-recent">
               <div className="db-recent-title">Recent bets</div>
               {[
-                { name: "Winx St – R6", type: "WIN", amount: "+$96", win: true },
-                { name: "Flemington – R3", type: "EW", amount: "-$50", win: false },
-                { name: "Eagle Farm – R8", type: "PLACE", amount: "+$38", win: true },
+                { raceHorse: "Rosehill Guineas - Green Spaces", betType: "PLACE", amount: "+$72", win: true },
+                { raceHorse: "George Ryder - Autumn Glow", betType: "WIN", amount: "+$140", win: true },
+                { raceHorse: "Tancred - Aeliana", betType: "E/W", amount: "+$210", win: true },
               ].map((bet, i) => (
                 <div key={i} className="db-bet-row">
                   <div>
-                    <div className="db-bet-name">{bet.name}</div>
-                    <div className="db-bet-type">{bet.type}</div>
+                    <div className="db-bet-name">{bet.raceHorse}</div>
+                    <div className="db-bet-type">{bet.betType}</div>
                   </div>
                   <div className="db-bet-amount" style={{ color: bet.win ? "#6d28d9" : "#e05252" }}>
                     {bet.amount}
@@ -592,7 +549,7 @@ export default function LandingPage() {
       <section className="stats-section" style={{ padding: 0 }}>
         <div className="stats-grid" ref={statsRef}>
           {[
-            { num: "50+", label: "Beta users" },
+            { num: "Free", label: "Tier to begin" },
             { num: "All", label: "Bet types covered" },
             { num: "AI", label: "Powered insights" },
             { num: "100%", label: "Mobile optimised" },
@@ -635,7 +592,7 @@ export default function LandingPage() {
               {
                 icon: "🤖",
                 title: "AI insights",
-                desc: "With Pro or Elite: personalised analysis of your betting patterns — where your edge is and where it is not.",
+                desc: "With Pro or Elite: personalised analysis of your betting patterns, where your edge is and where it is not.",
               },
               {
                 icon: "🏇",
@@ -660,7 +617,7 @@ export default function LandingPage() {
               {
                 icon: "🏟️",
                 title: "Venue breakdown",
-                desc: "Pro and Elite: see your performance track-by-track — Flemington vs Eagle Farm and beyond.",
+                desc: "Pro and Elite: see your performance track-by-track, from Flemington and Eagle Farm to the rest.",
               },
               {
                 icon: "💰",
@@ -678,7 +635,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* GUIDES — internal links for SEO (same hub as /what-is-punters-journal) */}
+      {/* GUIDES: internal links for SEO (same hub as /what-is-punters-journal) */}
       <section id="guides" style={{ background: "#f5f5f3" }}>
         <div className="section-inner">
           <div style={{ marginBottom: "2.5rem" }}>
@@ -687,7 +644,7 @@ export default function LandingPage() {
               New to systematic <em>tracking?</em>
             </h2>
             <p className="section-sub" style={{ maxWidth: "560px" }}>
-              Start with the explainer and entry-level guides — the same paths we use across the site for Australian horse racing punters.
+              Start with the explainer and entry-level guides we use across the site for Australian horse racing punters.
             </p>
           </div>
           <div className="guides-grid">
@@ -715,52 +672,6 @@ export default function LandingPage() {
               <div className="guide-card-title">Pricing</div>
               <div className="guide-card-desc">Compare Free, Pro, and Elite in one place.</div>
             </a>
-          </div>
-        </div>
-      </section>
-
-      {/* SOCIAL PROOF */}
-      <section style={{ background: "#fafaf9" }}>
-        <div className="section-inner">
-          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-            <div className="section-eyebrow">From the community</div>
-            <h2>
-              What punters are <em>saying</em>
-            </h2>
-          </div>
-          <div className="social-grid">
-            {[
-              {
-                text: "Finally know what my actual ROI is. Turns out I thought I was up but the numbers said otherwise. Game changer for the way I bet.",
-                name: "Jake M.",
-                sub: "Wolfden member",
-                init: "JM",
-              },
-              {
-                text: "Tracked my first 20 bets and the AI insight straight away picked up that I was losing money on wet track favourites. Would never have spotted that myself.",
-                name: "Ryan S.",
-                sub: "Beta tester",
-                init: "RS",
-              },
-              {
-                text: "Tried to do this in Excel for years. The automatic calculations alone make it worth it. On my phone at the track it's mint.",
-                name: "Tom K.",
-                sub: "Founding member",
-                init: "TK",
-              },
-            ].map((t, i) => (
-              <div key={i} className="testimonial">
-                <div className="stars">★★★★★</div>
-                <p className="testimonial-text">&ldquo;{t.text}&rdquo;</p>
-                <div className="testimonial-author">
-                  <div className="author-avatar">{t.init}</div>
-                  <div>
-                    <div className="author-name">{t.name}</div>
-                    <div className="author-sub">{t.sub}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -848,7 +759,7 @@ export default function LandingPage() {
                 <div className="plan-name">{plan.name}</div>
                 <div className="plan-price">
                   <span className="price-amount">${plan.price}</span>
-                  <span className="price-period">/mo{plan.yearlyNote ? ` — ${plan.yearlyNote}` : ""}</span>
+                  <span className="price-period">/mo{plan.yearlyNote ? `, ${plan.yearlyNote}` : ""}</span>
                 </div>
                 <p className="plan-tagline">{plan.tagline}</p>
                 <ul className="plan-features">
@@ -901,7 +812,7 @@ export default function LandingPage() {
         </h2>
         <p>Free to start, takes 2 minutes. Start tracking your bets today.</p>
         <a href="/signup" className="btn-primary btn-light">
-          Start for free — no card needed →
+          Start for free. No card needed →
         </a>
       </section>
 

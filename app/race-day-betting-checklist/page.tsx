@@ -79,7 +79,7 @@ export default function RaceDayChecklistPage() {
             {/* Introduction */}
             <div className="bg-card rounded-xl border border-border p-8 shadow-sm">
               <p className="text-muted-foreground">
-                This checklist ensures you don&apos;t miss critical steps on race day. Use it as a reference before, during, and after race meetings. Serious punters follow systematic processes—this checklist helps you build that discipline.
+                This checklist ensures you don&apos;t miss critical steps on race day. Use it as a reference before, during, and after race meetings. Serious punters follow systematic processes, and this checklist helps you build that discipline.
               </p>
             </div>
 

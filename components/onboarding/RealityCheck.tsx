@@ -66,7 +66,7 @@ export function RealityCheck({ onComplete }: RealityCheckProps) {
         <div className="space-y-6">
           <div className="text-center">
             <p className="text-lg md:text-xl text-foreground mb-8">
-              If we could show you exactly where your betting is leaking money — would you want to know?
+              If we could show you exactly where your betting is leaking money, would you want to know?
             </p>
           </div>
 

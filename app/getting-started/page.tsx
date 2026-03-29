@@ -48,7 +48,7 @@ export default function GettingStartedPage() {
                     <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                       <li>Days 1-3: Log at least 1 bet per day (even if it&apos;s a small one)</li>
                       <li>Days 4-7: Log all bets from one race meeting</li>
-                      <li>Focus on accuracy—get the details right</li>
+                      <li>Focus on accuracy: get the details right</li>
                     </ul>
                   </div>
                   <div>
@@ -78,7 +78,7 @@ export default function GettingStartedPage() {
                 </div>
                 <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
                   <p className="text-sm text-muted-foreground">
-                    <strong className="text-foreground">Tip:</strong> Set a daily reminder on your phone. Consistency is more important than volume—even logging 1 bet per day builds the habit.
+                    <strong className="text-foreground">Tip:</strong> Set a daily reminder on your phone. Consistency is more important than volume. Even logging 1 bet per day builds the habit.
                   </p>
                 </div>
               </div>
@@ -186,7 +186,7 @@ export default function GettingStartedPage() {
                   <div className="border-t border-border pt-4">
                     <strong className="text-foreground">Pre-Race Notes:</strong>
                     <p className="text-muted-foreground mt-1">
-                      Strong form last start, good barrier draw (3), expected to lead or sit second. Market has drifted from 3.80 to 4.50—value at current odds. Pace map suggests front runners have advantage.
+                      Strong form last start, good barrier draw (3), expected to lead or sit second. Market has drifted from 3.80 to 4.50. Value at current odds. Pace map suggests front runners have advantage.
                     </p>
                   </div>
                   <div className="border-t border-border pt-4">
@@ -206,7 +206,7 @@ export default function GettingStartedPage() {
                   <div className="border-t border-border pt-4">
                     <strong className="text-foreground">Post-Race Notes:</strong>
                     <p className="text-muted-foreground mt-1">
-                      Led throughout as expected. Jockey rode perfectly, controlled pace. Value was there—should have been shorter odds. Pace play strategy worked well.
+                      Led throughout as expected. Jockey rode perfectly, controlled pace. Value was there; should have been shorter odds. Pace play strategy worked well.
                     </p>
                   </div>
                 </div>

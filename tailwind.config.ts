@@ -72,7 +72,7 @@ const config: Config = {
         '18': '4.5rem',
         '112': '28rem',
         '128': '32rem',
-        /** iOS home indicator / notch — use with pb-safe, pt-safe-top, etc. */
+        /** iOS home indicator / notch; use with pb-safe, pt-safe-top, etc. */
         safe: "env(safe-area-inset-bottom, 0px)",
         "safe-top": "env(safe-area-inset-top, 0px)",
         "safe-left": "env(safe-area-inset-left, 0px)",

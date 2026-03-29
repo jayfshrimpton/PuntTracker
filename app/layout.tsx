@@ -73,7 +73,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Sync theme before first paint — avoids white flash when using dark mode (must match lib/theme.tsx). */}
+        {/* Sync theme before first paint so dark mode avoids a white flash (must match lib/theme.tsx). */}
         <script
           dangerouslySetInnerHTML={{
             __html: `

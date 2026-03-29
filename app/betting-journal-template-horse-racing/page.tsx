@@ -73,7 +73,7 @@ export default function BettingJournalTemplatePage() {
             {/* Introduction */}
             <div className="bg-card rounded-xl border border-border p-8 shadow-sm">
               <p className="text-muted-foreground">
-                A betting journal is more than just a record of bets—it&apos;s a tool for learning and improvement. This template provides the structure serious punters need to track their bets systematically and identify what actually works.
+                A betting journal is more than just a record of bets. It&apos;s a tool for learning and improvement. This template provides the structure serious punters need to track their bets systematically and identify what actually works.
               </p>
             </div>
 

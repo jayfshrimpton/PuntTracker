@@ -47,7 +47,7 @@
   }
 
   .dark {
-    /* Warm dark — same brand lane as light */
+    /* Warm dark; same brand lane as light */
     --background: 240 6% 10%;
     --foreground: 60 9% 97%;
 

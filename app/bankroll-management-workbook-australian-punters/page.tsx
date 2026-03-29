@@ -92,7 +92,7 @@ export default function BankrollWorkbookPage() {
                   <h2 className="text-2xl font-bold mb-4">Step 1: Calculate Your Starting Bankroll</h2>
                   <div className="space-y-4 text-muted-foreground">
                     <p>
-                      Your starting bankroll is the total amount you can afford to lose without affecting your lifestyle. This is <em>not</em> your entire savings—it&apos;s money specifically allocated for betting.
+                      Your starting bankroll is the total amount you can afford to lose without affecting your lifestyle. This is <em>not</em> your entire savings. It&apos;s money specifically allocated for betting.
                     </p>
                     <div className="bg-muted/50 rounded-lg p-4 space-y-2">
                       <h3 className="font-semibold text-foreground">Bankroll Calculation Formula:</h3>
@@ -144,7 +144,7 @@ export default function BankrollWorkbookPage() {
                         <li><strong>Conservative (1%):</strong> For new punters or those rebuilding after losses</li>
                         <li><strong>Standard (1.5%):</strong> For experienced punters with consistent performance</li>
                         <li><strong>Aggressive (2%):</strong> Only for proven profitable punters with strong ROI</li>
-                        <li>Never exceed 2% per unit—the risk of ruin increases dramatically</li>
+                        <li>Never exceed 2% per unit. The risk of ruin increases dramatically.</li>
                       </ul>
                     </div>
                   </div>
