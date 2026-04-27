@@ -36,6 +36,12 @@ export async function GET() {
       priority: 0.7,
     },
     {
+      url: `${siteUrl}/start`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'monthly',
+      priority: 0.75,
+    },
+    {
       url: `${siteUrl}/race-day-betting-checklist`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',

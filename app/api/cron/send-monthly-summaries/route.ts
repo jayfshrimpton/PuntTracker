@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
-import { fetchUserBetsServer } from '@/lib/api-server';
+import { fetchAllBetsForUserPaginated } from '@/lib/fetch-user-bets-paginated';
 import { calculateMonthlyStats } from '@/lib/stats';
 import { sendMonthlySummaryEmail } from '@/lib/email';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
@@ -127,15 +127,12 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
-        // Fetch bets for last month for this user
-        // We need to use service role to bypass RLS for this query
-        const { data: bets, error: betsFetchError } = await supabase
-          .from('bets')
-          .select('*')
-          .eq('user_id', userId)
-          .gte('bet_date', monthStart.toISOString().split('T')[0])
-          .lte('bet_date', monthEnd.toISOString().split('T')[0])
-          .order('bet_date', { ascending: false });
+        // Fetch bets for last month (paginate past PostgREST default row cap)
+        const { data: bets, error: betsFetchError } = await fetchAllBetsForUserPaginated(
+          supabase,
+          userId,
+          { dateRange: 'custom', customStart: monthStart, customEnd: monthEnd }
+        );
 
         if (betsFetchError) {
           results.failed++;

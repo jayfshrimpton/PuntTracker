@@ -11,11 +11,11 @@ interface InsightInputProps {
 }
 
 const QUICK_PROMPTS = [
+    "What's my best track?",
+    "Where am I losing the most?",
     "What's my most profitable bet type?",
-    "Am I better at favorites or longshots?",
-    "Which venues should I focus on?",
-    "Show my best and worst months",
-    "Analyze my recent form"
+    "Am I better at short-priced runners or roughies?",
+    "How's my recent form?",
 ];
 
 export function InsightInput({ onSend, isLoading }: InsightInputProps) {

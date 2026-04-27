@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { fetchAllBetsForUserPaginated } from '@/lib/fetch-user-bets-paginated';
 import { calculateMonthlyStats } from '@/lib/stats';
 import { sendMonthlySummary } from '@/lib/resend';
 import { subMonths, startOfMonth, endOfMonth } from 'date-fns';
@@ -114,14 +115,11 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
-        // Fetch bets for last month for this user
-        const { data: bets, error: betsFetchError } = await supabase
-          .from('bets')
-          .select('*')
-          .eq('user_id', userId)
-          .gte('bet_date', monthStart.toISOString().split('T')[0])
-          .lte('bet_date', monthEnd.toISOString().split('T')[0])
-          .order('bet_date', { ascending: false });
+        const { data: bets, error: betsFetchError } = await fetchAllBetsForUserPaginated(
+          supabase,
+          userId,
+          { dateRange: 'custom', customStart: monthStart, customEnd: monthEnd }
+        );
 
         if (betsFetchError) {
           results.failed++;

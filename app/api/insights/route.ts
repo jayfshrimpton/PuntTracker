@@ -3,6 +3,13 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@/lib/supabase/server';
 import { withSubscriptionCheck } from '@/lib/api-auth';
 import { UserSubscription, checkUsageLimit, incrementUsage } from '@/lib/subscription-guard';
+import {
+  filterBetsByPeriod,
+  formatDashboardPeriodLabel,
+  normalizeDashboardPeriod,
+} from '@/lib/dashboard-period';
+import type { Bet } from '@/lib/api';
+import { fetchAllBetsForUserPaginated } from '@/lib/fetch-user-bets-paginated';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +22,11 @@ export const POST = withSubscriptionCheck(['pro', 'elite'], async (
     userId: string
 ) => {
     try {
-        const { message: question } = await request.json(); // Map 'message' from frontend to 'question'
+        const body = await request.json();
+        const { message: question, period: periodRaw } = body as {
+            message?: string;
+            period?: unknown;
+        };
 
         if (!question) {
             return NextResponse.json(
@@ -46,13 +57,12 @@ export const POST = withSubscriptionCheck(['pro', 'elite'], async (
             );
         }
 
-        // Fetch user's bets
+        // Fetch user's bets (paginate past PostgREST 1000-row default)
         const supabase = createClient();
-        const { data: bets, error: betsError } = await supabase
-            .from('bets')
-            .select('*')
-            .eq('user_id', userId)
-            .order('bet_date', { ascending: false });
+        const { data: bets, error: betsError } = await fetchAllBetsForUserPaginated(
+            supabase,
+            userId
+        );
 
         if (betsError) {
             console.error('Error fetching bets:', betsError);
@@ -63,28 +73,36 @@ export const POST = withSubscriptionCheck(['pro', 'elite'], async (
         }
 
         // Check if user has enough data
-        if (!bets || bets.length < 5) { // Kept at 5 as per previous logic, user code said 10 but 5 is friendlier for testing
+        const period = normalizeDashboardPeriod(periodRaw ?? { type: 'all' });
+        const periodLabel = formatDashboardPeriodLabel(period);
+        const periodBets = filterBetsByPeriod((bets || []) as Bet[], period);
+
+        // Determine if user wants full history analysis (ignores dashboard period)
+        const isFullAnalysis = /all|history|everything|entire|complete/i.test(question);
+        const workingBets = isFullAnalysis ? (bets || []) as Bet[] : periodBets;
+
+        if (!workingBets || workingBets.length < 5) {
             return NextResponse.json({
-                message: "I need at least 5 bets tracked to provide meaningful insights. Keep logging your bets and check back soon! 🐴",
+                message: isFullAnalysis
+                    ? "I need at least 5 bets tracked to provide meaningful insights. Keep logging your bets and check back soon! 🐴"
+                    : `I need at least 5 bets in your selected period (${periodLabel}) for solid insights. Try widening the date range on your dashboard, or say \"all bets\" to use your full history. 🐴`,
                 needsMoreData: true
             });
         }
 
-        // Determine if user wants full history analysis
-        const isFullAnalysis = /all|history|everything|entire|complete/i.test(question);
-        const betsToAnalyze = isFullAnalysis ? bets : bets.slice(0, 50);
+        const betsToAnalyze = isFullAnalysis ? workingBets : workingBets.slice(0, 50);
 
-        // Calculate basic stats for context
-        const totalBets = bets.length;
-        const totalStake = bets.reduce((sum, bet) => sum + (Number(bet.stake) || 0), 0);
-        const totalPL = bets.reduce((sum, bet) => sum + (Number(bet.profit_loss) || 0), 0);
-        const winners = bets.filter(bet => (Number(bet.profit_loss) || 0) > 0).length;
+        // Calculate basic stats for context (match the working set)
+        const totalBets = workingBets.length;
+        const totalStake = workingBets.reduce((sum, bet) => sum + (Number(bet.stake) || 0), 0);
+        const totalPL = workingBets.reduce((sum, bet) => sum + (Number(bet.profit_loss) || 0), 0);
+        const winners = workingBets.filter(bet => (Number(bet.profit_loss) || 0) > 0).length;
         const strikeRate = ((winners / totalBets) * 100).toFixed(1);
         const roi = totalStake > 0 ? ((totalPL / totalStake) * 100).toFixed(1) : '0.0';
-        const averageOdds = totalBets > 0 ? (bets.reduce((sum, bet) => sum + (Number(bet.price) || 0), 0) / totalBets).toFixed(2) : '0.00';
+        const averageOdds = totalBets > 0 ? (workingBets.reduce((sum, bet) => sum + (Number(bet.price) || 0), 0) / totalBets).toFixed(2) : '0.00';
 
         // Group by bet type
-        const betTypeStats = bets.reduce((acc: any, bet) => {
+        const betTypeStats = workingBets.reduce((acc: any, bet) => {
             const type = bet.bet_type || 'unknown';
             if (!acc[type]) {
                 acc[type] = { count: 0, stake: 0, pl: 0, winners: 0 };
@@ -124,9 +142,15 @@ export const POST = withSubscriptionCheck(['pro', 'elite'], async (
         };
 
         // Create prompt for Gemini
+        const scopeLine = isFullAnalysis
+            ? 'Scope: Full betting history (all dates).'
+            : `Scope: Dashboard period only — ${periodLabel}.`;
+
         const prompt = `You are a professional Australian horse racing betting analyst. You're helping a punter improve their betting performance.
 
-Here is their betting data:
+${scopeLine}
+
+Here is their betting data for this scope:
 - Total bets: ${totalBets}
 - Strike rate: ${strikeRate}%
 - ROI: ${roi}%
@@ -139,7 +163,7 @@ ${Object.entries(betTypeStats).map(([type, stats]: [string, any]) =>
             `${type}: ${stats.count} bets, ${((stats.winners / stats.count) * 100).toFixed(1)}% strike rate, $${stats.pl.toFixed(2)} P&L`
         ).join('\n')}
 
-${isFullAnalysis ? 'Complete Betting History:' : 'Recent Bets (Last 50):'}
+${isFullAnalysis ? 'Complete betting history (all dates):' : `Bets in this period (up to 50 most recent in period):`}
 ${context.recentBets.map(bet =>
             `- ${bet.date}: ${bet.horse} (${bet.venue} ${bet.race}) - ${bet.type} @ $${bet.odds} (Stake: $${bet.stake}, P&L: $${bet.result}, Pos: ${bet.position})${bet.strategies ? ` [Strategies: ${bet.strategies}]` : ''}${bet.notes ? ` [Notes: ${bet.notes}]` : ''}${bet.exotic_numbers ? ` [Exotic: ${bet.exotic_numbers}]` : ''}${bet.selections ? ` [Selections: ${bet.selections}]` : ''}`
         ).join('\n')}

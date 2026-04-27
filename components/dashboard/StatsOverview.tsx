@@ -17,10 +17,13 @@ interface StatsOverviewProps {
         totalBets: number;
         averageOdds: number;
     };
+    /** Bets included in the current period (for empty-state hints) */
     betsCount: number;
+    /** All-time bet count (user may have bets outside the selected period) */
+    totalBetsAllTime: number;
 }
 
-export function StatsOverview({ stats, betsCount }: StatsOverviewProps) {
+export function StatsOverview({ stats, betsCount, totalBetsAllTime }: StatsOverviewProps) {
     const { formatValue } = useCurrency();
 
     return (
@@ -30,7 +33,13 @@ export function StatsOverview({ stats, betsCount }: StatsOverviewProps) {
                 value={formatValue(stats.totalProfit)}
                 icon={DollarSign}
                 valueClassName={stats.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'}
-                description={betsCount === 0 ? "Start betting to see your P&L" : undefined}
+                description={
+                    totalBetsAllTime === 0
+                        ? 'Start betting to see your P&L'
+                        : betsCount === 0
+                          ? 'No bets in this period'
+                          : undefined
+                }
             />
             <StatsCard
                 title="Strike Rate"

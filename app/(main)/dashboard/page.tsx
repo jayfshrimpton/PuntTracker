@@ -2,7 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { fetchUserBets, fetchProfile, type Bet, type DateRange, type Profile } from '@/lib/api';
+import { fetchUserBets, fetchProfile, type Bet, type Profile } from '@/lib/api';
+import {
+  DEFAULT_DASHBOARD_PERIOD,
+  filterBetsByPeriod,
+  loadDashboardPeriodFromStorage,
+  saveDashboardPeriodToStorage,
+  type DashboardPeriodState,
+} from '@/lib/dashboard-period';
 import {
   calculateMonthlyStats,
   calculateStatsByBetType,
@@ -24,7 +31,11 @@ import { Celebration } from '@/components/onboarding/Celebration';
 
 import { EarlyInsightCard } from '@/components/onboarding/EarlyInsightCard';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { ShareDashboardModal } from '@/components/dashboard/ShareDashboardModal';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
+import { Button } from '@/components/ui/button';
+import { Share2 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
 // Dynamically import heavy chart components to improve initial page load
 import dynamic from 'next/dynamic';
 
@@ -41,7 +52,7 @@ const InsightsSection = dynamic(() => import('@/components/dashboard/InsightsSec
 export default function DashboardPage() {
   const [bets, setBets] = useState<Bet[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<DateRange>('all');
+  const [period, setPeriodState] = useState<DashboardPeriodState>(DEFAULT_DASHBOARD_PERIOD);
   const [filteredBets, setFilteredBets] = useState<Bet[]>([]);
   const [userEmail, setUserEmail] = useState<string>('');
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -52,11 +63,19 @@ export default function DashboardPage() {
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
   const [wantsTruth, setWantsTruth] = useState<boolean | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [sampleLoading, setSampleLoading] = useState(false);
   useEffect(() => {
     const dismissed = localStorage.getItem('welcome_dismissed');
     if (dismissed === 'true') {
       setWelcomeDismissed(true);
     }
+    setPeriodState(loadDashboardPeriodFromStorage());
+  }, []);
+
+  const setPeriod = useCallback((next: DashboardPeriodState) => {
+    setPeriodState(next);
+    saveDashboardPeriodToStorage(next);
   }, []);
 
   useEffect(() => {
@@ -101,28 +120,8 @@ export default function DashboardPage() {
   };
 
   const filterBets = useCallback(() => {
-    let filtered = [...bets];
-
-    if (dateRange === 'this-month') {
-      const now = new Date();
-      const start = new Date(now.getFullYear(), now.getMonth(), 1);
-      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      filtered = bets.filter((bet) => {
-        const betDate = new Date(bet.bet_date);
-        return betDate >= start && betDate <= end;
-      });
-    } else if (dateRange === 'last-month') {
-      const now = new Date();
-      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const end = new Date(now.getFullYear(), now.getMonth(), 0);
-      filtered = bets.filter((bet) => {
-        const betDate = new Date(bet.bet_date);
-        return betDate >= start && betDate <= end;
-      });
-    }
-
-    setFilteredBets(filtered);
-  }, [bets, dateRange]);
+    setFilteredBets(filterBetsByPeriod(bets, period));
+  }, [bets, period]);
 
   useEffect(() => {
     filterBets();
@@ -188,6 +187,24 @@ export default function DashboardPage() {
     router.push('/bets');
   };
 
+  const handleLoadSampleBets = async () => {
+    setSampleLoading(true);
+    try {
+      const res = await fetch('/api/onboarding/seed-demo-bets', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showToast(typeof data.error === 'string' ? data.error : 'Could not load sample data', 'error');
+        return;
+      }
+      await loadBets();
+      showToast('Sample bets added — explore your dashboard', 'success');
+    } catch {
+      showToast('Could not load sample data', 'error');
+    } finally {
+      setSampleLoading(false);
+    }
+  };
+
 
 
   const stats = calculateMonthlyStats(filteredBets);
@@ -239,19 +256,36 @@ export default function DashboardPage() {
     <div className="space-y-8 p-4 md:p-8 pt-6">
       <DashboardHeader
         userEmail={userEmail}
-        dateRange={dateRange}
-        setDateRange={setDateRange}
+        period={period}
+        setPeriod={setPeriod}
+        actions={
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2 shrink-0"
+            onClick={() => setShareOpen(true)}
+          >
+            <Share2 className="h-4 w-4" />
+            Share
+          </Button>
+        }
       />
 
-      <StatsOverview stats={stats} betsCount={bets.length} />
+      <StatsOverview
+        stats={stats}
+        betsCount={filteredBets.length}
+        totalBetsAllTime={bets.length}
+      />
 
       {filteredBets.length === 0 ? (
         <>
-          {bets.length > 0 && wantsTruth === true && (
-            <EarlyInsightCard bets={bets} wantsTruth={true} />
-          )}
           {bets.length === 0 ? (
-            <EmptyState onAddFirstBet={handleAddFirstBet} />
+            <EmptyState
+              onAddFirstBet={handleAddFirstBet}
+              onLoadSampleBets={handleLoadSampleBets}
+              sampleLoading={sampleLoading}
+            />
           ) : (
             <div className="rounded-2xl border border-dashed border-border p-12 text-center">
               <p className="text-muted-foreground">No data available for this period.</p>
@@ -269,7 +303,7 @@ export default function DashboardPage() {
             stats={stats}
             afterProfitLossChart={
               wantsTruth === true && bets.length > 0 ? (
-                <EarlyInsightCard bets={bets} wantsTruth={true} />
+                <EarlyInsightCard bets={filteredBets} wantsTruth={true} />
               ) : undefined
             }
           />
@@ -291,11 +325,18 @@ export default function DashboardPage() {
         isOpen={showWelcome}
         onClose={handleWelcomeClose}
         onAddFirstBet={handleAddFirstBet}
+        onTrySampleBets={() => {
+          handleWelcomeClose();
+          void handleLoadSampleBets();
+        }}
+        sampleLoading={sampleLoading}
       />
 
       {showCelebration && (
         <Celebration show={showCelebration} onClose={() => setShowCelebration(false)} />
       )}
+
+      <ShareDashboardModal isOpen={shareOpen} onClose={() => setShareOpen(false)} period={period} />
     </div>
   );
 }

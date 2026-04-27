@@ -361,6 +361,7 @@ function generateWelcomeEmailHTML(data: WelcomeEmailData): string {
   const { userName } = data;
   const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/dashboard`;
   const gettingStartedUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/getting-started`;
+  const quickStartUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/start`;
 
   return `
 <!DOCTYPE html>
@@ -421,6 +422,12 @@ function generateWelcomeEmailHTML(data: WelcomeEmailData): string {
       </a>
     </div>
 
+    <p style="text-align: center; margin-bottom: 24px;">
+      <a href="${quickStartUrl}" style="color: #4f46e5; font-size: 15px; font-weight: 600; text-decoration: none;">
+        Prefer a fast path? 4-step quick start →
+      </a>
+    </p>
+
     <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
       <h3 style="color: #333; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">
         💡 Quick Tips:
@@ -456,6 +463,7 @@ function generateWelcomeEmailText(data: WelcomeEmailData): string {
   const { userName } = data;
   const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/dashboard`;
   const gettingStartedUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/getting-started`;
+  const quickStartUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-url.com'}/start`;
 
   return `
 Welcome to Punter's Journal! 🐴
@@ -483,6 +491,7 @@ You're all set to start tracking your bets, analyzing your performance, and taki
 Get Started:
 Dashboard: ${dashboardUrl}
 Getting Started Guide: ${gettingStartedUrl}
+4-step quick start: ${quickStartUrl}
 
 💡 Quick Tips:
 • Start by adding your first bet - it only takes a few seconds!

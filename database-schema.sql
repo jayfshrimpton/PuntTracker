@@ -388,3 +388,38 @@ CREATE TRIGGER update_usage_tracking_updated_at
   BEFORE UPDATE ON public.usage_tracking
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- shared_dashboard_links (public stats card — read via Next.js API + service role)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.shared_dashboard_links (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  token TEXT NOT NULL,
+  period JSONB NOT NULL DEFAULT '{"type":"all"}'::jsonb,
+  show_profit BOOLEAN NOT NULL DEFAULT true,
+  show_strike_rate BOOLEAN NOT NULL DEFAULT true,
+  show_roi BOOLEAN NOT NULL DEFAULT true,
+  show_turnover BOOLEAN NOT NULL DEFAULT true,
+  display_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  CONSTRAINT shared_dashboard_links_user_id_key UNIQUE (user_id),
+  CONSTRAINT shared_dashboard_links_token_key UNIQUE (token)
+);
+
+CREATE INDEX IF NOT EXISTS shared_dashboard_links_token_idx ON public.shared_dashboard_links(token);
+
+ALTER TABLE public.shared_dashboard_links ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users manage own share links" ON public.shared_dashboard_links;
+CREATE POLICY "Users manage own share links" ON public.shared_dashboard_links
+  FOR ALL
+  USING ((SELECT auth.uid()) = user_id)
+  WITH CHECK ((SELECT auth.uid()) = user_id);
+
+DROP TRIGGER IF EXISTS update_shared_dashboard_links_updated_at ON public.shared_dashboard_links;
+CREATE TRIGGER update_shared_dashboard_links_updated_at
+  BEFORE UPDATE ON public.shared_dashboard_links
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();

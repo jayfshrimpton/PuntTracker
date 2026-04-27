@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withSubscriptionCheck } from '@/lib/api-auth';
+import { fetchAllBetsForUserPaginated } from '@/lib/fetch-user-bets-paginated';
 import { UserSubscription } from '@/lib/subscription-guard';
 
 export const dynamic = 'force-dynamic';
@@ -13,12 +14,10 @@ export const GET = withSubscriptionCheck(['pro', 'elite'], async (
   try {
     const supabase = createClient();
 
-    // Fetch user's bets
-    const { data: bets, error: betsError } = await supabase
-      .from('bets')
-      .select('*')
-      .eq('user_id', userId)
-      .order('bet_date', { ascending: false });
+    const { data: bets, error: betsError } = await fetchAllBetsForUserPaginated(
+      supabase,
+      userId
+    );
 
     if (betsError) {
       console.error('Error fetching bets:', betsError);

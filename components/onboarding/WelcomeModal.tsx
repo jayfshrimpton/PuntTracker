@@ -1,15 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, BookOpen } from 'lucide-react';
+import Link from 'next/link';
+import { X, BookOpen, Sparkles } from 'lucide-react';
 
 interface WelcomeModalProps {
     isOpen: boolean;
     onClose: () => void;
     onAddFirstBet: () => void;
+    onTrySampleBets?: () => void;
+    sampleLoading?: boolean;
 }
 
-export function WelcomeModal({ isOpen, onClose, onAddFirstBet }: WelcomeModalProps) {
+export function WelcomeModal({
+    isOpen,
+    onClose,
+    onAddFirstBet,
+    onTrySampleBets,
+    sampleLoading,
+}: WelcomeModalProps) {
     const [show, setShow] = useState(false);
 
     useEffect(() => {
@@ -47,6 +56,17 @@ export function WelcomeModal({ isOpen, onClose, onAddFirstBet }: WelcomeModalPro
                         >
                             Add My First Bet
                         </button>
+                        {onTrySampleBets && (
+                            <button
+                                type="button"
+                                onClick={onTrySampleBets}
+                                disabled={sampleLoading}
+                                className="w-full py-3 px-4 rounded-xl font-semibold border border-border bg-background hover:bg-muted/80 transition-colors disabled:opacity-60 inline-flex items-center justify-center gap-2"
+                            >
+                                <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                                {sampleLoading ? 'Loading…' : 'Try sample data'}
+                            </button>
+                        )}
                         <button
                             onClick={onClose}
                             className="w-full py-2 px-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -54,7 +74,14 @@ export function WelcomeModal({ isOpen, onClose, onAddFirstBet }: WelcomeModalPro
                             I&apos;ll do it later
                         </button>
 
-                        <div className="pt-2 border-t border-border mt-4">
+                        <div className="pt-2 border-t border-border mt-4 space-y-1">
+                            <Link
+                                href="/start"
+                                className="flex items-center justify-center gap-2 text-sm text-primary hover:underline py-2"
+                                onClick={onClose}
+                            >
+                                4-step quick start
+                            </Link>
                             <a
                                 href="/guide"
                                 className="flex items-center justify-center gap-2 text-sm text-primary hover:underline py-2"
