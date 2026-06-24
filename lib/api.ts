@@ -98,29 +98,25 @@ export async function createBet(
   betData: BetInput
 ): Promise<{ data: Bet | null; error: Error | null }> {
   try {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const res = await fetch('/api/bets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(betData),
+    });
 
-    if (!user) {
-      return { data: null, error: new Error('User not authenticated') };
+    const body = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      const message =
+        typeof body.message === 'string'
+          ? body.message
+          : typeof body.error === 'string'
+            ? body.error
+            : 'Failed to create bet';
+      return { data: null, error: new Error(message) };
     }
 
-    const { data, error } = await supabase
-      .from('bets')
-      .insert({
-        ...betData,
-        user_id: user.id,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      return { data: null, error: new Error(error.message) };
-    }
-
-    return { data: data as Bet, error: null };
+    return { data: body.data as Bet, error: null };
   } catch (error) {
     return {
       data: null,
@@ -194,6 +190,183 @@ export async function deleteBet(
   } catch (error) {
     return {
       error: error instanceof Error ? error : new Error('Unknown error'),
+    };
+  }
+}
+
+// Bank transactions (deposit/withdrawal log -> derived bank history; PUN-71)
+export type BankTransactionType = 'deposit' | 'withdrawal';
+
+export interface BankTransaction {
+  id: string;
+  user_id: string;
+  type: BankTransactionType;
+  amount: number;
+  occurred_on: string; // DATE (yyyy-MM-dd)
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BankTransactionInput {
+  type: BankTransactionType;
+  amount: number;
+  occurred_on: string;
+  note?: string | null;
+}
+
+/**
+ * True when a Supabase error indicates the relation does not exist yet, i.e.
+ * the bank_transactions migration has not been run. Postgres reports 42P01;
+ * PostgREST reports PGRST205 (and historically PGRST200 for schema cache misses).
+ */
+export function isMissingTableError(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) return false;
+  if (error.code === '42P01' || error.code === 'PGRST205' || error.code === 'PGRST200') {
+    return true;
+  }
+  const message = error.message?.toLowerCase() ?? '';
+  return (
+    message.includes('does not exist') ||
+    message.includes('could not find the table') ||
+    message.includes("relation \"public.bank_transactions\"")
+  );
+}
+
+export async function fetchBankTransactions(
+  userId: string
+): Promise<{ data: BankTransaction[] | null; error: Error | null; tableMissing: boolean }> {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('bank_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('occurred_on', { ascending: true });
+
+    if (error) {
+      if (isMissingTableError(error)) {
+        return { data: null, error: null, tableMissing: true };
+      }
+      return { data: null, error: new Error(error.message), tableMissing: false };
+    }
+
+    return { data: (data as BankTransaction[]) ?? [], error: null, tableMissing: false };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error('Unknown error'),
+      tableMissing: false,
+    };
+  }
+}
+
+export async function createBankTransaction(
+  input: BankTransactionInput
+): Promise<{ data: BankTransaction | null; error: Error | null; tableMissing: boolean }> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { data: null, error: new Error('User not authenticated'), tableMissing: false };
+    }
+
+    const { data, error } = await supabase
+      .from('bank_transactions')
+      .insert({ ...input, user_id: user.id })
+      .select()
+      .single();
+
+    if (error) {
+      if (isMissingTableError(error)) {
+        return { data: null, error: null, tableMissing: true };
+      }
+      return { data: null, error: new Error(error.message), tableMissing: false };
+    }
+
+    return { data: data as BankTransaction, error: null, tableMissing: false };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error('Unknown error'),
+      tableMissing: false,
+    };
+  }
+}
+
+export async function updateBankTransaction(
+  id: string,
+  input: Partial<BankTransactionInput>
+): Promise<{ data: BankTransaction | null; error: Error | null; tableMissing: boolean }> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { data: null, error: new Error('User not authenticated'), tableMissing: false };
+    }
+
+    const { data, error } = await supabase
+      .from('bank_transactions')
+      .update({ ...input, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+
+    if (error) {
+      if (isMissingTableError(error)) {
+        return { data: null, error: null, tableMissing: true };
+      }
+      return { data: null, error: new Error(error.message), tableMissing: false };
+    }
+
+    return { data: data as BankTransaction, error: null, tableMissing: false };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error('Unknown error'),
+      tableMissing: false,
+    };
+  }
+}
+
+export async function deleteBankTransaction(
+  id: string
+): Promise<{ error: Error | null; tableMissing: boolean }> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { error: new Error('User not authenticated'), tableMissing: false };
+    }
+
+    const { error } = await supabase
+      .from('bank_transactions')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      if (isMissingTableError(error)) {
+        return { error: null, tableMissing: true };
+      }
+      return { error: new Error(error.message), tableMissing: false };
+    }
+
+    return { error: null, tableMissing: false };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error : new Error('Unknown error'),
+      tableMissing: false,
     };
   }
 }
@@ -319,6 +492,8 @@ export interface Profile {
   display_units: boolean; // Default false
   custom_venues: string[] | null; // User's custom venue names
   custom_bookies: string[] | null; // User's custom bookie names
+  onboarding_completed?: boolean;
+  wants_truth?: boolean | null;
   created_at: string;
   updated_at: string;
 }

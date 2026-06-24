@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { fetchUserBets, fetchProfile, type Bet, type Profile } from '@/lib/api';
+import { fetchUserBets, fetchProfile, fetchBankTransactions, type Bet, type Profile, type BankTransaction } from '@/lib/api';
 import {
   DEFAULT_DASHBOARD_PERIOD,
   filterBetsByPeriod,
@@ -21,18 +21,25 @@ import {
   getDayOfWeekPerformance,
   getWeeklyPerformance,
   getPerformanceInsights,
+  getVenuePerformance,
+  getTopHorsePerformance,
+  getTopRacePerformance,
+  getGoalProgress,
+  getBankrollSummary,
+  getBankBalanceTimeSeries,
   ALL_BET_TYPES,
 } from '@/lib/stats';
 import { useCurrency } from '@/components/CurrencyContext';
 import { useRouter } from 'next/navigation';
 import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
 import { EmptyState } from '@/components/onboarding/EmptyState';
-import { Celebration } from '@/components/onboarding/Celebration';
 
 import { EarlyInsightCard } from '@/components/onboarding/EarlyInsightCard';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { ShareDashboardModal } from '@/components/dashboard/ShareDashboardModal';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
+import { BankrollSummary } from '@/components/dashboard/BankrollSummary';
+import { GoalsProgress } from '@/components/dashboard/GoalsProgress';
 import { Button } from '@/components/ui/button';
 import { Share2 } from 'lucide-react';
 import { showToast } from '@/lib/toast';
@@ -49,13 +56,32 @@ const InsightsSection = dynamic(() => import('@/components/dashboard/InsightsSec
   loading: () => <div className="rounded-2xl border border-border p-8 text-center text-muted-foreground">Loading insights...</div>,
 });
 
+const VenuePerformanceSection = dynamic(() => import('@/components/dashboard/VenuePerformanceSection'), {
+  ssr: false,
+  loading: () => <div className="rounded-2xl border border-border p-8 text-center text-muted-foreground">Loading venue performance...</div>,
+});
+
+const StakingCalculator = dynamic(() => import('@/components/StakingCalculator').then((m) => m.StakingCalculator), {
+  ssr: false,
+});
+
+const BankHistoryChart = dynamic(() => import('@/components/dashboard/BankHistoryChart').then((m) => m.BankHistoryChart), {
+  ssr: false,
+});
+
+const Celebration = dynamic(
+  () => import('@/components/onboarding/Celebration').then((m) => m.Celebration),
+  { ssr: false }
+);
+
 export default function DashboardPage() {
   const [bets, setBets] = useState<Bet[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriodState] = useState<DashboardPeriodState>(DEFAULT_DASHBOARD_PERIOD);
-  const [filteredBets, setFilteredBets] = useState<Bet[]>([]);
   const [userEmail, setUserEmail] = useState<string>('');
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [bankTransactions, setBankTransactions] = useState<BankTransaction[]>([]);
+  const [bankTableMissing, setBankTableMissing] = useState(false);
   const { formatValue, isLoading: currencyLoading } = useCurrency();
   const router = useRouter();
   const [showWelcome, setShowWelcome] = useState(false);
@@ -79,103 +105,83 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    loadBets();
-    loadProfile();
-    checkOnboardingStatus();
+    let cancelled = false;
+
     (async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email) setUserEmail(user.email);
+      try {
+        setLoading(true);
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user || cancelled) {
+          return;
+        }
+
+        if (user.email) {
+          setUserEmail(user.email);
+        }
+
+        const [betsResult, profileResult, bankResult] = await Promise.all([
+          fetchUserBets(user.id, 'all'),
+          fetchProfile(),
+          fetchBankTransactions(user.id),
+        ]);
+
+        if (cancelled) return;
+
+        const userBets = betsResult.data || [];
+        setBets(userBets);
+        setBankTableMissing(bankResult.tableMissing);
+        setBankTransactions(bankResult.data ?? []);
+
+        if (profileResult.data) {
+          setProfile(profileResult.data);
+          setOnboardingCompleted(profileResult.data.onboarding_completed ?? false);
+          setWantsTruth(profileResult.data.wants_truth ?? true);
+        } else {
+          setOnboardingCompleted(false);
+          setWantsTruth(true);
+        }
+
+        if (userBets.length === 0 && !localStorage.getItem('welcome_dismissed')) {
+          setShowWelcome(true);
+        }
+
+        if (userBets.length === 1 && !localStorage.getItem('has_celebrated_first_bet')) {
+          setShowCelebration(true);
+          localStorage.setItem('has_celebrated_first_bet', 'true');
+        }
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  const checkOnboardingStatus = async () => {
-    try {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_completed, wants_truth')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      const completed = profile?.onboarding_completed ?? false;
-      const truth = profile?.wants_truth ?? true; // Default to true so users see insights without prompt
-
-      setOnboardingCompleted(completed);
-      setWantsTruth(truth);
-    } catch (error) {
-      console.error('Error checking onboarding status:', error);
-    }
-  };
-
-  const loadProfile = async () => {
-    const { data } = await fetchProfile();
-    if (data) setProfile(data);
-  };
-
-  const filterBets = useCallback(() => {
-    setFilteredBets(filterBetsByPeriod(bets, period));
-  }, [bets, period]);
-
-  useEffect(() => {
-    filterBets();
-  }, [filterBets]);
 
   const loadBets = async () => {
     try {
-      setLoading(true);
       const supabase = createClient();
-      
-      // Wait for user session to be available (retry up to 5 times)
-      // This handles cases where magic link auth hasn't fully synced yet
-      let user = null;
-      for (let i = 0; i < 5; i++) {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-        
-        if (currentUser) {
-          user = currentUser;
-          break;
-        }
-        
-        // Wait 200ms before retrying
-        if (i < 4) {
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-      }
-
-      if (!user) {
-        return;
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
       const { data } = await fetchUserBets(user.id, 'all');
-      const userBets = data || [];
-      setBets(userBets);
-
-      // FTUE Logic
-      if (userBets.length === 0 && !localStorage.getItem('welcome_dismissed')) {
-        setShowWelcome(true);
-      }
-
-      // Check for first bet celebration
-      if (userBets.length === 1 && !localStorage.getItem('has_celebrated_first_bet')) {
-        setShowCelebration(true);
-        localStorage.setItem('has_celebrated_first_bet', 'true');
-      }
-
+      setBets(data || []);
     } catch (err) {
       console.error('Failed to load bets:', err);
-    } finally {
-      setLoading(false);
     }
   };
+
+  const filteredBets = useMemo(
+    () => filterBetsByPeriod(bets, period),
+    [bets, period]
+  );
 
   const handleWelcomeClose = () => {
     setShowWelcome(false);
@@ -207,18 +213,31 @@ export default function DashboardPage() {
 
 
 
-  const stats = calculateMonthlyStats(filteredBets);
-  const betTypeStats = calculateStatsByBetType(filteredBets);
-  const profitLossData = getProfitLossTimeSeries(filteredBets);
-  const monthlyProfitData = getMonthlyProfitData(filteredBets, 6);
-  const monthlyROIData = getMonthlyROIData(filteredBets, 6);
-  const streakStats = calculateStreaks(filteredBets);
-  const oddsRangeData = getOddsRangePerformance(filteredBets);
-  const dayOfWeekData = getDayOfWeekPerformance(filteredBets);
-  const weeklyData = getWeeklyPerformance(filteredBets, 12);
-  const insights = getPerformanceInsights(filteredBets);
+  const stats = useMemo(() => calculateMonthlyStats(filteredBets), [filteredBets]);
+  const betTypeStats = useMemo(() => calculateStatsByBetType(filteredBets), [filteredBets]);
+  const profitLossData = useMemo(() => getProfitLossTimeSeries(filteredBets), [filteredBets]);
+  const monthlyProfitData = useMemo(() => getMonthlyProfitData(filteredBets, 6), [filteredBets]);
+  const monthlyROIData = useMemo(() => getMonthlyROIData(filteredBets, 6), [filteredBets]);
+  const streakStats = useMemo(() => calculateStreaks(filteredBets), [filteredBets]);
+  const oddsRangeData = useMemo(() => getOddsRangePerformance(filteredBets), [filteredBets]);
+  const dayOfWeekData = useMemo(() => getDayOfWeekPerformance(filteredBets), [filteredBets]);
+  const weeklyData = useMemo(() => getWeeklyPerformance(filteredBets, 12), [filteredBets]);
+  const insights = useMemo(() => getPerformanceInsights(filteredBets), [filteredBets]);
+  const venueData = useMemo(() => getVenuePerformance(filteredBets), [filteredBets]);
+  const topHorses = useMemo(() => getTopHorsePerformance(filteredBets), [filteredBets]);
+  const topRaces = useMemo(() => getTopRacePerformance(filteredBets), [filteredBets]);
 
-  const BET_TYPE_LABELS: Record<string, string> = {
+  const goalProgress = useMemo(() => getGoalProgress(bets, profile), [bets, profile]);
+  const bankroll = useMemo(
+    () => getBankrollSummary(bets, profile, bankTableMissing ? null : bankTransactions),
+    [bets, profile, bankTableMissing, bankTransactions]
+  );
+  const bankBalanceSeries = useMemo(
+    () => getBankBalanceTimeSeries(bets, bankTransactions, profile),
+    [bets, bankTransactions, profile]
+  );
+
+  const BET_TYPE_LABELS: Record<string, string> = useMemo(() => ({
     'win': 'Win',
     'place': 'Place',
     'lay': 'Lay',
@@ -229,18 +248,24 @@ export default function DashboardPage() {
     'trifecta': 'Trifecta',
     'first-four': 'First Four',
     'other': 'Other',
-  };
+  }), []);
 
-  const pieData = ALL_BET_TYPES.map((t) => ({
-    name: BET_TYPE_LABELS[t],
-    value: filteredBets.filter((b) => b.bet_type === (t as any)).length,
-    type: t,
-  }));
+  const pieData = useMemo(
+    () => ALL_BET_TYPES.map((t) => ({
+      name: BET_TYPE_LABELS[t],
+      value: filteredBets.filter((b) => b.bet_type === (t as any)).length,
+      type: t,
+    })),
+    [filteredBets, BET_TYPE_LABELS]
+  );
 
-  const strikeRateData = ALL_BET_TYPES.map((t) => ({
-    type: BET_TYPE_LABELS[t],
-    strikeRate: (betTypeStats as any)[t]?.totalBets > 0 ? (betTypeStats as any)[t].strikeRate : 0,
-  }));
+  const strikeRateData = useMemo(
+    () => ALL_BET_TYPES.map((t) => ({
+      type: BET_TYPE_LABELS[t],
+      strikeRate: (betTypeStats as any)[t]?.totalBets > 0 ? (betTypeStats as any)[t].strikeRate : 0,
+    })),
+    [betTypeStats, BET_TYPE_LABELS]
+  );
 
 
 
@@ -278,6 +303,19 @@ export default function DashboardPage() {
         totalBetsAllTime={bets.length}
       />
 
+      {profile && <BankrollSummary summary={bankroll} />}
+
+      {profile && bankroll.enabled && (
+        <BankHistoryChart
+          enabled={bankroll.enabled}
+          tableMissing={bankTableMissing}
+          series={bankBalanceSeries}
+          starting={bankroll.starting}
+        />
+      )}
+
+      {profile && <GoalsProgress progress={goalProgress} />}
+
       {filteredBets.length === 0 ? (
         <>
           {bets.length === 0 ? (
@@ -310,15 +348,30 @@ export default function DashboardPage() {
 
           {/* Only show advanced insights if user wants truth */}
           {wantsTruth === true && (
-            <InsightsSection
-              insights={insights}
-              streakStats={streakStats}
-              weeklyData={weeklyData}
-              oddsRangeData={oddsRangeData}
-              dayOfWeekData={dayOfWeekData}
-            />
+            <>
+              <InsightsSection
+                insights={insights}
+                streakStats={streakStats}
+                weeklyData={weeklyData}
+                oddsRangeData={oddsRangeData}
+                dayOfWeekData={dayOfWeekData}
+              />
+
+              <VenuePerformanceSection
+                venueData={venueData}
+                topHorses={topHorses}
+                topRaces={topRaces}
+              />
+            </>
           )}
         </>
+      )}
+
+      {profile && (
+        <StakingCalculator
+          defaultBankroll={profile.bankroll_current_amount}
+          unitSize={profile.unit_size}
+        />
       )}
 
       <WelcomeModal

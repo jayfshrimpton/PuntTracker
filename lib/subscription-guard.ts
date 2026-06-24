@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import { cache } from 'react';
 
 export type SubscriptionTier = 'free' | 'pro' | 'elite';
@@ -186,17 +187,15 @@ export async function incrementUsage(
   periodType: 'month' | 'day' = 'month',
   amount: number = 1
 ): Promise<void> {
-  const supabase = createClient();
   const now = new Date();
-  
+
   let periodStart: Date;
   let periodEnd: Date;
-  
+
   if (periodType === 'month') {
     periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
     periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   } else {
-    // For daily, use the date only (time doesn't matter for period boundaries)
     periodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     periodEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   }
@@ -204,32 +203,18 @@ export async function incrementUsage(
   const periodStartStr = periodStart.toISOString().split('T')[0];
   const periodEndStr = periodEnd.toISOString().split('T')[0];
 
-  // Try to update existing record
-  const { data: existing } = await supabase
-    .from('usage_tracking')
-    .select('id, count')
-    .eq('user_id', userId)
-    .eq('resource_type', resourceType)
-    .eq('period_start', periodStartStr)
-    .single();
+  const supabase = createServiceClient();
+  const { error } = await supabase.rpc('increment_usage', {
+    p_user_id: userId,
+    p_resource_type: resourceType,
+    p_period_start: periodStartStr,
+    p_period_end: periodEndStr,
+    p_amount: amount,
+  });
 
-  if (existing) {
-    // Update existing record
-    await supabase
-      .from('usage_tracking')
-      .update({ count: (existing.count || 0) + amount })
-      .eq('id', existing.id);
-  } else {
-    // Insert new record
-    await supabase
-      .from('usage_tracking')
-      .insert({
-        user_id: userId,
-        resource_type: resourceType,
-        count: amount,
-        period_start: periodStartStr,
-        period_end: periodEndStr,
-      });
+  if (error) {
+    console.error('increment_usage RPC failed:', error);
+    throw error;
   }
 }
 

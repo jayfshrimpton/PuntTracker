@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import {
   fetchUserBets,
+  fetchProfile,
   createBet,
   updateBet,
   deleteBet,
@@ -24,12 +26,20 @@ import { Edit2, Trash2, X, Check, PlusCircle, DollarSign, Target, CalendarDays, 
 import { format } from 'date-fns';
 import { showToast } from '@/lib/toast';
 import BetTypesGuide from '@/components/BetTypesGuide';
-import BetCalendar from '@/components/BetCalendar';
 
 import { exportBetsToCSV, downloadCSV } from '@/lib/csv-utils';
 import { getTrackLabel } from '@/lib/racing-tracks';
 import VenueCombobox from '@/components/VenueCombobox';
 import BookieCombobox from '@/components/BookieCombobox';
+
+const BetCalendar = dynamic(() => import('@/components/BetCalendar'), {
+  ssr: false,
+  loading: () => <div className="rounded-xl border border-border p-8 text-center text-muted-foreground">Loading calendar...</div>,
+});
+
+const ImportBetsModal = dynamic(() => import('@/components/ImportBetsModal'), {
+  ssr: false,
+});
 
 import { useCurrency } from '@/components/CurrencyContext';
 
@@ -39,7 +49,18 @@ export default function BetsPage() {
   const [error, setError] = useState<string | null>(null);
   const [editingBet, setEditingBet] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Bet>>({});
+  const [customVenues, setCustomVenues] = useState<string[]>([]);
+  const [customBookies, setCustomBookies] = useState<string[]>([]);
   const { formatValue, isLoading: currencyLoading } = useCurrency();
+
+  const comboboxVenueProps = {
+    customVenues,
+    onCustomVenuesChange: setCustomVenues,
+  };
+  const comboboxBookieProps = {
+    customBookies,
+    onCustomBookiesChange: setCustomBookies,
+  };
 
   // Form state
   const [formData, setFormData] = useState<BetInput>({
@@ -73,6 +94,7 @@ export default function BetsPage() {
 
   const [hasCSVAccess, setHasCSVAccess] = useState(false);
   const [checkingCSVAccess, setCheckingCSVAccess] = useState(true);
+  const [showImportModal, setShowImportModal] = useState(false);
 
 
   type MultiLeg = {
@@ -110,6 +132,11 @@ export default function BetsPage() {
   useEffect(() => {
     loadBets();
     checkCSVFeatureAccess();
+    (async () => {
+      const { data: profile } = await fetchProfile();
+      if (profile?.custom_venues) setCustomVenues(profile.custom_venues);
+      if (profile?.custom_bookies) setCustomBookies(profile.custom_bookies);
+    })();
   }, []);
 
   // Focus horse name input when navigated via keyboard shortcut
@@ -557,8 +584,7 @@ export default function BetsPage() {
 
 
 
-  // Apply filters and search to bets
-  const filteredBets = bets.filter((bet) => {
+  const filteredBets = useMemo(() => bets.filter((bet) => {
     // Enhanced search - searches across multiple fields
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
@@ -614,9 +640,12 @@ export default function BetsPage() {
     if (filters.dateTo && bet.bet_date > filters.dateTo) return false;
 
     return true;
-  });
+  }), [bets, searchQuery, filters]);
 
-  const monthlyStats = calculateMonthlyStats(filteredBets);
+  const monthlyStats = useMemo(
+    () => calculateMonthlyStats(filteredBets),
+    [filteredBets]
+  );
 
   const hasActiveFilters = Object.values(filters).some((value) => value !== '') || searchQuery.trim() !== '';
 
@@ -729,6 +758,7 @@ export default function BetsPage() {
                   Venue <span className="text-muted-foreground font-normal">(optional)</span>
                 </label>
                 <VenueCombobox
+                  {...comboboxVenueProps}
                   value={formData.venue ?? null}
                   onChange={(value) => setFormData({ ...formData, venue: value })}
                 />
@@ -762,6 +792,7 @@ export default function BetsPage() {
                   Bookie <span className="text-muted-foreground font-normal">(optional)</span>
                 </label>
                 <BookieCombobox
+                  {...comboboxBookieProps}
                   value={formData.bookie ?? null}
                   onChange={(value) => setFormData({ ...formData, bookie: value })}
                 />
@@ -1432,7 +1463,7 @@ export default function BetsPage() {
         </div>
       )}
 
-      {/* Bets Table */}
+      {viewMode === 'list' && (
       <div className="bg-card rounded-xl shadow-lg overflow-hidden border border-border">
         <div className="px-6 py-4 border-b border-border bg-gradient-to-r from-blue-600 to-purple-600">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
@@ -1462,6 +1493,30 @@ export default function BetsPage() {
                     {Object.values(filters).filter((v) => v !== '').length}
                   </span>
                 )}
+              </button>
+
+              <button
+                onClick={() => {
+                  if (!hasCSVAccess) {
+                    showToast('Bet import is available for Elite members only. Upgrade to Elite to access this feature.', 'error');
+                    return;
+                  }
+                  setShowImportModal(true);
+                }}
+                disabled={!hasCSVAccess || checkingCSVAccess}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${!hasCSVAccess || checkingCSVAccess
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-60'
+                  : 'bg-white/10 hover:bg-white/20 text-white'
+                  }`}
+                title={!hasCSVAccess ? 'Elite feature - Upgrade to access Bet Import' : 'Import bets from a PDF/Excel/CSV bet summary'}
+              >
+                <Upload className="h-4 w-4" />
+                <span className="hidden sm:inline">
+                  {checkingCSVAccess ? 'Loading...' : !hasCSVAccess ? 'Import (Elite)' : 'Import'}
+                </span>
+                <span className="sm:hidden">
+                  {checkingCSVAccess ? '...' : 'Import'}
+                </span>
               </button>
 
               <button
@@ -1662,6 +1717,7 @@ export default function BetsPage() {
                   Venue
                 </label>
                 <VenueCombobox
+                  {...comboboxVenueProps}
                   value={filters.venue}
                   onChange={(value) => setFilters({ ...filters, venue: value || '' })}
                 />
@@ -1737,6 +1793,7 @@ export default function BetsPage() {
                       <div className="col-span-2">
                         <label className="text-xs font-medium text-muted-foreground">Venue</label>
                         <VenueCombobox
+                  {...comboboxVenueProps}
                           value={editForm.venue || null}
                           onChange={(value) => setEditForm({ ...editForm, venue: value })}
                           className="text-sm"
@@ -1796,6 +1853,7 @@ export default function BetsPage() {
                       <div className="col-span-2">
                         <label className="text-xs font-medium text-muted-foreground">Bookie</label>
                         <BookieCombobox
+                  {...comboboxBookieProps}
                           value={editForm.bookie || null}
                           onChange={(value) => setEditForm({ ...editForm, bookie: value })}
                           className="text-sm"
@@ -2041,6 +2099,7 @@ export default function BetsPage() {
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <VenueCombobox
+                  {...comboboxVenueProps}
                             value={editForm.venue || null}
                             onChange={(value) => setEditForm({ ...editForm, venue: value })}
                             className="text-sm"
@@ -2048,6 +2107,7 @@ export default function BetsPage() {
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <BookieCombobox
+                  {...comboboxBookieProps}
                             value={editForm.bookie || null}
                             onChange={(value) => setEditForm({ ...editForm, bookie: value })}
                             className="text-sm"
@@ -2346,6 +2406,14 @@ export default function BetsPage() {
           </table >
         </div >
       </div >
+      )}
+
+      {showImportModal && (
+        <ImportBetsModal
+          onClose={() => setShowImportModal(false)}
+          onImported={() => loadBets()}
+        />
+      )}
     </div >
   );
 }

@@ -3,45 +3,37 @@
 import { useState, useRef, useEffect } from 'react';
 import { RACE_TRACKS, getTracksByState, getTrackLabel, getRacingTypeIcon, getRacingTypeLabel, getCountryLabel, getCountryFlag, type RacingType, type Country, type RaceTrack } from '@/lib/racing-tracks';
 import { ChevronDown, X, Plus } from 'lucide-react';
-import { fetchProfile, updateProfile } from '@/lib/api';
+import { updateProfile } from '@/lib/api';
 
 interface VenueComboboxProps {
   value: string | null;
   onChange: (value: string | null) => void;
   className?: string;
+  customVenues?: string[];
+  onCustomVenuesChange?: (venues: string[]) => void;
 }
 
-export default function VenueCombobox({ value, onChange, className = '' }: VenueComboboxProps) {
+export default function VenueCombobox({
+  value,
+  onChange,
+  className = '',
+  customVenues: customVenuesProp = [],
+  onCustomVenuesChange,
+}: VenueComboboxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [customVenues, setCustomVenues] = useState<string[]>([]);
+  const customVenues = customVenuesProp;
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load custom venues from user profile
-  useEffect(() => {
-    const loadCustomVenues = async () => {
-      try {
-        const { data: profile } = await fetchProfile();
-        if (profile?.custom_venues) {
-          setCustomVenues(profile.custom_venues);
-        }
-      } catch (error) {
-        console.error('Failed to load custom venues:', error);
-      }
-    };
-    loadCustomVenues();
-  }, []);
-
-  // Save custom venue to profile
   const saveCustomVenue = async (venueName: string) => {
     try {
       const updatedVenues = [...customVenues, venueName];
       await updateProfile({ custom_venues: updatedVenues });
-      setCustomVenues(updatedVenues);
+      onCustomVenuesChange?.(updatedVenues);
     } catch (error) {
       console.error('Failed to save custom venue:', error);
     }

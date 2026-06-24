@@ -1,38 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { showToast } from '@/lib/toast';
 import { Lock } from 'lucide-react';
 
-// Admin emails that have automatic access
-const ADMIN_EMAILS = [
-  'jayfshrimpton@gmail.com',
-  // Add more admin emails here as needed
-];
-
 export default function AdminLoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  // Redirect admin users to dashboard if already logged in
-  useEffect(() => {
-    const checkAdmin = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-        router.push('/admin/dashboard');
-      }
-    };
-    
-    checkAdmin();
-  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { sendVerificationEmail, sendPasswordResetEmail, sendMonthlySummary } from '@/lib/resend';
+import { sendMonthlySummary } from '@/lib/resend';
 
 export const dynamic = 'force-dynamic';
 
 interface EmailSendRequest {
-  type: 'verification' | 'reset' | 'summary';
+  type: 'summary';
   to: string;
   data: {
-    verificationUrl?: string;
-    resetUrl?: string;
     userName?: string;
     summaryData?: {
       totalBets: number;
@@ -28,12 +26,20 @@ export async function POST(request: NextRequest) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // For verification and reset emails, allow unauthenticated requests
-    // For summary emails, require authentication
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body: EmailSendRequest = await request.json();
     const { type, to, data } = body;
 
-    // Validate email address
+    if (type !== 'summary') {
+      return NextResponse.json(
+        { error: 'Invalid email type. Only summary emails are supported via this endpoint.' },
+        { status: 400 }
+      );
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(to)) {
       return NextResponse.json(
@@ -42,99 +48,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For summary emails, require authentication
-    if (type === 'summary') {
-      if (!user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-
-      // Verify user is requesting their own email or is admin
-      if (user.email !== to) {
-        // Check if user is admin (you can add admin check here)
-        // For now, only allow users to send to their own email
-        return NextResponse.json(
-          { error: 'You can only send summary emails to your own address' },
-          { status: 403 }
-        );
-      }
+    if (user.email !== to) {
+      return NextResponse.json(
+        { error: 'You can only send summary emails to your own address' },
+        { status: 403 }
+      );
     }
 
-    // Rate limiting: Check if user has sent too many emails recently
-    // (Simple in-memory rate limiting - in production, use Redis or similar)
-    // For now, we'll rely on Resend's rate limiting
-
-    let result;
-
-    switch (type) {
-      case 'verification':
-        if (!data.verificationUrl) {
-          return NextResponse.json(
-            { error: 'verificationUrl is required for verification emails' },
-            { status: 400 }
-          );
-        }
-        result = await sendVerificationEmail({
-          to,
-          verificationUrl: data.verificationUrl,
-          userName: data.userName,
-        });
-        break;
-
-      case 'reset':
-        if (!data.resetUrl) {
-          return NextResponse.json(
-            { error: 'resetUrl is required for password reset emails' },
-            { status: 400 }
-          );
-        }
-        result = await sendPasswordResetEmail({
-          to,
-          resetUrl: data.resetUrl,
-          userName: data.userName,
-        });
-        break;
-
-      case 'summary':
-        if (!data.summaryData) {
-          return NextResponse.json(
-            { error: 'summaryData is required for summary emails' },
-            { status: 400 }
-          );
-        }
-        result = await sendMonthlySummary({
-          to,
-          userName: data.userName,
-          summaryData: data.summaryData,
-        });
-        break;
-
-      default:
-        return NextResponse.json(
-          { error: 'Invalid email type. Must be verification, reset, or summary' },
-          { status: 400 }
-        );
+    if (!data.summaryData) {
+      return NextResponse.json(
+        { error: 'summaryData is required for summary emails' },
+        { status: 400 }
+      );
     }
+
+    const result = await sendMonthlySummary({
+      to,
+      userName: data.userName,
+      summaryData: data.summaryData,
+    });
 
     if (!result.success) {
+      console.error('Failed to send summary email:', result.error);
       return NextResponse.json(
-        { error: 'Failed to send email', details: result.error },
+        { error: 'Failed to send email' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: `${type} email sent successfully`,
+      message: 'summary email sent successfully',
     });
   } catch (error) {
     console.error('Error sending email:', error);
     return NextResponse.json(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
-

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAuthorizedCronRequest } from '@/lib/cron-auth';
 import { createServiceClient } from '@/lib/supabase/service';
 import { fetchAllBetsForUserPaginated } from '@/lib/fetch-user-bets-paginated';
 import { calculateMonthlyStats } from '@/lib/stats';
@@ -14,13 +15,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify the request has the correct secret token or is from Vercel Cron
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-    const vercelCronSecret = request.headers.get('x-vercel-cron-secret');
-
-    // Allow Vercel Cron or Bearer token authentication
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}` && vercelCronSecret !== cronSecret) {
+    if (!isAuthorizedCronRequest(request)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

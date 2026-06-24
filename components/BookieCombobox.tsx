@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, X, Plus } from 'lucide-react';
-import { fetchProfile, updateProfile } from '@/lib/api';
+import { updateProfile } from '@/lib/api';
 
 // Predefined list of popular Australian bookmakers
 const PREDEFINED_BOOKIES = [
@@ -23,39 +23,31 @@ interface BookieComboboxProps {
   value: string | null;
   onChange: (value: string | null) => void;
   className?: string;
+  customBookies?: string[];
+  onCustomBookiesChange?: (bookies: string[]) => void;
 }
 
-export default function BookieCombobox({ value, onChange, className = '' }: BookieComboboxProps) {
+export default function BookieCombobox({
+  value,
+  onChange,
+  className = '',
+  customBookies: customBookiesProp = [],
+  onCustomBookiesChange,
+}: BookieComboboxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [customBookies, setCustomBookies] = useState<string[]>([]);
+  const customBookies = customBookiesProp;
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load custom bookies from user profile
-  useEffect(() => {
-    const loadCustomBookies = async () => {
-      try {
-        const { data: profile } = await fetchProfile();
-        if (profile?.custom_bookies) {
-          setCustomBookies(profile.custom_bookies);
-        }
-      } catch (error) {
-        console.error('Failed to load custom bookies:', error);
-      }
-    };
-    loadCustomBookies();
-  }, []);
-
-  // Save custom bookie to profile
   const saveCustomBookie = async (bookieName: string) => {
     try {
       const updatedBookies = [...customBookies, bookieName];
       await updateProfile({ custom_bookies: updatedBookies });
-      setCustomBookies(updatedBookies);
+      onCustomBookiesChange?.(updatedBookies);
     } catch (error) {
       console.error('Failed to save custom bookie:', error);
     }

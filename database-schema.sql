@@ -47,6 +47,9 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFA
 
 COMMENT ON COLUMN public.profiles.custom_venues IS 'Custom venue names not in the predefined list';
 
+CREATE INDEX IF NOT EXISTS profiles_stripe_customer_id_idx ON public.profiles(stripe_customer_id)
+  WHERE stripe_customer_id IS NOT NULL;
+
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
@@ -60,6 +63,24 @@ CREATE POLICY "Users can insert own profile" ON public.profiles
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles
   FOR UPDATE USING ((SELECT auth.uid()) = id);
+
+CREATE OR REPLACE FUNCTION public.protect_profile_server_columns()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.stripe_customer_id IS DISTINCT FROM OLD.stripe_customer_id THEN
+    NEW.stripe_customer_id := OLD.stripe_customer_id;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS protect_profile_server_columns ON public.profiles;
+CREATE TRIGGER protect_profile_server_columns
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.protect_profile_server_columns();
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
@@ -109,6 +130,7 @@ CREATE TABLE IF NOT EXISTS public.bets (
 
 CREATE INDEX IF NOT EXISTS bets_user_id_idx ON public.bets(user_id);
 CREATE INDEX IF NOT EXISTS bets_bet_date_idx ON public.bets(bet_date);
+CREATE INDEX IF NOT EXISTS bets_user_id_bet_date_idx ON public.bets(user_id, bet_date DESC);
 
 ALTER TABLE public.bets ENABLE ROW LEVEL SECURITY;
 
@@ -198,6 +220,8 @@ CREATE TABLE IF NOT EXISTS public.subscriptions (
     ]::text[])
   )
 );
+
+CREATE INDEX IF NOT EXISTS subscriptions_user_id_idx ON public.subscriptions(user_id);
 
 ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 
@@ -375,13 +399,35 @@ DROP POLICY IF EXISTS "Users can view own usage" ON public.usage_tracking;
 CREATE POLICY "Users can view own usage" ON public.usage_tracking
   FOR SELECT USING ((SELECT auth.uid()) = user_id);
 
-DROP POLICY IF EXISTS "Users can insert own usage" ON public.usage_tracking;
-CREATE POLICY "Users can insert own usage" ON public.usage_tracking
-  FOR INSERT WITH CHECK ((SELECT auth.uid()) = user_id);
+-- Writes to usage_tracking are server-only (service role / increment_usage RPC).
+CREATE OR REPLACE FUNCTION public.increment_usage(
+  p_user_id UUID,
+  p_resource_type TEXT,
+  p_period_start DATE,
+  p_period_end DATE,
+  p_amount INTEGER DEFAULT 1
+)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF p_amount IS NULL OR p_amount < 1 THEN
+    RAISE EXCEPTION 'increment amount must be >= 1';
+  END IF;
 
-DROP POLICY IF EXISTS "Users can update own usage" ON public.usage_tracking;
-CREATE POLICY "Users can update own usage" ON public.usage_tracking
-  FOR UPDATE USING ((SELECT auth.uid()) = user_id);
+  INSERT INTO public.usage_tracking (user_id, resource_type, count, period_start, period_end)
+  VALUES (p_user_id, p_resource_type, p_amount, p_period_start, p_period_end)
+  ON CONFLICT (user_id, resource_type, period_start)
+  DO UPDATE SET
+    count = public.usage_tracking.count + EXCLUDED.count,
+    updated_at = timezone('utc'::text, now());
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.increment_usage(UUID, TEXT, DATE, DATE, INTEGER) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.increment_usage(UUID, TEXT, DATE, DATE, INTEGER) TO service_role;
 
 DROP TRIGGER IF EXISTS update_usage_tracking_updated_at ON public.usage_tracking;
 CREATE TRIGGER update_usage_tracking_updated_at
@@ -421,5 +467,50 @@ CREATE POLICY "Users manage own share links" ON public.shared_dashboard_links
 DROP TRIGGER IF EXISTS update_shared_dashboard_links_updated_at ON public.shared_dashboard_links;
 CREATE TRIGGER update_shared_dashboard_links_updated_at
   BEFORE UPDATE ON public.shared_dashboard_links
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- bank_transactions (deposit/withdrawal log -> derived bank history; PUN-71)
+-- Also mirrored in migrations/0001_bank_transactions.sql for one-off runs.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.bank_transactions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  amount NUMERIC(10,2) NOT NULL,
+  occurred_on DATE NOT NULL,
+  note TEXT,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  CONSTRAINT bank_transactions_type_check CHECK (type = ANY (ARRAY['deposit','withdrawal']::text[])),
+  CONSTRAINT bank_transactions_amount_check CHECK (amount > 0)
+);
+
+CREATE INDEX IF NOT EXISTS bank_transactions_user_id_idx ON public.bank_transactions(user_id);
+CREATE INDEX IF NOT EXISTS bank_transactions_occurred_on_idx ON public.bank_transactions(occurred_on);
+CREATE INDEX IF NOT EXISTS bank_transactions_user_occurred_on_idx ON public.bank_transactions(user_id, occurred_on DESC);
+
+ALTER TABLE public.bank_transactions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own bank transactions" ON public.bank_transactions;
+CREATE POLICY "Users can view own bank transactions" ON public.bank_transactions
+  FOR SELECT USING ((SELECT auth.uid()) = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own bank transactions" ON public.bank_transactions;
+CREATE POLICY "Users can insert own bank transactions" ON public.bank_transactions
+  FOR INSERT WITH CHECK ((SELECT auth.uid()) = user_id);
+
+DROP POLICY IF EXISTS "Users can update own bank transactions" ON public.bank_transactions;
+CREATE POLICY "Users can update own bank transactions" ON public.bank_transactions
+  FOR UPDATE USING ((SELECT auth.uid()) = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own bank transactions" ON public.bank_transactions;
+CREATE POLICY "Users can delete own bank transactions" ON public.bank_transactions
+  FOR DELETE USING ((SELECT auth.uid()) = user_id);
+
+DROP TRIGGER IF EXISTS update_bank_transactions_updated_at ON public.bank_transactions;
+CREATE TRIGGER update_bank_transactions_updated_at
+  BEFORE UPDATE ON public.bank_transactions
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();

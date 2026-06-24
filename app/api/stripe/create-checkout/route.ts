@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { stripe, getOrCreateStripeCustomer, PAYMENTS_ENABLED } from '@/lib/stripe/stripe';
+import { getProPriceIds, getElitePriceIds } from '@/lib/stripe/price-tier';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -28,6 +29,16 @@ export async function POST(req: Request) {
         if (!priceId) {
             return new NextResponse('Price ID is required', { status: 400 });
         }
+
+        const allowedPriceIds = new Set([...getProPriceIds(), ...getElitePriceIds()]);
+        if (!allowedPriceIds.has(priceId)) {
+            return new NextResponse(
+                JSON.stringify({ message: 'Invalid price ID' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            );
+        }
+
+        const safeQuantity = Math.min(Math.max(1, Math.floor(Number(quantity) || 1)), 1);
 
         // Verify the price exists before creating checkout session
         try {
@@ -58,7 +69,7 @@ export async function POST(req: Request) {
 
             return new NextResponse(
                 JSON.stringify({
-                    message: `Price ID "${priceId}" not found. Please verify it exists in your Stripe ${process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_') ? 'test' : 'live'} account. Visit /api/stripe/debug to see available prices.`
+                    message: `Price ID "${priceId}" not found. Please verify it exists in your Stripe ${process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_') ? 'test' : 'live'} account.`
                 }),
                 { status: 400, headers: { 'Content-Type': 'application/json' } }
             );
@@ -72,7 +83,7 @@ export async function POST(req: Request) {
             line_items: [
                 {
                     price: priceId,
-                    quantity,
+                    quantity: safeQuantity,
                 },
             ],
             mode: 'subscription',
@@ -86,8 +97,8 @@ export async function POST(req: Request) {
             success_url: `${process.env.NEXT_PUBLIC_APP_URL}/subscription?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
             metadata: {
-                userId: user.id,
                 ...metadata,
+                userId: user.id,
             },
         });
 

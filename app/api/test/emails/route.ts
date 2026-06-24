@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAuthorizedInternalRequest } from '@/lib/cron-auth';
 import { testVerificationEmail, testPasswordResetEmail, testMonthlySummaryEmail, testLaunchAnnouncementEmail, testAllEmails } from '@/lib/test-emails';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Protect with admin secret
-    const authHeader = request.headers.get('authorization');
-    const adminSecret = process.env.ADMIN_SECRET || process.env.CRON_SECRET;
-
-    if (adminSecret && authHeader !== `Bearer ${adminSecret}`) {
+    if (!isAuthorizedInternalRequest(request)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

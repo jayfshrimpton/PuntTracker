@@ -1,5 +1,14 @@
-import { Bet } from './api';
-import { format, startOfMonth, endOfMonth, subMonths, getDay } from 'date-fns';
+import { Bet, Profile, BankTransaction } from './api';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+  subMonths,
+  getDay,
+  isWithinInterval,
+} from 'date-fns';
 
 export interface MonthlyStats {
   totalStake: number;
@@ -526,6 +535,58 @@ export function getTopRacePerformance(bets: Bet[], limit: number = 10): RacePerf
   return raceStats;
 }
 
+// Venue/Track Performance (Top performing venues)
+export interface VenuePerformance {
+  venue: string;
+  bets: number;
+  wins: number;
+  profit: number;
+  strikeRate: number;
+  roi: number;
+}
+
+export function getVenuePerformance(bets: Bet[], limit: number = 10): VenuePerformance[] {
+  const venueMap: Record<string, Bet[]> = {};
+
+  bets.forEach((bet) => {
+    const venue = (bet.venue || '').trim();
+    // Skip bets without a venue or with an explicit "Unknown" placeholder
+    if (!venue || venue.toLowerCase() === 'unknown') return;
+    if (!venueMap[venue]) {
+      venueMap[venue] = [];
+    }
+    venueMap[venue].push(bet);
+  });
+
+  const venueStats: VenuePerformance[] = Object.entries(venueMap)
+    .map(([venue, venueBets]) => {
+      const wins = venueBets.filter(
+        (bet) => bet.profit_loss !== null && Number(bet.profit_loss) > 0
+      ).length;
+      const profit = venueBets.reduce(
+        (sum, bet) => sum + (bet.profit_loss ? Number(bet.profit_loss) : 0),
+        0
+      );
+      const totalStake = venueBets.reduce(
+        (sum, bet) => sum + (Number(bet.stake) || 0),
+        0
+      );
+
+      return {
+        venue,
+        bets: venueBets.length,
+        wins,
+        profit,
+        strikeRate: venueBets.length > 0 ? (wins / venueBets.length) * 100 : 0,
+        roi: totalStake > 0 ? (profit / totalStake) * 100 : 0,
+      };
+    })
+    .sort((a, b) => b.profit - a.profit)
+    .slice(0, limit);
+
+  return venueStats;
+}
+
 // Weekly Performance Trend
 export interface WeeklyPerformance {
   week: string;
@@ -651,4 +712,234 @@ export function getPerformanceInsights(bets: Bet[]): Insight[] {
 
   // Sort by priority (highest impact first)
   return insights.sort((a, b) => b.priority - a.priority).slice(0, 3); // Return top 3 insights
+}
+
+// Goals & Bankroll
+export interface GoalProgress {
+  id: string;
+  label: string;
+  current: number;
+  target: number;
+  pct: number; // 0-100, capped for display
+  met: boolean;
+  unit: 'currency' | 'percent';
+}
+
+function betsWithinInterval(bets: Bet[], start: Date, end: Date): Bet[] {
+  return bets.filter((bet) => {
+    if (!bet.bet_date) return false;
+    const date = new Date(bet.bet_date);
+    if (isNaN(date.getTime())) return false;
+    return isWithinInterval(date, { start, end });
+  });
+}
+
+/**
+ * Compute progress toward each enabled, non-null goal/target. Goals are measured
+ * against fixed calendar periods (current month / year), NOT the dashboard period.
+ */
+export function getGoalProgress(
+  bets: Bet[],
+  profile: Profile | null | undefined
+): GoalProgress[] {
+  if (!profile || !profile.goals_enabled) return [];
+
+  const now = new Date();
+  const monthBets = betsWithinInterval(bets, startOfMonth(now), endOfMonth(now));
+  const yearBets = betsWithinInterval(bets, startOfYear(now), endOfYear(now));
+
+  const monthStats = calculateMonthlyStats(monthBets);
+  const yearStats = calculateMonthlyStats(yearBets);
+
+  const progress: GoalProgress[] = [];
+
+  const pushTarget = (
+    id: string,
+    label: string,
+    current: number,
+    target: number | null,
+    unit: 'currency' | 'percent'
+  ) => {
+    if (target === null || target === undefined) return;
+    const numericTarget = Number(target);
+    if (!numericTarget || isNaN(numericTarget)) return;
+    const rawPct = (current / numericTarget) * 100;
+    const pct = Math.max(0, Math.min(100, rawPct));
+    progress.push({
+      id,
+      label,
+      current,
+      target: numericTarget,
+      pct,
+      met: current >= numericTarget,
+      unit,
+    });
+  };
+
+  pushTarget(
+    'monthly_profit',
+    'Monthly Profit',
+    monthStats.totalProfit,
+    profile.monthly_profit_target,
+    'currency'
+  );
+  pushTarget(
+    'monthly_roi',
+    'Monthly ROI',
+    monthStats.roi,
+    profile.monthly_roi_target,
+    'percent'
+  );
+  pushTarget(
+    'strike_rate',
+    'Strike Rate',
+    monthStats.strikeRate,
+    profile.strike_rate_target,
+    'percent'
+  );
+  pushTarget(
+    'annual_profit',
+    'Annual Profit',
+    yearStats.totalProfit,
+    profile.annual_profit_target,
+    'currency'
+  );
+
+  return progress;
+}
+
+export interface BankrollSummary {
+  enabled: boolean;
+  starting: number;
+  current: number;
+  allTimeProfit: number;
+  trueRoi: number; // profit relative to starting bank
+  growthPct: number; // (current - starting) / starting
+  suggestedUnit: number; // ~1.5% of current bank (display hint)
+}
+
+function sumBetProfit(bets: Bet[]): number {
+  return bets.reduce(
+    (sum, bet) => sum + (bet.profit_loss ? Number(bet.profit_loss) : 0),
+    0
+  );
+}
+
+/** Net deposits (deposits minus withdrawals) across all bank transactions. */
+export function getNetDeposits(transactions: BankTransaction[] | null | undefined): number {
+  if (!transactions || transactions.length === 0) return 0;
+  return transactions.reduce((sum, tx) => {
+    const amount = Number(tx.amount) || 0;
+    return sum + (tx.type === 'withdrawal' ? -amount : amount);
+  }, 0);
+}
+
+/**
+ * Derived current bank: starting + net deposits/withdrawals + cumulative bet P/L.
+ * This replaces the previously manual `bankroll_current_amount` figure.
+ */
+export function getDerivedCurrentBank(
+  bets: Bet[],
+  transactions: BankTransaction[] | null | undefined,
+  profile: Profile | null | undefined
+): number {
+  const starting = Number(profile?.bankroll_starting_amount ?? 0) || 0;
+  return starting + getNetDeposits(transactions) + sumBetProfit(bets);
+}
+
+/**
+ * Summarise bankroll figures and true ROI against the starting bank.
+ * `enabled` is false when tracking is off or no starting amount is set so the
+ * UI can self-hide. When `transactions` is provided the current bank is derived
+ * (starting + net deposits/withdrawals + bet P/L); otherwise it falls back to
+ * the stored `bankroll_current_amount` (e.g. before the migration is run).
+ */
+export function getBankrollSummary(
+  bets: Bet[],
+  profile: Profile | null | undefined,
+  transactions?: BankTransaction[] | null
+): BankrollSummary {
+  const starting = Number(profile?.bankroll_starting_amount ?? 0) || 0;
+  const allTimeProfit = sumBetProfit(bets);
+  const current =
+    transactions !== undefined && transactions !== null
+      ? getDerivedCurrentBank(bets, transactions, profile)
+      : Number(profile?.bankroll_current_amount ?? 0) || 0;
+
+  const enabled = Boolean(profile?.bankroll_tracking_enabled) && starting > 0;
+  const trueRoi = starting > 0 ? (allTimeProfit / starting) * 100 : 0;
+  const growthPct = starting > 0 ? ((current - starting) / starting) * 100 : 0;
+  const suggestedUnit = current > 0 ? current * 0.015 : 0;
+
+  return {
+    enabled,
+    starting,
+    current,
+    allTimeProfit,
+    trueRoi,
+    growthPct,
+    suggestedUnit,
+  };
+}
+
+export interface BankBalancePoint {
+  date: string; // ISO date of the event (or 'start' baseline)
+  balance: number; // running bank balance after this event
+  label: string; // short description for tooltip
+  kind: 'start' | 'bet' | 'deposit' | 'withdrawal';
+}
+
+/**
+ * Build a date-sorted running bank balance series by merging bet P/L events
+ * (by bet_date) and deposit/withdrawal events (by occurred_on), seeded with a
+ * "Start" baseline at the starting bankroll. Returns [] when no starting amount.
+ */
+export function getBankBalanceTimeSeries(
+  bets: Bet[],
+  transactions: BankTransaction[] | null | undefined,
+  profile: Profile | null | undefined
+): BankBalancePoint[] {
+  const starting = Number(profile?.bankroll_starting_amount ?? 0) || 0;
+  if (!profile?.bankroll_tracking_enabled || starting <= 0) return [];
+
+  type Event = { time: number; date: string; delta: number; kind: BankBalancePoint['kind']; label: string };
+  const events: Event[] = [];
+
+  bets.forEach((bet) => {
+    if (!bet.bet_date) return;
+    const time = new Date(bet.bet_date).getTime();
+    if (isNaN(time)) return;
+    const delta = bet.profit_loss ? Number(bet.profit_loss) : 0;
+    if (delta === 0) return;
+    events.push({ time, date: bet.bet_date, delta, kind: 'bet', label: 'Bet result' });
+  });
+
+  (transactions ?? []).forEach((tx) => {
+    if (!tx.occurred_on) return;
+    const time = new Date(tx.occurred_on).getTime();
+    if (isNaN(time)) return;
+    const amount = Number(tx.amount) || 0;
+    if (amount === 0) return;
+    if (tx.type === 'withdrawal') {
+      events.push({ time, date: tx.occurred_on, delta: -amount, kind: 'withdrawal', label: 'Withdrawal' });
+    } else {
+      events.push({ time, date: tx.occurred_on, delta: amount, kind: 'deposit', label: 'Deposit' });
+    }
+  });
+
+  // Stable chronological sort; deposits/withdrawals before bets on the same day.
+  const kindOrder: Record<BankBalancePoint['kind'], number> = { start: 0, deposit: 1, withdrawal: 1, bet: 2 };
+  events.sort((a, b) => (a.time - b.time) || (kindOrder[a.kind] - kindOrder[b.kind]));
+
+  const series: BankBalancePoint[] = [
+    { date: 'start', balance: starting, label: 'Starting bank', kind: 'start' },
+  ];
+
+  let running = starting;
+  events.forEach((event) => {
+    running += event.delta;
+    series.push({ date: event.date, balance: running, label: event.label, kind: event.kind });
+  });
+
+  return series;
 }

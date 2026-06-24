@@ -2,11 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { fetchProfile, updateProfile, type Profile } from '@/lib/api';
+import {
+  fetchProfile,
+  updateProfile,
+  fetchUserBets,
+  fetchBankTransactions,
+  createBankTransaction,
+  updateBankTransaction,
+  deleteBankTransaction,
+  type Profile,
+  type BankTransaction,
+  type BankTransactionType,
+} from '@/lib/api';
+import { getNetDeposits } from '@/lib/stats';
 import { showToast } from '@/lib/toast';
-import { User, Mail, Bell, Save, Loader2, Wallet, Target, DollarSign, Lock, CheckCircle } from 'lucide-react';
+import { User, Mail, Bell, Save, Loader2, Wallet, Target, DollarSign, Lock, CheckCircle, AlertTriangle, Plus, Trash2, Pencil, X as XIcon } from 'lucide-react';
 import { useCurrency } from '@/components/CurrencyContext';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { format } from 'date-fns';
 
 // Assuming ProfileUpdate is a type derived from Profile or separately defined in '@/lib/api'
 // For this edit, we'll assume it's available or compatible with Profile.
@@ -15,12 +28,22 @@ type ProfileUpdate = Partial<Profile> & { unit_size?: number | null };
 export default function SettingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { mode, setUnitSize: setGlobalUnitSize } = useCurrency();
+  const { mode, formatValue, setUnitSize: setGlobalUnitSize } = useCurrency();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [unitSize, setUnitSize] = useState<string>('10');
   const [userEmail, setUserEmail] = useState<string>('');
+
+  // Bank transactions (deposit/withdrawal log -> derived bank history; PUN-71)
+  const [bankTransactions, setBankTransactions] = useState<BankTransaction[]>([]);
+  const [bankTableMissing, setBankTableMissing] = useState(false);
+  const [betProfitTotal, setBetProfitTotal] = useState(0);
+  const [txForm, setTxForm] = useState<{ type: BankTransactionType; amount: string; occurred_on: string; note: string }>(
+    { type: 'deposit', amount: '', occurred_on: format(new Date(), 'yyyy-MM-dd'), note: '' }
+  );
+  const [editingTxId, setEditingTxId] = useState<string | null>(null);
+  const [txSaving, setTxSaving] = useState(false);
   
   // Password reset state
   const [showPasswordReset, setShowPasswordReset] = useState(false);
@@ -139,11 +162,114 @@ export default function SettingsPage() {
         });
         if (data.unit_size) setUnitSize(data.unit_size.toString());
       }
+
+      if (user) {
+        await loadBankData(user.id);
+      }
     } catch (err) {
       showToast('Failed to load profile', 'error');
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadBankData = async (userId: string) => {
+    const [txResult, betsResult] = await Promise.all([
+      fetchBankTransactions(userId),
+      fetchUserBets(userId, 'all'),
+    ]);
+
+    if (txResult.tableMissing) {
+      setBankTableMissing(true);
+      setBankTransactions([]);
+    } else {
+      setBankTableMissing(false);
+      setBankTransactions(txResult.data ?? []);
+    }
+
+    const total = (betsResult.data ?? []).reduce(
+      (sum, bet) => sum + (bet.profit_loss ? Number(bet.profit_loss) : 0),
+      0
+    );
+    setBetProfitTotal(total);
+  };
+
+  const resetTxForm = () => {
+    setEditingTxId(null);
+    setTxForm({ type: 'deposit', amount: '', occurred_on: format(new Date(), 'yyyy-MM-dd'), note: '' });
+  };
+
+  const handleTxSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amount = parseFloat(txForm.amount);
+    if (isNaN(amount) || amount <= 0) {
+      showToast('Enter an amount greater than 0', 'error');
+      return;
+    }
+    if (!txForm.occurred_on) {
+      showToast('Choose a date', 'error');
+      return;
+    }
+
+    setTxSaving(true);
+    try {
+      const input = {
+        type: txForm.type,
+        amount,
+        occurred_on: txForm.occurred_on,
+        note: txForm.note.trim() ? txForm.note.trim() : null,
+      };
+
+      const result = editingTxId
+        ? await updateBankTransaction(editingTxId, input)
+        : await createBankTransaction(input);
+
+      if (result.tableMissing) {
+        setBankTableMissing(true);
+        showToast('Database update required before saving transactions', 'error');
+        return;
+      }
+      if (result.error) {
+        showToast(editingTxId ? 'Failed to update transaction' : 'Failed to add transaction', 'error');
+        return;
+      }
+
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await loadBankData(user.id);
+
+      resetTxForm();
+      showToast(editingTxId ? 'Transaction updated' : 'Transaction added', 'success');
+    } finally {
+      setTxSaving(false);
+    }
+  };
+
+  const handleTxEdit = (tx: BankTransaction) => {
+    setEditingTxId(tx.id);
+    setTxForm({
+      type: tx.type,
+      amount: String(tx.amount),
+      occurred_on: tx.occurred_on,
+      note: tx.note ?? '',
+    });
+  };
+
+  const handleTxDelete = async (id: string) => {
+    const result = await deleteBankTransaction(id);
+    if (result.tableMissing) {
+      setBankTableMissing(true);
+      return;
+    }
+    if (result.error) {
+      showToast('Failed to delete transaction', 'error');
+      return;
+    }
+    if (editingTxId === id) resetTxForm();
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) await loadBankData(user.id);
+    showToast('Transaction deleted', 'success');
   };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
@@ -205,9 +331,13 @@ export default function SettingsPage() {
       const updates: ProfileUpdate = {
         full_name: formData.full_name || null,
         email_notifications_enabled: formData.email_notifications_enabled,
-        // Bankroll management
+        // Bankroll management. Current bank is derived (starting + net
+        // deposits/withdrawals + bet P/L); we cache it into bankroll_current_amount
+        // so consumers without transaction data have a sane fallback.
         bankroll_starting_amount: formData.bankroll_starting_amount ? parseFloat(formData.bankroll_starting_amount) : null,
-        bankroll_current_amount: formData.bankroll_current_amount ? parseFloat(formData.bankroll_current_amount) : null,
+        bankroll_current_amount: formData.bankroll_starting_amount
+          ? parseFloat(formData.bankroll_starting_amount) + getNetDeposits(bankTransactions) + betProfitTotal
+          : null,
         bankroll_tracking_enabled: formData.bankroll_tracking_enabled,
         // Goals and targets
         monthly_profit_target: formData.monthly_profit_target ? parseFloat(formData.monthly_profit_target) : null,
@@ -546,29 +676,20 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="bankroll_current_amount"
-                    className="block text-sm font-medium text-muted-foreground mb-2"
-                  >
-                    Current Bankroll ($)
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    Current Bankroll (calculated)
                   </label>
-                  <input
-                    type="number"
-                    id="bankroll_current_amount"
-                    step="0.01"
-                    min="0"
-                    value={formData.bankroll_current_amount}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        bankroll_current_amount: e.target.value,
-                      })
-                    }
-                    placeholder="0.00"
-                    className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
-                  />
+                  <div className="flex h-[42px] w-full items-center rounded-lg border border-input bg-muted/50 px-3 py-2 text-foreground">
+                    {formData.bankroll_starting_amount && !isNaN(parseFloat(formData.bankroll_starting_amount))
+                      ? formatValue(
+                          parseFloat(formData.bankroll_starting_amount) + getNetDeposits(bankTransactions) + betProfitTotal,
+                          2,
+                          false
+                        )
+                      : '—'}
+                  </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Your current bankroll amount
+                    Calculated from your starting bank, deposits/withdrawals and bet results
                   </p>
                 </div>
 
@@ -611,6 +732,142 @@ export default function SettingsPage() {
                     Recommended: 1-2% of your total bankroll.
                   </p>
                 </div>
+              </div>
+            )}
+
+            {formData.bankroll_tracking_enabled && (
+              <div className="mt-2 border-t border-border pt-4">
+                <div className="mb-3">
+                  <h3 className="text-sm font-semibold text-foreground">Deposits &amp; Withdrawals</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Log money in and out of your betting bank. These feed your bank history chart and current bank.
+                  </p>
+                </div>
+
+                {bankTableMissing ? (
+                  <div className="flex items-start gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-700 dark:text-yellow-300">
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span>
+                      Database update required: run <code className="font-mono">migrations/0001_bank_transactions.sql</code> in
+                      the Supabase SQL editor to enable deposit/withdrawal tracking.
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <form onSubmit={handleTxSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">Type</label>
+                        <select
+                          value={txForm.type}
+                          onChange={(e) => setTxForm({ ...txForm, type: e.target.value as BankTransactionType })}
+                          className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground bg-card transition-colors"
+                        >
+                          <option value="deposit">Deposit</option>
+                          <option value="withdrawal">Withdrawal</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">Amount ($)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          value={txForm.amount}
+                          onChange={(e) => setTxForm({ ...txForm, amount: e.target.value })}
+                          placeholder="0.00"
+                          className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">Date</label>
+                        <input
+                          type="date"
+                          value={txForm.occurred_on}
+                          onChange={(e) => setTxForm({ ...txForm, occurred_on: e.target.value })}
+                          className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground bg-card transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">Note (optional)</label>
+                        <input
+                          type="text"
+                          value={txForm.note}
+                          onChange={(e) => setTxForm({ ...txForm, note: e.target.value })}
+                          placeholder="e.g. top-up"
+                          className="block w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-foreground bg-card placeholder:text-muted-foreground transition-colors"
+                        />
+                      </div>
+                      <div className="sm:col-span-2 lg:col-span-4 flex gap-2">
+                        <button
+                          type="submit"
+                          disabled={txSaving}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                        >
+                          {txSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                          {editingTxId ? 'Update' : 'Add'}
+                        </button>
+                        {editingTxId && (
+                          <button
+                            type="button"
+                            onClick={resetTxForm}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-input text-foreground hover:bg-muted transition-colors"
+                          >
+                            <XIcon className="h-4 w-4" />
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </form>
+
+                    {bankTransactions.length > 0 && (
+                      <ul className="mt-4 divide-y divide-border rounded-lg border border-border">
+                        {bankTransactions
+                          .slice()
+                          .sort((a, b) => new Date(b.occurred_on).getTime() - new Date(a.occurred_on).getTime())
+                          .map((tx) => (
+                            <li key={tx.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span
+                                  className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${tx.type === 'deposit'
+                                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                    : 'bg-red-500/15 text-red-600 dark:text-red-400'
+                                    }`}
+                                >
+                                  {tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
+                                </span>
+                                <span className="font-medium text-foreground">
+                                  {tx.type === 'withdrawal' ? '-' : '+'}
+                                  {formatValue(Number(tx.amount), 2, false)}
+                                </span>
+                                <span className="text-muted-foreground shrink-0">
+                                  {format(new Date(tx.occurred_on), 'dd MMM yyyy')}
+                                </span>
+                                {tx.note && <span className="text-muted-foreground truncate">— {tx.note}</span>}
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleTxEdit(tx)}
+                                  className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                  aria-label="Edit transaction"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleTxDelete(tx.id)}
+                                  className="p-1.5 rounded-md text-muted-foreground hover:bg-red-500/10 hover:text-red-600 transition-colors"
+                                  aria-label="Delete transaction"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                      </ul>
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>
